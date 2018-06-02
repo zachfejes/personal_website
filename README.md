@@ -1,2 +1,2 @@
-# personal_website
-My personal website
+# Personal Website: zachfejes.com
+My personal website!
