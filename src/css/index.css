@@ -1,0 +1,21 @@
+html, body {
+    position: relative;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#root, #root > div {
+    box-sizing: border-box;
+    min-height: 100%;
+    padding: 0;
+    position: relative;
+    background-color: #000000;
+}
+
+h1, h2, h3, h4, h5, p, a {
+    display: inline-block;
+    color: #ffffff;
+    opacity: 1;
+    font-family: 'Open Sans', sans-serif;
+}

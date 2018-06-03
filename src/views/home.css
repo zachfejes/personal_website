@@ -1,0 +1,17 @@
+.home {
+    padding-top: 40vh;
+}
+
+.home h1 {
+    color: #FFFFFF;
+    margin: 0;
+    opacity: 1;
+    animation-name: example;
+    animation-duration: 8s;
+}
+
+@keyframes example {
+    0% { opacity: 0; }
+    25% { opacity: 0; }
+    100% { opacity: 1; }
+}
