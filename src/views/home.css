@@ -1,16 +1,51 @@
 .home {
     padding-top: 40vh;
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
 }
+.home::after {
+    content: "";
+    position: absolute;
+    width: 2px;
+    height: 60vh;
+    top: 170vh;
+    left: 10vw;
+    background-color: #FFFFFF;
+    opacity: 0.8;
+    animation-name: lineFlow;
+    animation-duration: 8s;
+}
+@keyframes lineFlow {
+    0% { top: -70vh; }
+    100% { top: 170vh; }
+}
+
+.home .circle {
+    position: absolute;
+    top: 40vh;
+    left: calc(10vw - 6.5px);
+    width: 15px;
+    height: 15px;
+    opacity: 0.8;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+}
+@keyframes circleExpand {
+    0% { width: 0px; height: 0px; }
+    50% { width: 15px; height: 0px; }
+}
+
 
 .home h1 {
     color: #FFFFFF;
     margin: 0;
     opacity: 1;
-    animation-name: example;
+    animation-name: fadeIn;
     animation-duration: 8s;
 }
 
-@keyframes example {
+@keyframes fadeIn {
     0% { opacity: 0; }
     25% { opacity: 0; }
     100% { opacity: 1; }
