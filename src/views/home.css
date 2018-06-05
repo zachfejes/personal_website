@@ -1,52 +1,214 @@
 .home {
-    padding-top: 40vh;
     position: relative;
     overflow: hidden;
     min-height: 100vh;
 }
-.home::after {
-    content: "";
-    position: absolute;
-    width: 2px;
-    height: 60vh;
-    top: 170vh;
-    left: 10vw;
-    background-color: #FFFFFF;
-    opacity: 0.8;
-    animation-name: lineFlow;
-    animation-duration: 8s;
-}
-@keyframes lineFlow {
-    0% { top: -70vh; }
-    100% { top: 170vh; }
+
+.home .welcomeMessage {
+    position: relative;
 }
 
-.home .circle {
+.home .welcomeMessage .circle:nth-child(1) {
     position: absolute;
-    top: 40vh;
-    left: calc(10vw - 6.5px);
-    width: 15px;
-    height: 15px;
-    opacity: 0.8;
-    border: 2px solid #FFFFFF;
+    top: calc(50vh - 100px);
+    left: calc(50vw - 100px);
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+    border: 1px solid #FFFFFF;
     border-radius: 50%;
+    animation-name: circleExpand;
+    animation-duration: 6s;
+    z-index: 1;
 }
 @keyframes circleExpand {
-    0% { width: 0px; height: 0px; }
-    50% { width: 15px; height: 0px; }
+    0% { width: 1px; height: 1px; opacity: 0.0001; top: 50vh; left: 50vw;}
+    60% { width: 1px; height: 1px; opacity: 0.0001; top: 50vh; left: 50vw;}
+    70% { width: 180px; height: 180px; opacity: 1; top: calc(50vh - 90px); left: calc(50vw - 90px);}
+    100% { width: 200px; height: 200px; opacity: 0; top: calc(50vh - 100px); left: calc(50vw - 100px);}
+}
+
+.home .welcomeMessage .circle:nth-child(2) {
+    position: absolute;
+    top: calc(50vh - 85px);
+    left: calc(50vw - 85px);
+    width: 170px;
+    height: 170px;
+    opacity: 1;
+    background-color: black;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+    animation-name: circleAppear;
+    animation-duration: 12s;
+    cursor: pointer;
+    z-index: 2;
+}
+@keyframes circleAppear {
+    0% { opacity: 0; }
+    35% { opacity: 0; }
+    40% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { opacity: 1; }
+}
+.home .welcomeMessage .circle.implode:nth-child(2) {
+    position: absolute;
+    top: calc(50vh - 25px);
+    left: calc(50vw - 150px);
+    width: 300px;
+    height: 50px;
+    opacity: 1;
+    background-color: black;
+    border: 2px solid #FFFFFF;
+    border-radius: 25px;
+    animation-name: circleImplode;
+    animation-duration: 5s;
+    cursor: default;
+    z-index: 2;
+}
+@keyframes circleImplode {
+    0% { border-radius: 50%; border: 2px solid #FFFFFF; width: 170px; height: 170px; top: calc(50vh - 85px); left: calc(50vw - 85px); opacity: 1}
+    20% { width: 50px; height: 50px; top: calc(50vh - 25px); left: calc(50vw - 25px); opacity: 1; border-radius: 50%; }
+    21% { border-radius: 25px; }
+    60% { width: 300px; left: calc(50vw - 150px); opacity: 1; border-radius: 25px;}
+}
+.home .welcomeMessage .circle.implode:nth-child(2)::after {
+    position: absolute;
+    content: "";
+    opacity: 0;
+    border: 1px solid #FFFFFF;
+    border-radius: 50%;
+    z-index: 1;
+    height: 130px;
+    width: 130px;
+    top: calc(50% - 65px);
+    left: calc(50% - 65px);
+    animation-name: implosionRipple;
+    animation-duration: 1s;
+}
+@keyframes implosionRipple {
+    0% { height: 170px; width: 170px; top: calc(50% - 85px); left: calc(50% - 85px); opacity: 0.5; border: 1px solid #FFFFFF;}
+    100% { height: 200px; width: 200px; top: calc(50% - 100px); left: calc(50% - 100px); opacity: 0; border: 10px solid #FFFFFF;}
 }
 
 
-.home h1 {
+.home .welcomeMessage h1 {
+    position: absolute;
+    top: calc(50vh - 20px);
+    left: calc(50vw - 50px);
     color: #FFFFFF;
     margin: 0;
     opacity: 1;
     animation-name: fadeIn;
-    animation-duration: 8s;
+    animation-duration: 12s;
 }
 
 @keyframes fadeIn {
     0% { opacity: 0; }
-    25% { opacity: 0; }
+    40% { opacity: 0; }
+    80% { opacity: 1; }
     100% { opacity: 1; }
+}
+
+/* .stage1 {
+    position: absolute;
+    bottom: 20vh;
+    left: calc(50vw - 300px);
+    width: 600px;
+    height: 1px;
+    background-color: #FFF;
+    animation-name: enterStageOne;
+    animation-duration: 2s;
+}
+@keyframes enterStageOne {
+    0% { width: 0px; left: calc(50vw - 0px); }
+    80% { width: 610px; left: calc(50vw - 305px); }
+    100% { width: 600px; left: calc(50vw - 300px); }
+} */
+
+
+.stage1 {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+.stage1 > .line:nth-child(1) {
+    position: absolute;
+    z-index: 3;
+    top: calc(50vh - 0.5px);
+    right: 80vw;
+    width: 100px;
+    opacity: 0;
+    height: 1px;
+    background-color: #FFF;
+    animation-name: lineShootLeft;
+    animation-duration: 1s;
+}
+.stage1 > .line:nth-child(2) {
+    position: absolute;
+    z-index: 3;
+    top: calc(50vh - 0.5px);
+    left: 80vw;
+    width: 100px;
+    opacity: 0;
+    height: 1px;
+    background-color: #FFF;
+    animation-name: lineShootRight;
+    animation-duration: 1s;
+}
+@keyframes lineShootLeft {
+    0% { right: 50vw; opacity: 0; }
+    20% { opacity: 0.8; }
+    50% { opacity: 0.8; }
+    100% { right: 80vw; opacity: 0; }
+}
+@keyframes lineShootRight {
+    0% { left: 50vw; opacity: 0; }
+    20% { opacity: 0.8; }
+    50% { opacity: 0.8; }
+    100% { left: 80vw; opacity: 0; }
+}
+.stage1 input,
+.stage1 input:focus {
+    position: absolute;
+    width: 200px;
+    height: 40px;
+    top: calc(50vh - 20px);
+    left: calc(50vw - 125px);
+    z-index: 10;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: #FFF;
+    font-size: 24px;
+}
+.stage1 button,
+.stage1 button:focus {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: calc(50vh - 15px);
+    right: calc(50vw - 140px);
+    opacity: 1;
+    border-radius: 50%;
+    background-color: transparent;
+    border: 2px solid #FFFFFF;
+    outline: none;
+    transition: 500ms ease;
+    -moz-transition: 500ms ease;
+}
+.stage1 button {
+    animation-name: buttonAppear;
+    animation-duration: 5s;
+}
+@keyframes buttonAppear {
+    0% { opacity: 0; }
+    60% { opacity: 0; }
+    100% { opacity: 1; }
+}
+.stage1 button.ready,
+.stage1 button.ready:focus {
+    background-color: #FFFFFF;
 }
