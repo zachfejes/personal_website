@@ -89,6 +89,27 @@
     0% { height: 170px; width: 170px; top: calc(50% - 85px); left: calc(50% - 85px); opacity: 0.5; border: 1px solid #FFFFFF;}
     100% { height: 200px; width: 200px; top: calc(50% - 100px); left: calc(50% - 100px); opacity: 0; border: 10px solid #FFFFFF;}
 }
+.home .welcomeMessage .circle.nameEntered:nth-child(2) {
+    position: absolute;
+    top: calc(50vh - 500px);
+    left: calc(50vw - 500px);
+    width: 1000px;
+    height: 1000px;
+    opacity: 0;
+    background-color: black;
+    border: 1px solid #FFFFFF;
+    border-radius: 50%;
+    animation-name: nameEntered;
+    animation-duration: 5s;
+    cursor: default;
+    z-index: 2;
+}
+@keyframes nameEntered {
+    0% { height: 50px; width: 300px; top: calc(50vh - 25px); left: calc(50vw - 150px); border-radius: 25px; opacity: 1;}
+    25% { height: 50px; width: 50px; top: calc(50vh - 25px); left: calc(50vw - 25px); border-radius: 25px; border: 2px solid #FFFFFF; }
+    26% { border-radius: 50%; opacity: 1; }
+    100% { width: 1000px; height: 1000px; top: calc(50vh - 500px); left: calc(50vw - 500px); border: 1px solid #FFFFFF; opacity: 0; border-radius: 50% }
+}
 
 
 .home .welcomeMessage h1 {
@@ -160,12 +181,14 @@
 }
 @keyframes lineShootLeft {
     0% { right: 50vw; opacity: 0; }
+    10% { opacity: 0; }
     20% { opacity: 0.8; }
     50% { opacity: 0.8; }
     100% { right: 80vw; opacity: 0; }
 }
 @keyframes lineShootRight {
     0% { left: 50vw; opacity: 0; }
+    10% { opacity: 0; }
     20% { opacity: 0.8; }
     50% { opacity: 0.8; }
     100% { left: 80vw; opacity: 0; }
@@ -183,6 +206,13 @@
     outline: none;
     color: #FFF;
     font-size: 24px;
+    opacity: 1;
+    transition: 200ms ease;
+    -moz-transition: 200ms ease;
+}
+.stage1 input.complete,
+.stage1 input.complete:focus {
+    opacity: 0;
 }
 .stage1 button,
 .stage1 button:focus {
@@ -196,8 +226,8 @@
     background-color: transparent;
     border: 2px solid #FFFFFF;
     outline: none;
-    transition: 500ms ease;
-    -moz-transition: 500ms ease;
+    transition: 500ms ease background-color;
+    -moz-transition: 500ms ease background-color;
 }
 .stage1 button {
     animation-name: buttonAppear;
@@ -211,4 +241,29 @@
 .stage1 button.ready,
 .stage1 button.ready:focus {
     background-color: #FFFFFF;
+}
+.stage1 button.ready.nameEntered,
+.stage1 button.ready.nameEntered:focus {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: calc(50vh - 15px);
+    right: calc(50vw - 15px);
+    opacity: 1;
+    border-radius: 50%;
+    background-color: transparent;
+    border: 2px solid #FFFFFF;
+    outline: none;
+    transition: none;
+    animation-name: buttonActivate;
+    animation-duration: 5s;
+}
+@keyframes buttonActivate {
+    0% { top: calc(50vh - 15px); right: calc(50vw - 140px); background-color: #FFFFFF; }
+    25% { top: calc(50vh - 15px); right: calc(50vw - 15px); background-color: transparent; }
+    100% { top: calc(50vh - 15px); right: calc(50vw - 15px); }
+}
+
+.stage1 circle {
+    position: absolute;
 }

@@ -9,7 +9,8 @@ class Home extends React.Component {
         super();
 
         this.state = {
-            stage: 0
+            stage: 0,
+            nameEntered: false
         };
     }
 
@@ -29,8 +30,13 @@ class Home extends React.Component {
         }
     }
 
+    onNameSubmit(e) {
+        e && e.preventDefault();
+        this.setState({ nameEntered: true });
+    }
+
     renderStageOne() {
-        const { stage } = this.state;
+        const { stage, nameEntered } = this.state;
         const { name } = this.props;
 
         if(stage === 1) {
@@ -38,8 +44,9 @@ class Home extends React.Component {
                 <div className="stage1">
                     <div className="line" />
                     <div className="line" />
-                    <input type="text" onChange={this.onNameEntry.bind(this)} />
-                    <button className={name ? "ready" : ""}/>
+                    <input type="text" className={nameEntered ? "complete" : ""} onChange={this.onNameEntry.bind(this)} />
+                    <button className={`${name ? "ready" : ""} ${nameEntered ? "nameEntered" : ""}`} onClick={this.onNameSubmit.bind(this)} />
+                    <div className="circle" />
                 </div>
             );
         }
@@ -49,13 +56,21 @@ class Home extends React.Component {
     }
 
     render() {
-        const { stage } = this.state;
+        const { stage, nameEntered } = this.state;
+        var circleClass = "";
+
+        if(stage === 1 && !nameEntered) {
+            circleClass = "implode";
+        }
+        else if (stage === 1 && nameEntered) {
+            circleClass = "nameEntered";
+        }
 
         return(
             <div className="container-fluid home">
                 <div className="row welcomeMessage" >
                     <div className="circle"/>
-                    <div className={`circle ${stage > 0 ? "implode" : ""}`} onClick={() => {this.setStage(1);}} />
+                    <div className={`circle ${circleClass}`} onClick={() => {this.setStage(1);}} />
                 </div>
 
                 {this.renderStageOne()}
