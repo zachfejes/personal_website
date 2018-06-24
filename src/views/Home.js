@@ -2,94 +2,130 @@ import React from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import "./home.css";
-import { actionSaveName, actionClearName } from "../actions";
+import { actionSaveName, actionClearName, actionClickStart } from "../actions";
 
 class Home extends React.Component {
     constructor() {
         super();
 
         this.state = {
-            stage: 0,
-            nameEntered: false
+            nameValue: ""
         };
     }
 
-    setStage(stage) {
-        this.setState({ stage });
+    enterSite() {
+        const { actionClickStart } = this.props;
+        actionClickStart();
     }
 
     onNameEntry(e) {
         e && e.preventDefault();
-        const { actionSaveName, actionClearName } = this.props;
-
-        if(e.target.value) {
-            actionSaveName(e.target.value);
-        }
-        else {
-            actionClearName();
-        }
+        this.setState({ nameValue: e.target.value });
     }
 
     onNameSubmit(e) {
         e && e.preventDefault();
-        this.setState({ nameEntered: true });
+        const { nameValue } = this.state;
+        const { actionSaveName } = this.props;
+        actionSaveName(nameValue);
     }
 
-    renderStageOne() {
-        const { stage, nameEntered } = this.state;
-        const { name } = this.props;
+    renderEnterSite() {
+        const { clickedStart, name } = this.props;
+        var circleClass = "";
 
-        if(stage === 1) {
-            return(
-                <div className="stage1">
+        if (clickedStart && !name) {
+            circleClass = "implode";
+        }
+        else if (clickedStart && name) {
+            circleClass = "nameEntered";
+        }
+
+        return (
+            <div className="row enterSite" >
+                <div className="circle" />
+                <div className={`circle ${circleClass}`} onClick={this.enterSite.bind(this)} />
+                <div className={`patientRipple ${circleClass}`} />
+            </div>
+        );
+    }
+
+    renderNameEntry() {
+        const { nameValue } = this.state;
+        const { name, clickedStart } = this.props;
+
+        if (clickedStart) {
+            return (
+                <div className="nameEntry">
                     <div className="line" />
                     <div className="line" />
-                    <input type="text" className={nameEntered ? "complete" : ""} onChange={this.onNameEntry.bind(this)} />
-                    <button className={`${name ? "ready" : ""} ${nameEntered ? "nameEntered" : ""}`} onClick={this.onNameSubmit.bind(this)} />
-                    <div className="circle" />
+                    <input type="text" className={name ? "complete" : ""} onChange={this.onNameEntry.bind(this)} />
+                    <button
+                        className={`${nameValue ? "ready" : ""} ${name ? "nameEntered" : ""}`}
+                        disabled={nameValue ? false : "disabled"}
+                        onClick={this.onNameSubmit.bind(this)}
+                    />
+                    {
+                    // <div className={`circle ${name ? "" : "hide"}`}>
+                    //     <div />
+                    //     <div />
+                    //     <div />
+                    //     <div />
+                    //     <div />
+                    //     <div />
+                    //     <div />
+                    //     <div />
+                    // </div>
+                    }
                 </div>
             );
         }
         else {
-            return(<span />);
+            return (<span />);
         }
     }
 
-    render() {
-        const { stage, nameEntered } = this.state;
-        var circleClass = "";
+    renderContent() {
+        const { clickedStart, name } = this.props;
 
-        if(stage === 1 && !nameEntered) {
-            circleClass = "implode";
-        }
-        else if (stage === 1 && nameEntered) {
-            circleClass = "nameEntered";
-        }
-
-        return(
-            <div className="container-fluid home">
-                <div className="row welcomeMessage" >
-                    <div className="circle"/>
-                    <div className={`circle ${circleClass}`} onClick={() => {this.setStage(1);}} />
+        return (
+            <div className={`row content ${clickedStart && name ? "show" : ""}`}>
+                <div className="col-xs-12 text-center">
+                    <div />
                 </div>
+            </div>
+        );
+    }
 
-                {this.renderStageOne()}
+    render() {
+        return (
+            <div className="container-fluid home">
+                {this.renderEnterSite()}
+                {this.renderNameEntry()}
+                {this.renderContent()}
             </div>
         );
     }
 }
 
-const mapStateToProps = ({ session }) => ({
-    name: session.name
-});
+const mapStateToProps = ({ session }) => {
+
+    return ({
+        name: session.name,
+        clickedStart: session.clickedStart
+    });
+};
 
 export default connect(mapStateToProps, {
     actionSaveName,
-    actionClearName
+    actionClearName,
+    actionClickStart
 })(Home);
 
 Home.propTypes = {
     name: PropTypes.string,
+    clickedStart: PropTypes.bool.isRequired,
     actionSaveName: PropTypes.func.isRequired,
-    actionClearName: PropTypes.func.isRequired
+    actionClearName: PropTypes.func.isRequired,
+    actionClickStart: PropTypes.func.isRequired
 };

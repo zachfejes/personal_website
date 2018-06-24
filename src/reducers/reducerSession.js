@@ -1,8 +1,9 @@
-import { SAVE_NAME, CLEAR_NAME, SET_LANGUAGE } from "../actions";
+import { SAVE_NAME, CLEAR_NAME, SET_LANGUAGE, CLICK_START } from "../actions";
 
 const sessionDefault = {
     name: "",
-    language: ""
+    language: "",
+    clickedStart: false
 };
 
 export default function reducerSession(state = sessionDefault, {type, payload}) {
@@ -25,6 +26,11 @@ export default function reducerSession(state = sessionDefault, {type, payload}) 
             return ({
                 ...state,
                 language: payload
+            });
+        case CLICK_START:
+            return ({
+                ...state,
+                clickedStart: true
             });
         default:
             return state;

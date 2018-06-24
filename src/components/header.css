@@ -1,0 +1,58 @@
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 55px;
+    background-color: transparent;
+    z-index: 1000;
+    padding: 20px 103px 20px 103px;
+    animation-name: initializeHeader;
+    animation-duration: 10s;
+    opacity: 0.8;
+}
+
+.header.hidden {
+    opacity: 0;
+    animation-name: none;
+}
+
+
+.header a,
+.header a:hover,
+.header a:focus,
+.header a:active,
+.header a:hover:focus {
+    font-size: 18px;
+    font-weight: 400;
+    color: #FFFFFF;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.header > table {
+    width: 100%;
+}
+
+.header > table > tbody > tr > td {
+
+}
+.header > table > tbody > tr > td:nth-child(1) {
+
+}
+.header > table > tbody > tr > td:nth-child(2) {
+
+}
+
+.header > table > tbody > tr > td:nth-last-child(1),
+.header > table > tbody > tr > td:nth-last-child(2) {
+    width: 100px;
+}
+
+
+
+@keyframes initializeHeader {
+    0% { opacity: 0; }
+    50% { opacity: 0; }
+    100% { opacity: 1 }
+}

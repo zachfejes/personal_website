@@ -1,14 +1,46 @@
+/* HOME PAGE ELEMENTS/ANIMATIONS - START  */
+
 .home {
     position: relative;
     overflow: hidden;
     min-height: 100vh;
 }
+.home .content {
+    opacity: 0;
+    transition: 3s linear;
+    -moz-transition: 3s linear;
+    -webkit-transition: 3s linear;
+    transition-delay: 3s;
+    -moz-transition-delay: 3s;
+    -webkit-transition-delay: 3s;
+}
+.home .content.show {
+    opacity: 1;
+}
+.home .content > div > div:nth-child(1) {
+    position: absolute;
+    top: calc(50vh - 150px);
+    left: calc(50vw - 150px);
+    background-image: url("./media/icosphere1.gif");
+    height: 300px;
+    width: 300px;
+    transition: 1s;
+    -moz-transition: 1s;
+    -webkit-transition: 1s;
+}
 
-.home .welcomeMessage {
+/* HOME PAGE ELEMENTS/ANIMATIONS - END */
+
+
+
+
+/* ENTER SITE ELEMENTS/ANIMATIONS - START */
+
+.home .enterSite {
     position: relative;
 }
 
-.home .welcomeMessage .circle:nth-child(1) {
+.home .enterSite .circle:nth-child(1) {
     position: absolute;
     top: calc(50vh - 100px);
     left: calc(50vw - 100px);
@@ -17,18 +49,11 @@
     opacity: 0;
     border: 1px solid #FFFFFF;
     border-radius: 50%;
-    animation-name: circleExpand;
+    animation-name: rippleCircleExpand;
     animation-duration: 6s;
     z-index: 1;
 }
-@keyframes circleExpand {
-    0% { width: 1px; height: 1px; opacity: 0.0001; top: 50vh; left: 50vw;}
-    60% { width: 1px; height: 1px; opacity: 0.0001; top: 50vh; left: 50vw;}
-    70% { width: 180px; height: 180px; opacity: 1; top: calc(50vh - 90px); left: calc(50vw - 90px);}
-    100% { width: 200px; height: 200px; opacity: 0; top: calc(50vh - 100px); left: calc(50vw - 100px);}
-}
-
-.home .welcomeMessage .circle:nth-child(2) {
+.home .enterSite .circle:nth-child(2) {
     position: absolute;
     top: calc(50vh - 85px);
     left: calc(50vw - 85px);
@@ -38,19 +63,32 @@
     background-color: black;
     border: 2px solid #FFFFFF;
     border-radius: 50%;
-    animation-name: circleAppear;
+    animation-name: siteEntryButtonFadeIn;
     animation-duration: 12s;
     cursor: pointer;
     z-index: 2;
 }
-@keyframes circleAppear {
-    0% { opacity: 0; }
-    35% { opacity: 0; }
-    40% { opacity: 1; }
-    95% { opacity: 1; }
-    100% { opacity: 1; }
+.home .enterSite .patientRipple {
+    position: absolute;
+    top: calc(50vh - 110px);
+    left: calc(50vw - 110px);
+    width: 220px;
+    height: 220px;
+    opacity: 0;
+    border: 1px solid #FFFFFF;
+    border-radius: 50%;
+    animation-name: rippleWhileUnclicked;
+    animation-duration: 8s;
+    animation-delay: 8s;
+    animation-iteration-count: infinite;
+    z-index: 1;
 }
-.home .welcomeMessage .circle.implode:nth-child(2) {
+.home .enterSite .patientRipple.implode,
+.home .enterSite .patientRipple.nameEntered {
+    animation-name: none;
+}
+
+.home .enterSite .circle.implode:nth-child(2) {
     position: absolute;
     top: calc(50vh - 25px);
     left: calc(50vw - 150px);
@@ -60,18 +98,12 @@
     background-color: black;
     border: 2px solid #FFFFFF;
     border-radius: 25px;
-    animation-name: circleImplode;
+    animation-name: buttonCircleBecomeNameOutline;
     animation-duration: 5s;
     cursor: default;
     z-index: 2;
 }
-@keyframes circleImplode {
-    0% { border-radius: 50%; border: 2px solid #FFFFFF; width: 170px; height: 170px; top: calc(50vh - 85px); left: calc(50vw - 85px); opacity: 1}
-    20% { width: 50px; height: 50px; top: calc(50vh - 25px); left: calc(50vw - 25px); opacity: 1; border-radius: 50%; }
-    21% { border-radius: 25px; }
-    60% { width: 300px; left: calc(50vw - 150px); opacity: 1; border-radius: 25px;}
-}
-.home .welcomeMessage .circle.implode:nth-child(2)::after {
+.home .enterSite .circle.implode:nth-child(2)::after {
     position: absolute;
     content: "";
     opacity: 0;
@@ -85,11 +117,7 @@
     animation-name: implosionRipple;
     animation-duration: 1s;
 }
-@keyframes implosionRipple {
-    0% { height: 170px; width: 170px; top: calc(50% - 85px); left: calc(50% - 85px); opacity: 0.5; border: 1px solid #FFFFFF;}
-    100% { height: 200px; width: 200px; top: calc(50% - 100px); left: calc(50% - 100px); opacity: 0; border: 10px solid #FFFFFF;}
-}
-.home .welcomeMessage .circle.nameEntered:nth-child(2) {
+.home .enterSite .circle.nameEntered:nth-child(2) {
     position: absolute;
     top: calc(50vh - 500px);
     left: calc(50vw - 500px);
@@ -99,55 +127,58 @@
     background-color: black;
     border: 1px solid #FFFFFF;
     border-radius: 50%;
-    animation-name: nameEntered;
+    animation-name: siteActivationRippleFromNameEntry;
     animation-duration: 5s;
     cursor: default;
     z-index: 2;
 }
-@keyframes nameEntered {
+
+@keyframes rippleCircleExpand {
+    0% { width: 1px; height: 1px; opacity: 0.0001; top: 50vh; left: 50vw;}
+    60% { width: 1px; height: 1px; opacity: 0.0001; top: 50vh; left: 50vw;}
+    70% { width: 180px; height: 180px; opacity: 1; top: calc(50vh - 90px); left: calc(50vw - 90px);}
+    100% { width: 200px; height: 200px; opacity: 0; top: calc(50vh - 100px); left: calc(50vw - 100px);}
+}
+@keyframes siteEntryButtonFadeIn {
+    0% { opacity: 0; }
+    35% { opacity: 0; }
+    40% { opacity: 1; }
+    100% { opacity: 1; }
+}
+@keyframes rippleWhileUnclicked {
+    0% { width: 180px; height: 180px; opacity: 0; top: calc(50vh - 90px); left: calc(50vw - 90px); }
+    8% { opacity: 1;}
+    40% { width: 220px; height: 220px; opacity: 0; top: calc(50vh - 110px); left: calc(50vw - 110px); }
+}
+@keyframes buttonCircleBecomeNameOutline {
+    0% { border-radius: 50%; border: 2px solid #FFFFFF; width: 170px; height: 170px; top: calc(50vh - 85px); left: calc(50vw - 85px); opacity: 1}
+    20% { width: 50px; height: 50px; top: calc(50vh - 25px); left: calc(50vw - 25px); opacity: 1; border-radius: 50%; }
+    21% { border-radius: 25px; }
+    60% { width: 300px; left: calc(50vw - 150px); opacity: 1; border-radius: 25px;}
+}
+@keyframes implosionRipple {
+    0% { height: 170px; width: 170px; top: calc(50% - 85px); left: calc(50% - 85px); opacity: 0.5; border: 1px solid #FFFFFF;}
+    100% { height: 200px; width: 200px; top: calc(50% - 100px); left: calc(50% - 100px); opacity: 0; border: 10px solid #FFFFFF;}
+}
+@keyframes siteActivationRippleFromNameEntry {
     0% { height: 50px; width: 300px; top: calc(50vh - 25px); left: calc(50vw - 150px); border-radius: 25px; opacity: 1;}
     25% { height: 50px; width: 50px; top: calc(50vh - 25px); left: calc(50vw - 25px); border-radius: 25px; border: 2px solid #FFFFFF; }
     26% { border-radius: 50%; opacity: 1; }
-    100% { width: 1000px; height: 1000px; top: calc(50vh - 500px); left: calc(50vw - 500px); border: 1px solid #FFFFFF; opacity: 0; border-radius: 50% }
+    100% { width: 96vh; height: 96vh; top: calc(50vh - 48vh); left: calc(50vw - 48vh); border: 1px solid #FFFFFF; opacity: 0; border-radius: 50% }
+}
+@keyframes siteActivationRippleFromStart {
+    0% { width: 200px; height: 200px; top: calc(50vh - 100px); left: calc(50vw - 100px); border-radius: 50%; border: 1px solid #FFFFFF; opacity: 1; }
+    100% { width: 100vh; height: 100vh; top: calc(50vh - 50vh); left: calc(50vw - 50vh); border-radius: 50%; border: 1px solid #FFFFFF; opacity: 0; }
 }
 
 
-.home .welcomeMessage h1 {
-    position: absolute;
-    top: calc(50vh - 20px);
-    left: calc(50vw - 50px);
-    color: #FFFFFF;
-    margin: 0;
-    opacity: 1;
-    animation-name: fadeIn;
-    animation-duration: 12s;
-}
-
-@keyframes fadeIn {
-    0% { opacity: 0; }
-    40% { opacity: 0; }
-    80% { opacity: 1; }
-    100% { opacity: 1; }
-}
-
-/* .stage1 {
-    position: absolute;
-    bottom: 20vh;
-    left: calc(50vw - 300px);
-    width: 600px;
-    height: 1px;
-    background-color: #FFF;
-    animation-name: enterStageOne;
-    animation-duration: 2s;
-}
-@keyframes enterStageOne {
-    0% { width: 0px; left: calc(50vw - 0px); }
-    80% { width: 610px; left: calc(50vw - 305px); }
-    100% { width: 600px; left: calc(50vw - 300px); }
-} */
+/* ENTER SITE ELEMENTS/ANIMATIONS - END */
 
 
-.stage1 {
+
+/* NAME ENTRY ELEMENTS/ANIMATIONS - END */
+
+.nameEntry {
     position: absolute;
     width: 100vw;
     height: 100vh;
@@ -155,7 +186,7 @@
     left: 0;
     z-index: 10;
 }
-.stage1 > .line:nth-child(1) {
+.nameEntry > .line:nth-child(1) {
     position: absolute;
     z-index: 3;
     top: calc(50vh - 0.5px);
@@ -167,7 +198,7 @@
     animation-name: lineShootLeft;
     animation-duration: 1s;
 }
-.stage1 > .line:nth-child(2) {
+.nameEntry > .line:nth-child(2) {
     position: absolute;
     z-index: 3;
     top: calc(50vh - 0.5px);
@@ -179,22 +210,8 @@
     animation-name: lineShootRight;
     animation-duration: 1s;
 }
-@keyframes lineShootLeft {
-    0% { right: 50vw; opacity: 0; }
-    10% { opacity: 0; }
-    20% { opacity: 0.8; }
-    50% { opacity: 0.8; }
-    100% { right: 80vw; opacity: 0; }
-}
-@keyframes lineShootRight {
-    0% { left: 50vw; opacity: 0; }
-    10% { opacity: 0; }
-    20% { opacity: 0.8; }
-    50% { opacity: 0.8; }
-    100% { left: 80vw; opacity: 0; }
-}
-.stage1 input,
-.stage1 input:focus {
+.nameEntry input,
+.nameEntry input:focus {
     position: absolute;
     width: 200px;
     height: 40px;
@@ -210,12 +227,13 @@
     transition: 200ms ease;
     -moz-transition: 200ms ease;
 }
-.stage1 input.complete,
-.stage1 input.complete:focus {
+.nameEntry input.complete,
+.nameEntry input.complete:focus {
     opacity: 0;
+    display: none;
 }
-.stage1 button,
-.stage1 button:focus {
+.nameEntry button,
+.nameEntry button:focus {
     position: absolute;
     width: 30px;
     height: 30px;
@@ -226,44 +244,142 @@
     background-color: transparent;
     border: 2px solid #FFFFFF;
     outline: none;
+    z-index: 1;
     transition: 500ms ease background-color;
     -moz-transition: 500ms ease background-color;
 }
-.stage1 button {
-    animation-name: buttonAppear;
+.nameEntry button {
+    animation-name: nameSubmitButtonAppear;
     animation-duration: 5s;
 }
-@keyframes buttonAppear {
-    0% { opacity: 0; }
-    60% { opacity: 0; }
-    100% { opacity: 1; }
-}
-.stage1 button.ready,
-.stage1 button.ready:focus {
+.nameEntry button.ready,
+.nameEntry button.ready:focus {
     background-color: #FFFFFF;
 }
-.stage1 button.ready.nameEntered,
-.stage1 button.ready.nameEntered:focus {
+.nameEntry button.ready.nameEntered,
+.nameEntry button.ready.nameEntered:focus {
     position: absolute;
     width: 30px;
     height: 30px;
     top: calc(50vh - 15px);
     right: calc(50vw - 15px);
-    opacity: 1;
+    opacity: 0;
     border-radius: 50%;
-    background-color: transparent;
-    border: 2px solid #FFFFFF;
-    outline: none;
+    background-color: #FFFFFF;
+    border: 1px solid #FFFFFF;
     transition: none;
-    animation-name: buttonActivate;
+    animation-name: nameSubmitButtonActivateSite;
     animation-duration: 5s;
 }
-@keyframes buttonActivate {
-    0% { top: calc(50vh - 15px); right: calc(50vw - 140px); background-color: #FFFFFF; }
-    25% { top: calc(50vh - 15px); right: calc(50vw - 15px); background-color: transparent; }
-    100% { top: calc(50vh - 15px); right: calc(50vw - 15px); }
+/* .nameEntry .circle {
+    position: absolute;
+    perspective: 1000px;
+    opacity: 1;
+    z-index: 5;
+    top: calc(50vh - 45vh);
+    left: calc(50vw - 45vh);
+    height: 90vh;
+    width: 90vh;
+    background-color: transparent;
+    border-radius: 50%;
+    z-index: 0;
+    animation: activationCirclesEngage 10s linear;
+    -moz-animation: activationCirclesEngage 10s linear;
+    -webkit-animation: activationCirclesEngage 10s linear;
+}
+.nameeEntry .circle.hide {
+    opacity: 0;
+    animation: none;
+    -moz-animation: none;
+    -webkit-animation: none;
+}
+.nameEntry .circle > div {
+    position: absolute;
+    transform-style: preserve-3d;
+    top: calc(50% - 2px);
+    left: 0;
+    height: 4px;
+    width: 20px;
+    border-radius: 2px;
+    background-color: #FFFFFF;
+    opacity: 1;
+    z-index: 500;
+    transform-origin: calc(45vh);
 }
 
-.stage1 circle {
-    position: absolute;
+.nameEntry .circle > div:nth-child(1) {
+    transform: rotate(0deg);
 }
+.nameEntry .circle > div:nth-child(2) {
+    transform: rotate(45deg);
+}
+.nameEntry .circle > div:nth-child(3) {
+    transform: rotate(90deg);
+}
+.nameEntry .circle > div:nth-child(4) {
+    transform: rotate(135deg);
+}
+.nameEntry .circle > div:nth-child(5) {
+    transform: rotate(180deg);
+}
+.nameEntry .circle > div:nth-child(6) {
+    transform: rotate(225deg);
+}
+.nameEntry .circle > div:nth-child(7) {
+    transform: rotate(270deg);
+}
+.nameEntry .circle > div:nth-child(8) {
+    transform: rotate(315deg);
+} */
+
+@keyframes lineShootLeft {
+    0% { right: 50vw; opacity: 0; }
+    10% { opacity: 0; }
+    20% { opacity: 0.8; }
+    50% { opacity: 0.8; }
+    100% { right: 80vw; opacity: 0; }
+}
+@keyframes lineShootRight {
+    0% { left: 50vw; opacity: 0; }
+    10% { opacity: 0; }
+    20% { opacity: 0.8; }
+    50% { opacity: 0.8; }
+    100% { left: 80vw; opacity: 0; }
+}
+@keyframes nameSubmitButtonAppear {
+    0% { opacity: 0; }
+    60% { opacity: 0; }
+    100% { opacity: 1; }
+}
+@keyframes nameSubmitButtonActivateSite {
+    0% { width: 30px; height: 30px; top: calc(50vh - 15px); right: calc(50vw - 140px); background-color: #FFFFFF; opacity: 1; border-radius: 50%; }
+    25% { width: 30px; height: 30px; top: calc(50vh - 15px); right: calc(50vw - 15px);  opacity: 1; }
+    40% { width: 30px; height: 30px; top: calc(50vh - 15px); right: calc(50vw - 15px);  opacity: 0; }
+    100% { width: 30px; height: 30px; top: calc(50vh - 15px); right: calc(50vw - 15px);  opacity: 0; }
+}
+/* @keyframes activationCirclesEngage {
+    from {
+        transform: rotate(0deg);
+        -webkit-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+        -webkit-transform: rotate(360deg);
+        -moz-transform: rotate(360deg);
+    }
+
+    0% { opacity: 0; }
+    38% { opacity: 0; }
+    40% { opacity: 0.2; }
+    48% { opacity: 0; }
+    100% { opacity: 0; }
+} */
+
+/* NAME ENTRY ELEMENTS/ANIMATIONS - END */
+
+
+
+
+
+

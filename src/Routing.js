@@ -1,11 +1,14 @@
 import React from "react";
-import { Switch, Route } from "react-router-dom";
+import { Switch, Route, withRouter } from "react-router-dom";
 import { Home, About, Projects, NotFound } from "./views";
+import { Header } from "./components";
 
 class Routing extends React.Component {
     render() {
         return(
             <div id="beep_boop">
+                <Header />
+
                 <Switch>
                     <Route exact path="/" render={() => <Home />} />
                     <Route exact path="/about" render={() => <About />} />
@@ -18,6 +21,4 @@ class Routing extends React.Component {
     }
 }
 
-
-
-export default Routing;
+export default withRouter(Routing);
