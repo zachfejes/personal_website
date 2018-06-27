@@ -8,6 +8,29 @@ class Projects extends React.Component {
             <div className="row">
                 <div className="col-xs-12 text-center">
                     <h1>Projects</h1>
+
+                    <div className="icosphere">
+                        <div className="triangle">
+                            <div />
+                            <div />
+                            <div />
+                        </div>
+                        <div className="triangle">
+                            <div />
+                            <div />
+                            <div />
+                        </div>
+                        <div className="triangle">
+                            <div />
+                            <div />
+                            <div />
+                        </div>
+                        <div className="triangle">
+                        <div />
+                        <div />
+                        <div />
+                    </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,0 +1,48 @@
+.projects {
+    position: relative;
+}
+
+.projects .icosphere {
+    position: absolute;
+    top: calc(50vh - 200px);
+    left: calc(50vw - 200px);
+    height: 400px;
+    width: 400px;
+}
+
+/** A SINGLE TRIANGLE **/
+
+.projects .icosphere > div.triangle {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.projects .icosphere > div.triangle > div {
+    position: absolute;
+    width: 50px;
+    height: 1px;
+    background-color: #FFFFFF;
+}
+.projects .icosphere > div.triangle > div:nth-child(2) {
+    transform-origin: left;
+    transform: rotateZ(60deg)
+}
+.projects .icosphere > div.triangle > div:nth-child(3) {
+    transform-origin: right;
+    transform: rotateZ(-60deg);
+}
+
+/** A GROUP OF TRIANGLES **/
+
+.projects .icosphere > div.triangle:nth-child(2) {
+    transform-origin: top, left;
+    transform: rotateZ(60deg);
+}
+.projects .icosphere > div.triangle:nth-child(3) {
+    transform-origin: top, right;
+    transform: rotateZ(-60deg);
+}
+.projects .icosphere > div.triangle:nth-child(4) {
+    transform-origin: top, right;
+    transform: rotateZ(-120deg);
+}
