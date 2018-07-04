@@ -1,7 +1,7 @@
 import moment from "moment";
 
 export const aboutConfig = {
-    personalInfo: "Just a guy who wants to go to space, and is willing to put in the work to get there.",
+    personalInfo: "Just a guy who is intent on getting to space, and wants to put in the work to make it happen",
     professionalInfo: {
         title: "Professional Experience",
         proExperience: [
@@ -28,8 +28,54 @@ export const aboutConfig = {
                 org: "SENSASSURE",
                 description: "Designed and fabricated several iterations of Sensassure’s new product, including custom sensors and PCBs (Eagle PCB). Iteratively improved the product through analog and pilot testing – optimizing the design for manufacturing. Managed relations with 60+ manufacturers and suppliers to cost out the product for pilot and mass production volumes. Secured and trained staff for the manufacturing of 350 sensors in preparation of pilot rollout."
             },
+            {
+                startDate: moment("May 2013", "MMMM YYYY"),
+                endDate: moment("December 2013", "MMMM YYYY"),
+                role: "Summer Intern, Corporate Real Estate",
+                org: "Royal Bank of Canada",
+                description: "Designed and coded new functionality into the Microsoft SharePoint platform (JavaScript, HTML). Constructed and documented a detailed Vendor Management System, a Resource Management Tool, and a web-initiated email system that dynamically prepared emails with relevant content."
+            },
+            {
+                startDate: moment("May 2012", "MMMM YYYY"),
+                endDate: moment("August 2012", "MMMM YYYY"),
+                role: "Research Intern",
+                org: "FH Joanneum University of Applied Sciences",
+                description: "Developed a Structured English analyzer using SharePoint based workflows. Created a prototypical use case, in which a Service Level Agreement was generated, English language user input analyzed, and modifications to the approval process were made automatically."
+            },
+            {
+                startDate: moment("April 2011", "MMMM YYYY"),
+                endDate: moment("November 2011", "MMMM YYYY"),
+                role: "Administrative Assistant, Critical Environments",
+                org: "Royal Bank of Canada",
+                description: "Developed, deployed and managed a Microsoft SharePoint site to categorize and store documentation for over 50 projects worldwide. Conferred with project management, technical specialists, and end-users in order to integrate the design of the SharePoint site within the framework of the company."
+            }
         ]
     },
-    educationInfo: "I went to school for a long while. It was crazy hard, I went on probation once, and I worked through it. It was fun.",
-    contactInfo: "Beep boop."
+    educationInfo: [
+        {
+            degree: "B.A.Sc ELECTRICAL ENGINEERING",
+            school: "UNIVERSITY OF TORONTO",
+            startDate: moment("September 2009", "MMMM YYYY"),
+            endDate: moment("April 2014", "MMMM YYYY"),
+            keyAreas: "RF Antenna Analysis: Transmission Power, VSWR, Gain Measurement. Microwave Circuit Design & Analysis. Vector Network Analyzer. Leveraged Linux (Redhat & Ubuntu) platforms in software assignments.",
+            gpa: 2.66,
+            finalYearGpa: 3.04,
+            awards: [
+                {
+                    name: "Vern Gomes Memorial Award",
+                    description: "Determined by Electrical and Computer Engineering student-staff committee for most valuable contributions to the class of his/her graduating year."
+                }
+            ]
+        }
+    ],
+    contactInfo: {
+        email: {
+            text: "zacharyfejes@gmail.com",
+            link: "mailto:zacharyfejes@gmail.com"
+        },
+        phone: {
+            text: "+1 647-907-6753",
+            link: "tel:16479076753"
+        }
+    }
 };
