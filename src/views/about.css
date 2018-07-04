@@ -1,0 +1,68 @@
+.about {
+    max-height: 100%;
+    min-height: 100vh;
+    padding-top: 100px;
+}
+
+/* PERSONAL INFO STYLE START  */
+
+.about .personalInfo {
+
+}
+
+/* PERRSONAL INFO STYLE END */
+
+/* PROFESSIONAL INFO STYLE START */
+
+.about .professionalInfo {
+
+}
+
+.about .professionalInfo > div {
+    width: 600px;
+    height: auto;
+    min-height: 150px;
+    border: 1px solid white;
+    margin: auto;
+    margin-bottom: 11px;
+    text-align: left;
+    padding: 15px;
+}
+
+.about .professionalInfo h5,
+.about .professionalInfo p,
+.about .professionalInfo p small {
+    color: #FFFFFF;
+    display: block;
+    margin: 0;
+}
+.about .professionalInfo h5 {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 5px 0;
+}
+.about .professionalInfo p small {
+    font-size: 10px;
+    font-weight: 500;
+}
+.about .professionalInfo p:nth-last-child(1) {
+    margin-top: 11px;
+}
+
+/* PROFESSIONAL INFO STYLE END */
+
+/* EDUCATION INFO STYLE START */
+
+.about .educationInfo {
+
+}
+
+/* EDUCATION INFO STYLE END */
+
+/* CONTACT INFO STYLE START */
+
+.about .contactInfo {
+
+}
+
+/* CONTACT INFO STYLE END */
