@@ -255,3 +255,311 @@
     transform-origin: top, right;
     transform: rotateZ(-120deg);
 } */
+
+
+
+
+
+
+
+
+
+/** ICONOSPHERE **/
+
+/* control the full sphere */
+.ico {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+}
+.ico.show-front {
+    transform: translateZ(-100px) rotateY(0deg);
+}
+.ico.show-right {
+    transform: translateZ(-100px) rotateY(-90deg);
+}
+.ico.show-back {
+    transform: translateZ(-100px) rotateY(-180deg);
+}
+.ico.show-left {
+    transform: translateZ(-100px) rotateY(90deg);
+}
+.ico.show-top {
+    transform: translateZ(-100px) rotateX(-90deg);
+}
+.ico.show-bottom {
+    transform: translateZ(-100px) rotateX(90deg);
+}
+
+/* each face of the sphere */
+.ico__face {
+    position: absolute;
+    width: 200px;
+    height: 173.2px;
+    line-height: 130px;
+    color: white;
+    font-size: 20px;
+    text-align: center;
+    transform-style: preserve-3d;
+    transform-origin: top center;
+}
+.ico__face > div {
+    position: absolute;
+    width: 200px;
+    height: 1px;
+    background-color: #FFFFFF;
+}
+.ico__face > div:nth-child(1) {
+    transform-origin: top center;
+    transform: rotateZ(0deg);
+}
+.ico__face > div:nth-child(2) {
+    transform-origin: bottom left;
+    transform: rotateZ(60deg);
+}
+.ico__face > div:nth-child(3) {
+    transform-origin: bottom right;
+    transform: rotateZ(-60deg);
+}
+
+/* organizing the sphere's faces */
+.ico__face--0 {
+    /* transform: translateZ(0) translateY(57.735px) rotateY(0deg) rotateX(-19.47deg); */
+    transform: rotateZ(0deg) rotateX(0);
+}
+.ico__face--1 {
+    transform: rotateZ(180deg) rotateX(-41.81deg);
+}
+.ico__face--2 {
+    transform: rotateZ(-60deg) translateY(87px) translateX(-50px) rotateX(-41.81deg);
+}
+.ico__face--3 {
+    transform: rotateZ(60deg) translateY(87px) translateX(50px) rotateX(-41.81deg);
+}
+.ico__face--4 {
+
+}
+.ico__face--5 {
+
+}
+.ico__face--6 {
+    
+}
+.ico__face--7 {
+
+}
+.ico__face--8 {
+    
+}
+
+
+
+
+/* Line by Line Construction */
+
+
+.sphere {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 3s;
+    animation-name: rotate;
+    animation-duration: 10s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
+@keyframes rotate {
+    0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) }
+    100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg)}
+}
+.sphere.show-front {
+    transform: translateZ(-100px) rotateY(0deg);
+}
+.sphere.show-right {
+    transform: translateZ(-100px) rotateY(-80deg);
+}
+.sphere.show-back {
+    transform: translateZ(-100px) rotateY(-170deg);
+}
+.sphere.show-left {
+    transform: translateZ(-100px) rotateY(80deg);
+}
+.sphere.show-top {
+    transform: translateZ(-100px) rotateX(-80deg);
+}
+.sphere.show-bottom {
+    transform: translateZ(-100px) rotateX(80deg);
+}
+
+.sphere .circle {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1px solid white;
+}
+
+.sphere .circle--0 {
+    width: 200px;
+    height: 200px;
+    top: calc(50% - 100px);
+    left: calc(50% - 100px);
+    transform: translateZ(0);
+}
+.sphere .circle--1 {
+    width: 173.2px;
+    height: 173.2px;
+    top: calc(50% - 86.6px);
+    left: calc(50% - 86.6px);
+    transform: translateZ(50px);
+}
+.sphere .circle--2 {
+    width: 173.2px;
+    height: 173.2px;
+    top: calc(50% - 86.6px);
+    left: calc(50% - 86.6px);
+    transform: translateZ(-50px);
+}
+.sphere .circle--3 {
+    width: 100px;
+    height: 100px;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    transform: translateZ(86.6px);
+}
+.sphere .circle--4 {
+    width: 100px;
+    height: 100px;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    transform: translateZ(-86.6px);
+}
+.sphere .circle--5 {
+    width: 1px;
+    height: 1px;
+    top: calc(50% - 0.5px);
+    left: calc(50% - 0.5px);
+    transform: translateZ(100px);
+}
+.sphere .circle--6 {
+    width: 1px;
+    height: 1px;
+    top: calc(50% - 0.5px);
+    left: calc(50% - 0.5px);
+    transform: translateZ(-100px);
+}
+.sphere .circle--7 {
+    width: 200px;
+    height: 200px;
+    top: calc(50% - 100px);
+    left: calc(50% - 100px);
+    transform-origin: top center;
+    transform: rotateY(90deg);
+}
+.sphere .circle--8 {
+    width: 173.2px;
+    height: 173.2px;
+    top: calc(50% - 86.6px);
+    left: calc(50% - 86.6px);
+    transform-origin: top center;
+    transform: rotateY(90deg) translateZ(50px);
+}
+.sphere .circle--9 {
+    width: 173.2px;
+    height: 173.2px;
+    top: calc(50% - 86.6px);
+    left: calc(50% - 86.6px);
+    transform-origin: top center;
+    transform: rotateY(90deg) translateZ(-50px);
+}
+.sphere .circle--10 {
+    width: 100px;
+    height: 100px;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    transform-origin: top center;
+    transform: rotateY(90deg) translateZ(86.6px);
+}
+.sphere .circle--11 {
+    width: 100px;
+    height: 100px;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    transform-origin: top center;
+    transform: rotateY(90deg) translateZ(-86.6px);
+}
+.sphere .circle--12 {
+    width: 1px;
+    height: 1px;
+    top: calc(50% - 0.5px);
+    left: calc(50% - 0.5px);
+    transform-origin: top center;
+    transform: rotateY(90deg) translateZ(100px);
+}
+.sphere .circle--13 {
+    width: 1px;
+    height: 1px;
+    top: calc(50% - 0.5px);
+    left: calc(50% - 0.5px);
+    transform-origin: top center;
+    transform: rotateY(90deg) translateZ(-100px);
+}
+.sphere .circle--14 {
+    width: 200px;
+    height: 200px;
+    top: calc(50% - 100px);
+    left: calc(50% - 100px);
+    transform-origin: left center;
+    transform: rotateX(90deg);
+}
+.sphere .circle--15 {
+    width: 173.2px;
+    height: 173.2px;
+    top: calc(50% - 86.6px);
+    left: calc(50% - 86.6px);
+    transform-origin: left center;
+    transform: rotateX(90deg) translateZ(50px);
+}
+.sphere .circle--16 {
+    width: 173.2px;
+    height: 173.2px;
+    top: calc(50% - 86.6px);
+    left: calc(50% - 86.6px);
+    transform-origin: left center;
+    transform: rotateX(90deg) translateZ(-50px);
+}
+.sphere .circle--17 {
+    width: 100px;
+    height: 100px;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    transform-origin: left center;
+    transform: rotateX(90deg) translateZ(86.6px);
+}
+.sphere .circle--18 {
+    width: 100px;
+    height: 100px;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    transform-origin: left center;
+    transform: rotateX(90deg) translateZ(-86.6px);
+}
+.sphere .circle--19 {
+    width: 1px;
+    height: 1px;
+    top: calc(50% - 0.5px);
+    left: calc(50% - 0.5px);
+    transform-origin: left center;
+    transform: rotateX(90deg) translateZ(100px);
+}
+.sphere .circle--20 {
+    width: 1px;
+    height: 1px;
+    top: calc(50% - 0.5px);
+    left: calc(50% - 0.5px);
+    transform-origin: left center;
+    transform: rotateX(90deg) translateZ(-100px);
+}

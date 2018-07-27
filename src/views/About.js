@@ -35,7 +35,7 @@ class About extends React.Component {
                 <h2>{title}</h2>
                 {experience}
             </div>
-        )
+        );
     }
 
     renderEducationInfo() {

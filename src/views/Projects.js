@@ -1,8 +1,25 @@
 import React from "react";
 import "./projects.css";
 
+const icoFace = (i) => (
+    <div className={`ico__face ico__face--${i}`}>
+        <div /><div /><div />
+        {i}
+    </div>
+);
+
+const sphereSlice = (i) => (
+    <div className={`circle circle--${i}`} />
+);
+
 class Projects extends React.Component {
     render() {
+        var slices = [];
+
+        for(var i = 0; i < 21; i++) {
+            slices.push(sphereSlice(i));
+        }
+
         return(
             <div className="container-fluid projects">
             <div className="row">
@@ -10,6 +27,13 @@ class Projects extends React.Component {
                     <h1>Projects</h1>
 
                     <div className="scene">
+
+                        <div className="sphere">
+                            {slices}
+                        </div>
+
+                    </div>
+                    {/*
                         <div className="cluster">
                         <div className="pyramid">
                             <div className="pyramid__face pyramid__face--front">
@@ -103,7 +127,7 @@ class Projects extends React.Component {
                             </div>
                         </div>
                     </div>
-
+        */}
                     {/*
                     <div className="scene">
                         <div className="cube">
