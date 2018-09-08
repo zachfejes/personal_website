@@ -1,0 +1,181 @@
+.dotMatrixScene {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    perspective: 400px;
+    top: calc(50vh - 200px);
+    left: calc(50vw - 200px);
+}
+
+.dotPlane {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+    animation: rotateFrame linear infinite;
+    animation-duration: 10s;
+}
+
+.dotPlane .planeRing {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+}
+
+.dotPlane .planeRing:nth-child(1) {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20%;
+    animation: rotateBounceRing ease infinite;
+    animation-duration: 9s;
+}
+.dotPlane .planeRing:nth-child(2) {
+    background: rgba(100, 255, 100, 0.1);
+    border-radius: 40%;
+    animation: rotateBounceRing ease infinite;
+    animation-duration: 8s;
+}
+.dotPlane .planeRing:nth-child(3) {
+    background: rgba(100, 100, 255, 0.1);
+    border-radius: 30%;
+    animation: rotateBounceRing ease infinite;
+    animation-duration: 10.2s;
+}
+
+@keyframes rotateFrame {
+    0% { transform: rotateX(70deg) rotateY(-23.5deg) rotateZ(0deg);}
+    100% { transform: rotateX(70deg) rotateY(-23.5deg) rotateZ(360deg); }
+}
+
+@keyframes rotateBounceRing {
+    0% { transform: rotateZ(0deg); }
+    100% { transform: rotateZ(360deg); }
+}
+
+
+.dotMatrix {
+    width: 50%;
+    height: 50%;
+    top: calc(50% - 100px);
+    left: calc(50% - 100px);
+    position: absolute;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+    animation: rotateMatrix linear infinite;
+    animation-duration: 10s;
+}
+
+.dotMatrix .dotRing {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+}
+
+.dotMatrix .dotRing:nth-child(1) {
+    width: 100px;
+    height: 100px;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    transform: translateZ(86.6px);
+}
+.dotMatrix .dotRing:nth-child(2) {
+    width: 173.2px;
+    height: 173.2px;
+    top: calc(50% - 86.6px);
+    left: calc(50% - 86.6px);
+    transform: translateZ(50px);
+}
+.dotMatrix .dotRing:nth-child(3) {
+    transform: translateZ(0px);
+}
+.dotMatrix .dotRing:nth-child(4) {
+    width: 173.2px;
+    height: 173.2px;
+    top: calc(50% - 86.6px);
+    left: calc(50% - 86.6px);
+    transform: translateZ(-50px);
+}
+.dotMatrix .dotRing:nth-child(5) {
+    width: 100px;
+    height: 100px;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    transform: translateZ(-86.6px);
+}
+
+
+.dotMatrix .dotRing .dot {
+    position: absolute;
+    top: calc(50% - 2px);
+    left: calc(50% - 2px);
+    width: 4px;
+    height: 4px;
+    background-color: #FFFFFF;
+    border-radius: 50%;
+    transition: transform 1s;
+    animation: rotateMatrixDot linear infinite;
+    animation-duration: 10s;
+}
+
+.dotMatrix .dotRing .dot::before {
+    content: "";
+    position: absolute;
+    top: calc(50% - 2px);
+    left: calc(50% - 2px);
+    width: 4px;
+    height: 4px;
+    box-shadow: 0px 0px 4px 4px rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.dotMatrix .dotRing .dot:nth-child(1) {
+    top: calc(50% - 2px);
+    left: calc(100% - 2px);
+}
+.dotMatrix .dotRing .dot:nth-child(2) {
+    top: calc(0% + 2px);
+    left: calc(50% - 2px);
+}
+.dotMatrix .dotRing .dot:nth-child(3) {
+    top: calc(50% - 2px);
+    left: calc(0% + 2px);
+}
+.dotMatrix .dotRing .dot:nth-child(4) {
+    top: calc(100% - 2px);
+    left: calc(50% - 2px);
+}
+.dotMatrix .dotRing .dot:nth-child(5) {
+    top: calc(50%  - 2px + 35.355%);
+    left: calc(50% - 2px + 35.355%);
+}
+.dotMatrix .dotRing .dot:nth-child(6) {
+    top: calc(50% - 2px + 35.355%);
+    left: calc(50% - 2px - 35.355%);
+}
+.dotMatrix .dotRing .dot:nth-child(7) {
+    top: calc(50% - 2px - 35.355%);
+    left: calc(50% - 2px - 35.355%);
+}
+.dotMatrix .dotRing .dot:nth-child(8) {
+    top: calc(50% - 2px - 35.355%);
+    left: calc(50% - 2px + 35.355%);
+}
+
+@keyframes rotateMatrix {
+    0% { transform: rotateZ(0deg) rotateX(0deg) rotateY(-90deg);  }
+    100% { transform: rotateZ(360deg) rotateX(360deg) rotateY(90deg); }
+}
+@keyframes rotateMatrixDot {
+    0% { transform: rotateY(90deg) rotateX(360deg) rotateZ(360deg); }
+    100% { transform: rotateY(-90deg) rotateX(0deg) rotateZ(0deg); }
+}
