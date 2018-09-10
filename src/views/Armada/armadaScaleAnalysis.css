@@ -1,0 +1,69 @@
+.armadaScaleAnalysis {
+    height: 100%;
+    min-height: 100vh;
+    padding-top: 70px;
+    width: 60%;
+    max-width: 1000px;
+    margin: auto;
+    text-align: center;
+    background-image: url("/media/Wireframe1.png");
+    background-size: contain;
+    background-position: top;
+}
+
+@media screen and (max-width: 600px) {
+    .armadaScaleAnalysis {
+        width: 100%;
+        margin: 0;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+.armada .armadaScaleAnalysis .graph {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 40px;
+    margin-bottom: 80px;
+}
+
+.armada .armadaScaleAnalysis .contentBlock {
+    margin-bottom: 40px;
+    text-align: left;
+}
+
+.armada .armadaScaleAnalysis .contentBlock p,
+.armada .armadaScaleAnalysis .contentBlock ul,
+.armada .armadaScaleAnalysis .contentBlock li {
+    text-align: left;
+    line-height: 1.8;
+    width: 100%;
+}
+
+.armada .armadaScaleAnalysis .contentBlock ul {
+    list-style: none;
+}
+
+.armada .armadaScaleAnalysis .contentBlock:nth-child(1) {
+    background-image: url("/Armada/media/Wireframe1");
+}
+
+.armada .armadaScaleAnalysis .graph form,
+.armada .armadaScaleAnalysis .graph form > table {
+    margin-top: 40px;
+    margin-bottom: 40px;
+    width: 100%;
+}
+.armada .armadaScaleAnalysis .graph form > table > tbody > tr > td {
+    width: 25%;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+.armada .armadaScaleAnalysis .graph button.graphButton {
+    width: 100%;
+}
+.armada .armadaScaleAnalysis .graph input[type=number]::-webkit-inner-spin-button, 
+.armada .armadaScaleAnalysis .graph input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
