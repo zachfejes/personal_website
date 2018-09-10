@@ -1,0 +1,22 @@
+.armada {
+    height: 100%;
+    min-height: 100vh;
+}
+
+.armada h1 {
+    color: #b2b2b2;
+}
+.armada h3 {
+    display: block;
+    color: #AAAAAA;
+    margin-bottom: 20px;
+}
+.armada p,
+.armada ul,
+.armada ol,
+.armada li {
+    color: #AAAAAA;
+}
+.armada a {
+    cursor: pointer;
+}
