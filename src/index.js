@@ -1,6 +1,6 @@
 import React from "react";
 import { Provider } from "react-redux";
-import { Router } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { hydrate, render } from "react-dom";
 import Routing from "./Routing";
 import createBrowserHistory from "history/createBrowserHistory";
@@ -20,9 +20,9 @@ const history = createBrowserHistory();
 const rootElement = document.getElementById("root");
 const App = (
     <Provider store={reduxStore}>
-        <Router history={history}>
+        <BrowserRouter history={history}>
             <Routing />
-        </Router>
+        </BrowserRouter>
     </Provider>
 );
 
