@@ -3,6 +3,7 @@
  */
 import React from "react";
 //import PropTypes from "prop-types";
+import { HashLink } from "react-router-hash-link";
 import { Scatter } from "react-chartjs-2";
 import MathJax from "react-mathjax";
 
@@ -33,12 +34,12 @@ class ArmadaScaleAnalysis extends React.Component {
                     <p>
                         Several weeks ago, I started work on a simple side project.
 
-                        I love the cinematics/visuals of Armada, and felt that it would
+                        I love the cinematic nature of Armada, and felt that it would
                         be great to use a real station model in the game. As the core game 
                         (prior to the Corellian Conflict) featured only unarmed repair 
                         stations, my imagination immediately filled with the image of the 
                         XQ platforms synonymous with the TIE Fighter and X-Wing 90s game
-                        series<sup><a>1</a></sup>.
+                        series<sup><HashLink smooth to="/armada#ref1">1</HashLink></sup>.
                     </p>
 
                 </section>
@@ -62,7 +63,7 @@ class ArmadaScaleAnalysis extends React.Component {
                         separate write-up, but for now I'd like to focus on the second
                         point above. The size of the Ship and Squadron models in Armada is
                          based on a <i> relative </i> scale. That is to say, that a CR90 model 
-                        is not at the same scale to its canonicle counterpart as a Victory 
+                        is not at the same scale to its canonical counterpart as a Victory 
                         Class Star Destroyer is. For proof of this, try fitting the CR90 into 
                         the VSD's docking bay. I'll wait.
                     </p>
@@ -84,7 +85,7 @@ class ArmadaScaleAnalysis extends React.Component {
                     <p>
                         We should be able to come up with a functional representation
                         of the non-linear scale in Armada. To start, let's plot our available 
-                        data<sup><a>2</a></sup>.
+                        data<sup><HashLink smooth to="/armada#ref2">2</HashLink></sup>.
                     </p>
                 </section>
 
@@ -95,7 +96,8 @@ class ArmadaScaleAnalysis extends React.Component {
                 <section className="contentBlock">
                     <MathJax.Provider>
                         <p>
-                            This graph shows most of the ships currently in Armada<sup><a>2</a></sup>,
+                            This graph shows most of the ships currently in Armada
+                            <sup><HashLink smooth to="/armada#ref2">2</HashLink></sup>,
                             and compares their canon length to the measured length of their models.
                             From this graph we can note a few observations.
                         </p>
@@ -109,7 +111,7 @@ class ArmadaScaleAnalysis extends React.Component {
                         <p>
                             To define a <i>best fit</i> relationship, we should choose a base case to
                             work with. By observation, I initially guessed that the relationship was 
-                            either a power, or logorithmic function. By trying both, we can see which
+                            either a power, or logarithmic function. By trying both, we can see which
                             better fits the data.
                         </p>
                         <br/>
@@ -118,8 +120,9 @@ class ArmadaScaleAnalysis extends React.Component {
 
                             <MathJax.Node formula={"y = a \\ln(x) + b"} />
 
-                            I used linear regression<sup><a>3</a></sup> to find the a and b values that 
-                            gave the <i>closest fit</i>, and wound up with the function:
+                            I used linear regression<sup><HashLink smooth to="/armada#ref3">2</HashLink></sup> 
+                            to find the a and b values that gave the <i>closest fit</i>, and 
+                            wound up with the function:
 
                             <MathJax.Node formula={"y = 3.84 \\ln(x) - 78.25"} />
 
@@ -184,7 +187,8 @@ class ArmadaScaleAnalysis extends React.Component {
                         With this function in hand, we can now confidently determine a reasonable 
                         size for ANY Star Wars ship given its size in canon. 
 
-                        For my XQ2 station, the canon length is 884m<sup></sup>. By plugging it into
+                        For my XQ2 station, the canon length is 884m
+                        <sup><HashLink smooth to="/armada#ref4">4</HashLink></sup>. By plugging it into
                         the formula, we find that the appropriate model length for the station is
                         146mm.
 
@@ -200,9 +204,10 @@ class ArmadaScaleAnalysis extends React.Component {
                 <section className="contentBlock">
                     <hr />
                     <ul>
-                        <li><a href="http://starwars.wikia.com/wiki/XQ_Platform_series"><sup>1</sup>XQ Station Details</a></li>
-                        <li><a href="https://community.fantasyflightgames.com/topic/250961-armada-sliding-scale-graph/"><sup>2</sup> Data sourced from	Rune Taq on FF Forum</a></li>
-                        <li><a href="https://machinelearningmastery.com/implement-simple-linear-regression-scratch-python/"><sup>3</sup>Thanks to Jason Brownlee for this refresher on linear regression</a></li>
+                        <li><a id="ref1" href="http://starwars.wikia.com/wiki/XQ_Platform_series"><sup>1</sup>XQ Station Details</a></li>
+                        <li><a id="ref2" href="https://community.fantasyflightgames.com/topic/250961-armada-sliding-scale-graph/"><sup>2</sup> Data sourced from	Rune Taq on FF Forum</a></li>
+                        <li><a id="ref3" href="https://machinelearningmastery.com/implement-simple-linear-regression-scratch-python/"><sup>3</sup>Thanks to Jason Brownlee for this refresher on linear regression</a></li>
+                        <li><a id="ref4" href="http://starwars.wikia.com/wiki/XQ2_Platform"><sup>4</sup>Wookieepedia Article on the XQ-2 Series Platform</a></li>
                     </ul>
                 </section>
             </div>
