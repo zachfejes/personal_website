@@ -1,4 +1,4 @@
-import { SAVE_NAME, CLEAR_NAME, SET_LANGUAGE, CLICK_START } from "./actionTypes";
+import { SAVE_NAME, CLEAR_NAME, SET_LANGUAGE, SET_INTENDED_PATH } from "./actionTypes";
 
 function actionSaveName(name) {
     return({
@@ -21,11 +21,13 @@ function actionSetLanguage(language) {
     });
 }
 
-function actionClickStart() {
-    return({
-        type: CLICK_START,
-        payload: true
-    });
+function actionSetIntendedPath(path) {
+    return({ type: SET_INTENDED_PATH, payload: path });
 }
 
-export { actionSaveName, actionClearName, actionSetLanguage, actionClickStart };
+export { 
+    actionSaveName, 
+    actionClearName, 
+    actionSetLanguage,
+    actionSetIntendedPath
+};

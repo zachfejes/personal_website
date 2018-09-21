@@ -30,10 +30,10 @@ class Header extends React.Component {
     }
 
     render() {
-        const { clickedStart, name } = this.props;
+        const { name } = this.props;
 
         return (
-            <div className={`header ${clickedStart && name ? "" : "hidden"}`}>
+            <div className={`header ${!name ? "hidden" : ""}`}>
                 <table>
                     <tbody>
                         <tr>
@@ -49,7 +49,6 @@ class Header extends React.Component {
 }
 
 const mapStateToProps = ({ session }) => ({
-    clickedStart: session.clickedStart,
     name: session.name
 });
 
@@ -58,6 +57,5 @@ export default withRouter(connect(mapStateToProps)(Header));
 Header.propTypes = {
     history: PropTypes.object.isRequired,
     location: PropTypes.object.isRequired,
-    clickedStart: PropTypes.bool.isRequired,
     name: PropTypes.string
 };

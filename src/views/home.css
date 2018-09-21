@@ -177,7 +177,7 @@
 
 
 /* NAME ENTRY ELEMENTS/ANIMATIONS - END */
-
+/* 
 .nameEntry {
     position: absolute;
     width: 100vw;
@@ -270,7 +270,7 @@
     transition: none;
     animation-name: nameSubmitButtonActivateSite;
     animation-duration: 5s;
-}
+} */
 /* .nameEntry .circle {
     position: absolute;
     perspective: 1000px;

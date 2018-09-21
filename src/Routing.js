@@ -1,7 +1,7 @@
 import React from "react";
 import { Switch, Route, withRouter } from "react-router-dom";
-import { Home, About, Projects, Armada, NotFound } from "./views";
-import { Header } from "./components";
+import { Home, About, Projects, Armada, NotFound, NameEntry } from "./views";
+import { Header, PrivateRoute } from "./components";
 
 class Routing extends React.Component {
     render() {
@@ -10,10 +10,11 @@ class Routing extends React.Component {
                 <Header />
 
                 <Switch>
-                    <Route exact path="/" render={() => <Home />} />
-                    <Route exact path="/about" render={() => <About />} />
-                    <Route exact path="/projects" render={() => <Projects />} />
+                    <PrivateRoute exact path="/" render={() => <Home />} />
+                    <PrivateRoute exact path="/about" render={() => <About />} />
+                    <PrivateRoute exact path="/projects" render={() => <Projects />} />
                     <Route exact path="/armada" render={() => <Armada />} />
+                    <Route exact path="/identify" render={() => <NameEntry />} />
                     <Route path="/*" render={() => <NotFound />} />
                 </Switch>
             </div>
