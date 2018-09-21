@@ -34,7 +34,6 @@ class NameEntry extends React.Component {
         const { actionSaveName } = this.props;
         const cookies = new Cookies();
         cookies.set("sessionCookie", { name: value }, { path: "/" });
-        console.log(cookies.get("sessionCookie")); // Pacman
         actionSaveName(value);
     }
 
