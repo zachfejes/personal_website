@@ -1,0 +1,211 @@
+.nameEntry {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.nameEntry > form {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+}
+
+.nameEntry > form > p {
+    position: absolute;
+    top: calc(50vh - 40px);
+    left: calc(50vw - 200px);
+    length: 200px;
+    height: 10px;
+    font-size: 10px;
+    color: #aaaaaa;
+    opacity: 1;
+    transition: 500ms ease;
+    -o-transition: 500ms ease;
+    -moz-transition: 500ms ease;
+    -webkit-transition: 500ms ease;
+}
+.nameEntry > form > p.show {
+    opacity: 1;
+}
+
+.nameEntry > form > input {
+    position: absolute;
+    top: calc(50vh - 25px);
+    left: calc(50vw - 200px);
+    width: 200px;
+    height: 50px;
+    z-index: 3;
+    font-size: 24px;
+    opacity: 0.8;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    outline: none;
+    color: #FFFFFF;
+    transition: 200ms;
+    -o-transition: 200ms;
+    -moz-transition: 200ms;
+    -webkit-transtiion: 200ms;
+}
+.nameEntry > form > input.done {
+    opacity: 0;
+}
+
+.nameEntry > form > .inputGuide {
+    position: absolute;
+    top: calc(50vh - 25px);
+    left: calc(50vw - 210px);
+    width: 220px;
+    height: 50px;
+    z-index: 1;
+    font-size: 34px;
+    opacity: 1;
+    background-color: #000000;
+    border: 2px solid #FFFFFF;
+    border-radius: 8px;
+    border-top-left-radius: 0px;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-right-radius: 0px;
+    z-index: 1;
+    transition: 900ms ease;
+    -o-transition: 900ms ease;
+    -moz-transition: 900ms ease;
+    -webkit-transition: 900ms ease;
+}
+.nameEntry > form > .inputGuide.done {
+    animation-name: inputGuideOut;
+    animation-duration: 0.9s;
+    opacity: 0;
+}
+
+.nameEntry > form > button {
+    position: absolute;
+    top: calc(50vh - 25px);
+    right: calc(50vw - 165px);
+    width: 50px;
+    height: 50px;
+    outline: none;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+    background-color: rgba(255,255,255,0);
+    z-index: 1;
+    cursor: not-allowed;
+    transition: 300ms ease;
+    -o-transition: 300ms ease;
+    -moz-transition: 300ms ease;
+    -webkit-transition: 300ms ease;
+}
+.nameEntry > form > button.enabled {
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 1);
+}
+
+
+.nameEntry > button.enter {
+    position: absolute;
+    top: calc(50vh - 85px);
+    left: calc(50vw - 85px);
+    width: 170px;
+    height: 170px;
+    opacity: 0;
+    background-color: black;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+    animation-name: siteEntryButtonFadeOut;
+    animation-duration: 500ms;
+    cursor: pointer;
+    z-index: 2;
+}
+.nameEntry > button.enter:focus{
+    outline: none;
+}
+
+.nameEntry > button.enter.show {
+    position: absolute;
+    top: calc(50vh - 85px);
+    left: calc(50vw - 85px);
+    width: 170px;
+    height: 170px;
+    opacity: 1;
+    background-color: black;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+    animation-name: siteEntryButtonFadeIn;
+    animation-duration: 12s;
+    cursor: pointer;
+    z-index: 2;
+}
+
+
+.nameEntry > .ripple {
+    animation: none;
+}
+.nameEntry > .ripple.show {
+    position: absolute;
+    top: calc(50vh - 100px);
+    left: calc(50vw - 100px);
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+    border: 1px solid #FFFFFF;
+    border-radius: 50%;
+    animation-name: rippleCircleExpand;
+    animation-duration: 6s;
+    z-index: 1;
+}
+
+.nameEntry > .patientRipple {
+    animation: none;
+}
+.nameEntry > .patientRipple.show {
+    position: absolute;
+    top: calc(50vh - 110px);
+    left: calc(50vw - 110px);
+    width: 220px;
+    height: 220px;
+    opacity: 0;
+    border: 1px solid #FFFFFF;
+    border-radius: 50%;
+    animation-name: rippleWhileUnclicked;
+    animation-duration: 8s;
+    animation-delay: 8s;
+    animation-iteration-count: infinite;
+    z-index: 1;
+}
+
+
+@keyframes siteEntryButtonFadeIn {
+    0% { opacity: 0; }
+    35% { opacity: 0; }
+    40% { opacity: 1; }
+    100% { opacity: 1; }
+}
+@keyframes siteEntryButtonFadeOut {
+    0% {opacity: 1;}
+    100% {opacity: 0;}
+}
+@keyframes rippleCircleExpand {
+    0% { width: 1px; height: 1px; opacity: 0.0001; top: 50vh; left: 50vw;}
+    60% { width: 1px; height: 1px; opacity: 0.0001; top: 50vh; left: 50vw;}
+    70% { width: 180px; height: 180px; opacity: 1; top: calc(50vh - 90px); left: calc(50vw - 90px);}
+    100% { width: 200px; height: 200px; opacity: 0; top: calc(50vh - 100px); left: calc(50vw - 100px);}
+}
+@keyframes rippleWhileUnclicked {
+    0% { width: 180px; height: 180px; opacity: 0; top: calc(50vh - 90px); left: calc(50vw - 90px); }
+    8% { opacity: 1;}
+    40% { width: 220px; height: 220px; opacity: 0; top: calc(50vh - 110px); left: calc(50vw - 110px); }
+}
+
+
+
+@keyframes inputGuideIn {
+    0% {opacity: 0;}
+    100% {opacity: 1;}
+}
+@keyframes inputGuideOut {
+    0% {border-top-width: 1px; border-left-width: 2px; border-bottom-width: 2px; border-right-width: 1px;}
+    20% {border-top-width: 0px; border-left-width: 0px; border-bottom-width: 2px; border-right-width: 0px;}
+    100% {border-top-width: 0px; border-left-width: 0px; border-bottom-width: 2px; border-right-width: 0px;}
+}

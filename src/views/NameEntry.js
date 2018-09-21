@@ -11,7 +11,8 @@ class NameEntry extends React.Component {
         super();
 
         this.state = {
-            value: ""
+            value: "",
+            entered: false
         };
     }
 
@@ -33,24 +34,47 @@ class NameEntry extends React.Component {
         const { value } = this.state;
         const { actionSaveName } = this.props;
         const cookies = new Cookies();
-        cookies.set("sessionCookie", { name: value }, { path: "/" });
-        actionSaveName(value);
+        setTimeout(() => {
+            cookies.set("sessionCookie", { name: value }, { path: "/" });
+            actionSaveName(value);
+        }, 1000);
+    }
+
+    onClick(e) {
+        e && e.preventDefault();
+        this.setState({ entered: true });
     }
 
     render() {
-        const { value } = this.state; 
+        const { value, entered } = this.state; 
 
         return (
             <div className="container-fluid nameEntry">
-                <form onSubmit={this.onNameSubmit.bind(this)}>
-                    <input 
-                        type="text" 
-                        className="form-control" 
-                        value={value} 
-                        onChange={this.onNameEntry.bind(this)} 
-                    />
-                    <button type="submit" className="btn">Enter</button>
-                </form>
+                <button 
+                    className={`enter ${entered ? "" : "show"}`} 
+                    onClick={this.onClick.bind(this)}
+                    disabled={entered ? "disabled" : false}
+                />
+                <div className={`ripple ${entered ? "" : "show"}`} />
+                <div className={`patientRipple ${entered ? "" : "show"}`} />
+                {
+                    entered ? 
+                        <form onSubmit={this.onNameSubmit.bind(this)}>
+                            <p>Enter Your Name</p>
+                            <input 
+                                type="text" 
+                                className="form-control" 
+                                value={value} 
+                                onChange={this.onNameEntry.bind(this)} 
+                            />
+                            <button 
+                                type="submit" 
+                                className={value ? "enabled" : ""} 
+                                disabled={value ? false : "disabled"}
+                            />
+                            <div className="inputGuide" />
+                        </form> : <span />
+                }
             </div>
         );
     }

@@ -19,13 +19,13 @@ const PrivateRoute = ({
     render: Component, name, location, actionSetIntendedPath, actionSaveName, ...rest }) => {
 
     actionSetIntendedPath(location.pathname);
-    const cookies = new Cookies();
-    const sessionCookie = cookies.get("sessionCookie");
+    // const cookies = new Cookies();
+    // const sessionCookie = cookies.get("sessionCookie");
 
-    if(sessionCookie && sessionCookie.name) {
-        actionSaveName(sessionCookie.name);
-        return <Route {...rest} render={(props) => <Component {...props} />} />;
-    }
+    // if(sessionCookie && sessionCookie.name) {
+    //     actionSaveName(sessionCookie.name);
+    //     return <Route {...rest} render={(props) => <Component {...props} />} />;
+    // }
 
     return (
         <Route {...rest} render={(props) =>
