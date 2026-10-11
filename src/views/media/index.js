@@ -1,1 +1,0 @@
-export { default as iconosphere } from "./icosphere1.gif";
