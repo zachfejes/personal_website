@@ -5,9 +5,10 @@ A clean rebuild of my personal website: a portfolio of projects plus a resume / 
 ## Goals
 
 - Show who I am and what I've built, quickly and clearly.
-- Make it easy to add new projects without touching layout code.
+- Let each project be a rich, interactive write-up (charts, math, demos), not just text and images.
+- Professional look with a distinctive visual identity and tasteful motion.
 - Fast, accessible, and good-looking on phone and desktop.
-- Cheap to run: free static hosting, no server.
+- Static output that can be hosted anywhere.
 
 ## Decisions
 
@@ -15,53 +16,102 @@ A clean rebuild of my personal website: a portfolio of projects plus a resume / 
 | --- | --- | --- |
 | Purpose | Portfolio + resume / about me | No blog for now; can be added later. |
 | Framework | Angular (latest stable) | Standalone components, signals, Angular Router. |
-| Rendering | Static prerendering (SSG) | Each route builds to its own HTML file, so GitHub Pages serves real pages and deep links work without a 404 redirect hack. |
-| Hosting | GitHub Pages | Deployed by a GitHub Actions workflow on every push to `master`. |
+| Rendering | Static prerendering (SSG) | Each route builds to its own HTML file, so deep links work on any static host without redirect hacks. |
+| Project pages | Code, not content | Each project is its own lazy-loaded Angular component (see below). |
+| Environments | Staging on GitHub Pages, production on a custom domain | Same build, different Angular build configuration (see below). |
+
+## Environments
+
+Angular build configurations, each with its own `environment.*.ts` file:
+
+| Config | Where | Base href | Settings |
+| --- | --- | --- | --- |
+| `development` | `ng serve` locally | `/` | No analytics, verbose errors. |
+| `staging` | GitHub Pages: `zachfejes.github.io/personal_website/` | `/personal_website/` | `noindex` meta tag and `robots.txt` disallow, so search engines don't index the dev copy. "Staging" badge in the footer. |
+| `production` | Custom domain, on a paid host | `/` | Canonical URLs, sitemap, analytics (if any), indexable. |
+
+Values that differ per environment (`siteUrl`, `baseHref`, `indexable`, `analyticsId`) live in the environment files. Code reads them instead of hard-coding URLs.
+
+Deployment:
+
+- **Staging:** GitHub Actions on every push to `master`: lint, test, `ng build --configuration staging`, deploy with `actions/deploy-pages`.
+- **Production:** a separate workflow, triggered manually or by pushing a version tag (`v*`): `ng build --configuration production`, then deploy to the production host.
+- Because the output is plain static files, the production host is interchangeable: Netlify, Vercel, Cloudflare Pages, a static bucket + CDN, or a VPS behind nginx. The only host-specific part is the deploy step in the production workflow.
+
+## Project pages: code vs. content
+
+Project write-ups like Armada mix prose with interactive charts, equations, and custom layouts. Markdown handles the prose well but gets awkward once a page needs live components, and Markdown-with-components (MDX-style) isn't well supported in Angular.
+
+**Recommendation: treat each project as code, and keep a small metadata registry for listing them.**
+
+- **One component per project:** `src/app/projects/<slug>/<slug>.page.ts`, lazy-loaded on its own route. The page can use any Angular code it needs: charts, sliders, canvas, 3D.
+- **Shared building blocks** keep pages consistent and quick to write:
+  - `<app-article>`: page shell with title, subtitle, date, reading width, and a table of contents.
+  - `<app-section>`: a section with heading and anchor link, supporting the alternating color bands.
+  - `<app-figure>`: an image or chart with a caption.
+  - `<app-math>`: an equation, rendered with KaTeX at build time.
+  - `<app-callout>`, `<app-code-block>`, `<app-footnote>` / `<app-references>`.
+  - `<app-chart>`: a thin wrapper around a charting library (D3 or Chart.js), themed to the site palette.
+- **Registry:** `src/app/projects/projects.registry.ts` lists each project's `slug`, `title`, `summary`, `tags`, `date`, `thumbnail`, `featured`, and `loadComponent`. The projects grid, the landing page's featured projects, routes, prerender paths, and the sitemap are all generated from this one list, so adding a project means adding one folder and one registry entry.
+
+Trade-off: writing prose in templates is a bit more verbose than Markdown. If a future project is mostly text, a Markdown-rendering component can be added later without changing this structure.
+
+## Visual direction
+
+- **Palette:** full-width sections alternating between three bands.
+  - Near-black / charcoal (e.g. `#151515`) with off-white text.
+  - Off-white / warm paper (e.g. `#F3F1EC`) with charcoal text.
+  - Dark green accent (e.g. `#1E4D3A`) with off-white text, used for emphasis sections and calls to action.
+  - Defined as CSS custom properties; a section picks its band with a class (`band--dark`, `band--light`, `band--accent`).
+- **Typography:** professional pairing, self-hosted for performance, final pick still open. Candidates: Inter or IBM Plex Sans for body, with a refined serif such as Source Serif 4 or Fraunces for headings.
+- **Motion:** scroll-reveal fade/slide-ins (IntersectionObserver), subtle parallax or hover effects on project cards, smooth anchor scrolling. Everything respects `prefers-reduced-motion`.
+- **Fixed theme:** the alternating bands are the design, so there is no light/dark mode toggle.
 
 ## Site structure
 
 | Route | Page | Content |
 | --- | --- | --- |
-| `/` | Home | Name, one-line intro, short summary, links to projects and resume, featured projects. |
-| `/projects` | Projects | Grid of project cards (title, summary, tags, image). |
-| `/projects/:slug` | Project detail | Write-up: problem, what I built, tech used, links (repo, live demo), screenshots. |
-| `/about` | About / Resume | Bio, experience timeline, skills, education, downloadable PDF resume. |
-| `/contact` (or footer) | Contact | Email and profile links (GitHub, LinkedIn). No form, so no backend needed. |
-
-## Content model
-
-Content lives as data files in the repo so adding a project is a content change, not a code change.
-
-- `src/content/projects/*.json` (or Markdown with front matter): `slug`, `title`, `summary`, `tags`, `date`, `image`, `repoUrl`, `liveUrl`, `featured`, `body`.
-- `src/content/resume.json`: experience, skills, education.
-- `public/resume.pdf`: downloadable resume.
-
-Project slugs are read at build time so the prerenderer generates one page per project.
+| `/` | Landing (long scroll) | Hero (name, title, one-liner) → short intro → featured projects → experience highlights → skills → contact call to action. Sections alternate color bands. |
+| `/projects` | Projects | Grid of project cards (thumbnail, title, summary, tags). |
+| `/projects/:slug` | Project write-up | The project's own component (see above). |
+| `/about` | About / Resume | Full bio, experience timeline, skills, education, downloadable PDF resume. |
+| Footer (every page) | Contact | Email, GitHub, LinkedIn. No form, so no backend needed. |
 
 ## Technical plan
 
 - **Scaffold:** `ng new` with routing, SCSS, and SSR/prerendering enabled (static output only).
-- **Styling:** SCSS with CSS custom properties for theme tokens; light and dark mode via `prefers-color-scheme`.
-- **Components:** layout shell (header, nav, footer), project card, project grid, timeline, tag chip.
-- **SEO:** per-route `<title>` and meta description via Angular `Title`/`Meta`; Open Graph tags; `sitemap.xml`.
-- **Accessibility:** semantic landmarks, keyboard-navigable nav, sufficient contrast, alt text on all images.
+- **Styling:** SCSS with CSS custom-property design tokens (colors, type scale, spacing).
+- **Layout components:** header and nav (with a scroll-aware style change over dark/light bands), footer, band section, project card, project grid, timeline.
+- **SEO:** per-route `<title>` and meta description via Angular `Title`/`Meta`; Open Graph tags; `sitemap.xml` and `robots.txt` generated per environment.
+- **Accessibility:** semantic landmarks, keyboard-navigable nav, contrast checked for every band and text combination, alt text, accessible chart descriptions.
 - **Quality:** ESLint (angular-eslint), Prettier, unit tests for components with logic.
-- **CI/CD:** GitHub Actions workflow — install, lint, test, build, upload `dist/.../browser` with `actions/upload-pages-artifact`, deploy with `actions/deploy-pages`.
-- **Base path:** if served at `zachfejes.github.io/personal_website/`, build with `--base-href /personal_website/`; if using a custom domain, keep `/` and add a `CNAME` file.
+
+## First project: Armada Scaling
+
+Rebuild the old "Armada Scaling" write-up as the first project page and the reference example for the format.
+
+- **Source:** the old React version is in git history at commit `36797de`, under `src/views/Armada/` and `src/config/armadaScaleData.js`.
+- **Content:** background, the problem (the non-linear model scale in Star Wars: Armada), method, scatter plot of canon length vs. model length, log and power regression fits, results, references, and wireframe images.
+- **Interactive:**
+  - Scatter plot with hover labels for each ship.
+  - Toggleable overlays for the log and power fits.
+  - Possibly an input that predicts model size for a given canon length.
+- **Port:** the chart data and regression helper (`linearRegression.js`) carry over as typed TypeScript. Equations move from MathJax to KaTeX.
 
 ## Milestones
 
-1. **Scaffold & deploy** — Angular app with a placeholder home page, deployed to GitHub Pages via Actions.
-2. **Layout & theme** — header, nav, footer, typography, colors, dark mode.
-3. **Projects** — content files, projects grid, project detail pages, prerendered per slug.
-4. **About / Resume** — bio, experience timeline, skills, PDF download.
-5. **Polish** — SEO tags, sitemap, accessibility pass, performance check (Lighthouse), favicon.
-6. **Content** — write up the first set of projects and finalize the bio.
+1. **Scaffold & staging deploy:** Angular app with prerendering, environment configs, placeholder landing page, deployed to GitHub Pages.
+2. **Design system:** tokens, fonts, color bands, header/nav/footer, scroll-reveal animations.
+3. **Landing page:** long-scroll home with all sections (placeholder copy is fine).
+4. **Project framework:** registry, projects grid, article building blocks, routing and prerendering per slug.
+5. **Armada Scaling:** port the first project using the framework.
+6. **About / Resume:** bio, experience timeline, skills, PDF download.
+7. **Polish:** SEO, sitemap, accessibility pass, Lighthouse performance check, favicon and social preview images.
+8. **Production:** choose a host, connect the domain, add the production deploy workflow.
 
 ## Open questions
 
-- Custom domain, or `zachfejes.github.io/personal_website/`?
-- Which projects to feature first?
-- Visual direction: minimal / typographic, or more graphic and colorful?
-- Project write-ups in JSON or Markdown? (Markdown is nicer to write; needs a small build-time parser.)
-- Anything from the old site worth carrying over (e.g. the Armada article)?
+- Which production host? (Decide by milestone 8; nothing earlier depends on it.)
+- Final font pairing and exact palette values (decide in milestone 2 with visual mock-ups).
+- Charting library: D3 (maximum control, more code) or Chart.js (quicker, less flexible)?
+- Which projects follow Armada?
