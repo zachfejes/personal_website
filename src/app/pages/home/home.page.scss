@@ -1,0 +1,31 @@
+.hero {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  line-height: 1.05;
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.875rem;
+  color: var(--color-accent-bright);
+}
+
+.lede {
+  max-width: 40ch;
+  font-size: 1.25rem;
+  color: var(--color-on-dark-muted);
+}
+
+ul {
+  padding-left: 1.25rem;
+  line-height: 1.8;
+}

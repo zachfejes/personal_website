@@ -1,0 +1,29 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem clamp(1rem, 5vw, 4rem);
+  background: var(--color-dark);
+  color: var(--color-on-dark-muted);
+  font-size: 0.875rem;
+
+  p {
+    margin: 0;
+  }
+}
+
+.footer__env {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent-bright);
+}

@@ -12,23 +12,23 @@ A clean rebuild of my personal website: a portfolio of projects plus a resume / 
 
 ## Decisions
 
-| Area | Choice | Notes |
-| --- | --- | --- |
-| Purpose | Portfolio + resume / about me | No blog for now; can be added later. |
-| Framework | Angular (latest stable) | Standalone components, signals, Angular Router. |
-| Rendering | Static prerendering (SSG) | Each route builds to its own HTML file, so deep links work on any static host without redirect hacks. |
-| Project pages | Code, not content | Each project is its own lazy-loaded Angular component (see below). |
-| Environments | Staging on GitHub Pages, production on a custom domain | Same build, different Angular build configuration (see below). |
+| Area          | Choice                                                 | Notes                                                                                                 |
+| ------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| Purpose       | Portfolio + resume / about me                          | No blog for now; can be added later.                                                                  |
+| Framework     | Angular (latest stable)                                | Standalone components, signals, Angular Router.                                                       |
+| Rendering     | Static prerendering (SSG)                              | Each route builds to its own HTML file, so deep links work on any static host without redirect hacks. |
+| Project pages | Code, not content                                      | Each project is its own lazy-loaded Angular component (see below).                                    |
+| Environments  | Staging on GitHub Pages, production on a custom domain | Same build, different Angular build configuration (see below).                                        |
 
 ## Environments
 
 Angular build configurations, each with its own `environment.*.ts` file:
 
-| Config | Where | Base href | Settings |
-| --- | --- | --- | --- |
-| `development` | `ng serve` locally | `/` | No analytics, verbose errors. |
-| `staging` | GitHub Pages: `zachfejes.github.io/personal_website/` | `/personal_website/` | `noindex` meta tag and `robots.txt` disallow, so search engines don't index the dev copy. "Staging" badge in the footer. |
-| `production` | Custom domain, on a paid host | `/` | Canonical URLs, sitemap, analytics (if any), indexable. |
+| Config        | Where                                                 | Base href            | Settings                                                                                                                 |
+| ------------- | ----------------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `development` | `ng serve` locally                                    | `/`                  | No analytics, verbose errors.                                                                                            |
+| `staging`     | GitHub Pages: `zachfejes.github.io/personal_website/` | `/personal_website/` | `noindex` meta tag and `robots.txt` disallow, so search engines don't index the dev copy. "Staging" badge in the footer. |
+| `production`  | Custom domain, on a paid host                         | `/`                  | Canonical URLs, sitemap, analytics (if any), indexable.                                                                  |
 
 Values that differ per environment (`siteUrl`, `baseHref`, `indexable`, `analyticsId`) live in the environment files. Code reads them instead of hard-coding URLs.
 
@@ -69,13 +69,13 @@ Trade-off: writing prose in templates is a bit more verbose than Markdown. If a 
 
 ## Site structure
 
-| Route | Page | Content |
-| --- | --- | --- |
-| `/` | Landing (long scroll) | Hero (name, title, one-liner) → short intro → featured projects → experience highlights → skills → contact call to action. Sections alternate color bands. |
-| `/projects` | Projects | Grid of project cards (thumbnail, title, summary, tags). |
-| `/projects/:slug` | Project write-up | The project's own component (see above). |
-| `/about` | About / Resume | Full bio, experience timeline, skills, education, downloadable PDF resume. |
-| Footer (every page) | Contact | Email, GitHub, LinkedIn. No form, so no backend needed. |
+| Route               | Page                  | Content                                                                                                                                                    |
+| ------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                 | Landing (long scroll) | Hero (name, title, one-liner) → short intro → featured projects → experience highlights → skills → contact call to action. Sections alternate color bands. |
+| `/projects`         | Projects              | Grid of project cards (thumbnail, title, summary, tags).                                                                                                   |
+| `/projects/:slug`   | Project write-up      | The project's own component (see above).                                                                                                                   |
+| `/about`            | About / Resume        | Full bio, experience timeline, skills, education, downloadable PDF resume.                                                                                 |
+| Footer (every page) | Contact               | Email, GitHub, LinkedIn. No form, so no backend needed.                                                                                                    |
 
 ## Technical plan
 
