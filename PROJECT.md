@@ -58,6 +58,8 @@ Trade-off: writing prose in templates is a bit more verbose than Markdown. If a 
 
 ## Visual direction
 
+- **Mood:** warm, inviting, cozy, with a sense of wonder.
+- **Grain:** every band has a subtle film-grain texture (a tiled noise overlay), with one site-wide strength setting.
 - **Palette:** full-width sections alternating between three bands.
   - Near-black / charcoal (e.g. `#151515`) with off-white text.
   - Off-white / warm paper (e.g. `#F3F1EC`) with charcoal text.
@@ -66,6 +68,30 @@ Trade-off: writing prose in templates is a bit more verbose than Markdown. If a 
 - **Typography:** professional pairing, self-hosted for performance, final pick still open. Candidates: Inter or IBM Plex Sans for body, with a refined serif such as Source Serif 4 or Fraunces for headings.
 - **Motion:** scroll-reveal fade/slide-ins (IntersectionObserver), subtle parallax or hover effects on project cards, smooth anchor scrolling. Everything respects `prefers-reduced-motion`.
 - **Fixed theme:** the alternating bands are the design, so there is no light/dark mode toggle.
+
+## Project pages: visual storytelling
+
+Project pages tell each project's story by weaving imagery and data together, in the style of
+architectural presentation boards and editorial data visualization. Each page has its own look, but
+draws from a shared visual vocabulary:
+
+- **Maps and contours:** contour lines and terrain as backgrounds or as the subject itself, with
+  routes, waypoints and annotations on top.
+- **Annotated imagery:** photos, renders and diagrams labelled with hairline leader lines that end in
+  small circles, and italic serif annotations.
+- **Exploded and layered drawings:** isometric or axonometric breakdowns that show how something is
+  put together, layer by layer.
+- **Process diagrams:** steps connected by arrows and dashed paths, on grainy paper.
+- **Flowing data:** Sankey-like streams and arcs, mostly in muted tones, with the key thread picked
+  out in a single warm accent.
+- **Instrument readouts:** HUD-style stats, dials and scale bars that frame the data.
+- **Timelines:** nodes on a line, for project histories.
+- **Scrollytelling:** a sticky figure that changes as the reader scrolls through the narrative steps.
+
+These become reusable building blocks (alongside the article blocks above), drawn with SVG, Canvas
+and D3, so they can be animated and made interactive. Reference boards: RENON map, topographic site
+model, rover HUD, Race to Treat Global Diseases, recycled ceramic process diagram, Barajeel museum
+axonometric, Air Pollution Sources, High-Rise Zoo, misty company timeline, particle sphere.
 
 ## Site structure
 
@@ -113,5 +139,6 @@ Rebuild the old "Armada Scaling" write-up as the first project page and the refe
 
 - Which production host? (Decide by milestone 8; nothing earlier depends on it.)
 - Final font pairing and exact palette values (decide in milestone 2 with visual mock-ups).
-- Charting library: D3 (maximum control, more code) or Chart.js (quicker, less flexible)?
+- Charting library: leaning D3, since the storytelling visuals above need custom drawing that
+  Chart.js can't do.
 - Which projects follow Armada?
