@@ -142,3 +142,14 @@ Rebuild the old "Armada Scaling" write-up as the first project page and the refe
 - Charting library: leaning D3, since the storytelling visuals above need custom drawing that
   Chart.js can't do.
 - Which projects follow Armada?
+
+## Future ideas
+
+Not scheduled. Revisit once the rest of the site is together.
+
+- **Patched-conic trajectories in the star-field hero:** the hero's probe travelling along a curve
+  between star waypoints is a favourite. Replace the current smooth spline (Catmull-Rom) with a
+  physically plausible trajectory built from patched conics. Treat each waypoint star as a body
+  with a sphere of influence, and stitch elliptical arcs (captured/orbital legs) and hyperbolic
+  segments (flybys / gravity assists) together. Then animate the probe along them with
+  Kepler-correct speed (faster near periapsis, slower far out).
