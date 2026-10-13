@@ -1,0 +1,1715 @@
+<title>Hero Tuner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Instrument+Serif:ital@0;1&family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Literata:ital,opsz,wght@0,7..72,300..700;1,7..72,300..700&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=Young+Serif&family=Cormorant+Garamond:ital,wght@0,400..700;1,400..700&family=Hanken+Grotesk:ital,wght@0,300..700;1,300..700&family=Manrope:wght@300..700&family=Work+Sans:ital,wght@0,300..700;1,300..700&family=IBM+Plex+Sans:ital,wght@0,300..700;1,300..700&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Mono:wght@400;500&family=Space+Mono&display=swap"
+/>
+<style>
+  /* Layout: the hero preview fills the left; a scrollable tuner panel sits on the right
+     (stacked below on narrow screens). Single dark look for the tool chrome. */
+  :root {
+    color-scheme: dark;
+    --chrome-bg: #0f0e0d;
+    --chrome-panel: #171615;
+    --chrome-fg: #e9e4dc;
+    --chrome-muted: #9c968d;
+    --chrome-line: #2b2825;
+    --chrome-focus: #e3a857;
+    --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  body {
+    background: var(--chrome-bg);
+    color: var(--chrome-fg);
+    font: 14px/1.45 'Hanken Grotesk', system-ui, sans-serif;
+  }
+  .app {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    min-height: 100vh;
+  }
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* ---------- Preview ---------- */
+  .preview {
+    min-width: 0;
+    font-family: var(--body);
+    color: var(--on-dark);
+  }
+  .band {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  .band::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background-image: var(--noise);
+    background-size: var(--grain-scale) var(--grain-scale);
+    mix-blend-mode: overlay;
+    opacity: var(--grain);
+  }
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1.1rem max(16px, 6vw);
+    background: var(--ink);
+  }
+  .nav .wordmark {
+    font-family: var(--display);
+    font-weight: var(--display-weight);
+    font-size: 1.3rem;
+    letter-spacing: var(--tracking);
+    position: relative;
+    z-index: 1;
+  }
+  .nav ul {
+    display: flex;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--label);
+    font-size: 0.85rem;
+    color: var(--muted);
+    position: relative;
+    z-index: 1;
+  }
+  .nav.upper ul {
+    text-transform: uppercase;
+    letter-spacing: var(--label-tracking);
+    font-size: 0.75rem;
+  }
+  .hero {
+    box-sizing: border-box;
+    background: var(--ink);
+    min-height: var(--hero-height);
+    padding: clamp(2.5rem, 7vw, 5rem) max(16px, 6vw);
+    display: grid;
+    align-content: center;
+    gap: 1.2rem;
+  }
+  .hero.tinted {
+    background: radial-gradient(
+      ellipse 80% 90% at 70% 40%,
+      color-mix(in srgb, var(--tint) var(--tint-strength), var(--ink)),
+      var(--ink) 75%
+    );
+  }
+  .hero.center {
+    justify-items: center;
+    text-align: center;
+  }
+  .hero > .copy {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 1.1rem;
+    max-width: min(100%, var(--copy-width));
+  }
+  .headline,
+  .nav .wordmark,
+  .strip h3 {
+    text-shadow: var(--display-shadow);
+  }
+  /* Ribbons: each band sits slightly over the one above it and casts a soft shadow upward,
+     like stacked sheets of paper. Strength and overlap come from the Depth controls. */
+  .hero {
+    z-index: 1;
+    box-shadow: 0 -10px 24px -8px rgba(0, 0, 0, var(--ribbon-a));
+  }
+  .strip {
+    position: relative;
+    z-index: 2;
+    margin-top: calc(-1 * var(--ribbon-overlap));
+    box-shadow: 0 -14px 30px -10px rgba(0, 0, 0, var(--ribbon-a));
+  }
+  .strip .light {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, calc(var(--ribbon-a) * 0.5));
+  }
+  .strip .accent {
+    z-index: 1;
+    box-shadow:
+      -14px 0 28px -12px rgba(0, 0, 0, var(--ribbon-a)),
+      inset 0 1px 0 rgba(255, 255, 255, calc(var(--ribbon-a) * 0.18));
+  }
+  .hero.center > .copy {
+    justify-items: center;
+  }
+  .motif-canvas,
+  .overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    display: block;
+  }
+  .eyebrow {
+    margin: 0;
+    font-family: var(--label);
+    font-size: 0.76rem;
+    letter-spacing: var(--label-tracking);
+    text-transform: uppercase;
+    color: var(--highlight);
+  }
+  .headline {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: var(--display-weight);
+    font-size: clamp(2.2rem, var(--display-vw), var(--display-max));
+    line-height: var(--display-lh);
+    letter-spacing: var(--tracking);
+    text-wrap: balance;
+  }
+  .headline em {
+    color: var(--highlight);
+    font-style: var(--accent-style);
+    font-family: var(--accent-font);
+    font-weight: var(--accent-weight);
+    font-size: calc(var(--accent-scale) * 1em);
+    letter-spacing: var(--accent-tracking);
+  }
+  .lede {
+    margin: 0;
+    max-width: var(--lede-max, 46ch);
+    font-size: var(--lede-size, 1.12rem);
+    color: var(--muted);
+  }
+  .copy.fluid {
+    max-width: 100%;
+  }
+  .hl-line {
+    display: block;
+    width: fit-content;
+    white-space: nowrap;
+  }
+  .headline.wrap .hl-line {
+    display: inline;
+    white-space: normal;
+  }
+  .headline.wrap .hl-line::after {
+    content: ' ';
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.3rem;
+  }
+  .btn {
+    padding: 0.75rem 1.3rem;
+    border-radius: var(--radius);
+    font-size: 0.92rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+    font-family: var(--body);
+  }
+  .btn--primary {
+    background: var(--highlight);
+    color: var(--ink);
+  }
+  .btn--ghost {
+    border-color: color-mix(in srgb, var(--on-dark) 35%, transparent);
+    color: var(--on-dark);
+  }
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  }
+  .strip > div {
+    padding: 2rem max(16px, 4vw);
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+  }
+  .strip h3 {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: var(--display-weight);
+    letter-spacing: var(--tracking);
+    font-size: 1.6rem;
+  }
+  .strip p {
+    margin: 0;
+    max-width: 40ch;
+  }
+  .strip .light {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .strip .light p {
+    color: color-mix(in srgb, var(--ink) 72%, var(--paper));
+  }
+  .strip .accent {
+    background: var(--green);
+    color: var(--on-dark);
+  }
+  .strip .accent p {
+    color: color-mix(in srgb, var(--on-dark) 82%, transparent);
+  }
+  .strip .light .btn {
+    justify-self: start;
+    background: var(--ink);
+    color: var(--paper);
+    margin-top: 0.5rem;
+  }
+  .overlay text {
+    font-family: var(--label);
+  }
+  .overlay[hidden] {
+    display: none;
+  }
+
+  /* ---------- Size readout + hide/show ---------- */
+  .app.panel-hidden {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app.panel-hidden .panel {
+    display: none;
+  }
+  .readout {
+    font: 0.76rem/1.5 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    color: var(--chrome-fg);
+    background: #0f0e0d;
+    border: 1px solid var(--chrome-line);
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
+  }
+  .float-ctl {
+    position: fixed;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    z-index: 50;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.75rem;
+    max-width: calc(100vw - 24px);
+    padding: 0.35rem 0.4rem 0.35rem 0.85rem;
+    border: 1px solid var(--chrome-line);
+    border-radius: 999px;
+    background: rgba(15, 14, 13, 0.88);
+    backdrop-filter: blur(6px);
+    color: var(--chrome-fg);
+    font: 0.74rem 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .float-ctl[hidden] {
+    display: none;
+  }
+  .float-ctl button {
+    font: 600 0.78rem 'Hanken Grotesk', sans-serif;
+    color: #1b1714;
+    background: var(--chrome-focus);
+    border: 0;
+    border-radius: 999px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+  }
+
+  /* ---------- Tuner panel ---------- */
+  .panel {
+    background: var(--chrome-panel);
+    border-left: 1px solid var(--chrome-line);
+    padding: 1rem 1rem 2rem;
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+    max-height: 100vh;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+  }
+  @media (max-width: 900px) {
+    .panel {
+      max-height: none;
+      position: static;
+      border-left: 0;
+      border-top: 1px solid var(--chrome-line);
+    }
+  }
+  .panel h1 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+  .panel > p {
+    margin: 0;
+    color: var(--chrome-muted);
+    font-size: 0.85rem;
+  }
+  .presets {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+  .presets button,
+  .panel .action {
+    font: inherit;
+    font-size: 0.82rem;
+    color: var(--chrome-fg);
+    background: transparent;
+    border: 1px solid var(--chrome-line);
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
+    text-align: left;
+    cursor: pointer;
+  }
+  .presets .edited {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--chrome-focus);
+  }
+  .presets .edited[hidden] {
+    display: none;
+  }
+  .panel .action:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .presets button[aria-pressed='true'] {
+    border-color: var(--chrome-focus);
+    background: color-mix(in srgb, var(--chrome-focus) 12%, transparent);
+  }
+  .presets button:hover,
+  .panel .action:hover {
+    border-color: var(--chrome-muted);
+  }
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--chrome-focus);
+    outline-offset: 2px;
+  }
+  details {
+    border: 1px solid var(--chrome-line);
+    border-radius: 10px;
+    padding: 0.2rem 0.75rem;
+  }
+  details[open] {
+    padding-bottom: 0.75rem;
+  }
+  summary {
+    cursor: pointer;
+    padding: 0.5rem 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .field {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    font-size: 0.82rem;
+  }
+  .field label {
+    color: var(--chrome-muted);
+  }
+  .field input[type='range'] {
+    width: 100%;
+    accent-color: var(--chrome-focus);
+  }
+  .field output {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--chrome-muted);
+    min-width: 4ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .field input[type='color'] {
+    width: 100%;
+    height: 1.7rem;
+    padding: 0;
+    border: 1px solid var(--chrome-line);
+    border-radius: 6px;
+    background: none;
+  }
+  .field select,
+  .field input[type='text'] {
+    width: 100%;
+    font: inherit;
+    font-size: 0.82rem;
+    color: var(--chrome-fg);
+    background: #0f0e0d;
+    border: 1px solid var(--chrome-line);
+    border-radius: 6px;
+    padding: 0.3rem 0.4rem;
+  }
+  .field--color {
+    grid-template-columns: 7.5rem 2.25rem minmax(0, 1fr);
+  }
+  .field .hex {
+    width: 100%;
+    font: 0.78rem 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em;
+    color: var(--chrome-fg);
+    background: #0f0e0d;
+    border: 1px solid var(--chrome-line);
+    border-radius: 6px;
+    padding: 0.3rem 0.45rem;
+  }
+  .field .hex[aria-invalid='true'] {
+    border-color: #d06a5a;
+  }
+  .field input[type='checkbox'] {
+    justify-self: start;
+    accent-color: var(--chrome-focus);
+  }
+  .export {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .export textarea {
+    width: 100%;
+    min-height: 9rem;
+    font: 0.72rem/1.4 'JetBrains Mono', monospace;
+    color: var(--chrome-fg);
+    background: #0f0e0d;
+    border: 1px solid var(--chrome-line);
+    border-radius: 8px;
+    padding: 0.5rem;
+    resize: vertical;
+  }
+  .export .row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .export .status {
+    font-size: 0.8rem;
+    color: var(--chrome-muted);
+  }
+  .export .action.primary {
+    background: var(--chrome-focus);
+    color: #1b1714;
+    border-color: var(--chrome-focus);
+    font-weight: 600;
+  }
+</style>
+
+<div class="app">
+  <main class="preview" id="preview">
+    <div class="band nav" id="nav">
+      <span class="wordmark">Zach Fejes</span>
+      <ul>
+        <li>Projects</li>
+        <li>About</li>
+        <li>Contact</li>
+      </ul>
+    </div>
+    <section class="band hero" id="hero">
+      <canvas class="motif-canvas" id="motif" aria-hidden="true"></canvas>
+      <svg class="overlay" id="overlay-survey" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true" hidden>
+        <path d="M560 -10 C 620 120, 540 200, 640 290 S 760 420, 720 580" fill="none" stroke="var(--on-dark)" stroke-opacity=".55" stroke-width="2" />
+        <path d="M640 290 C 720 280, 820 230, 1010 250" fill="none" stroke="var(--on-dark)" stroke-opacity=".3" stroke-width="1.2" />
+        <g fill="none" stroke="var(--motif)"><circle cx="640" cy="290" r="16" stroke-width="1.5" /><circle cx="585" cy="140" r="9" /><circle cx="830" cy="236" r="9" /></g>
+        <g fill="var(--motif2)"><circle cx="640" cy="290" r="3" /><circle cx="585" cy="140" r="2.5" /><circle cx="830" cy="236" r="2.5" /></g>
+        <g font-size="11" fill="var(--muted)" letter-spacing="1">
+          <line x1="656" y1="290" x2="700" y2="320" stroke="var(--muted)" stroke-opacity=".6" /><text x="704" y="324">WP-01 · ARMADA</text>
+          <line x1="594" y1="140" x2="640" y2="112" stroke="var(--muted)" stroke-opacity=".6" /><text x="644" y="110">WP-02 · NEXT</text>
+        </g>
+      </svg>
+      <svg class="overlay" id="overlay-model" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true" hidden>
+        <g stroke="var(--on-dark)" stroke-opacity=".8" fill="none" transform="translate(620 50)"><path d="M0 10 V0 M0 6 H40 V0 M40 6 H80 V0 M80 6 H160 V0 M160 6 H300 V0" /></g>
+        <g font-size="11" fill="var(--on-dark)" fill-opacity=".8"><text x="616" y="44">0</text><text x="696" y="44">20</text><text x="776" y="44">40</text><text x="916" y="44">80 cm</text></g>
+        <g transform="translate(900 120)" stroke="var(--on-dark)" stroke-opacity=".8" fill="none"><circle r="22" /><path d="M-6 16 L6 -16" stroke-width="2" /></g>
+        <path d="M700 200 l70 -20 l40 60 l-70 20 z" fill="var(--on-dark)" />
+        <path d="M740 260 l70 -20 v10 l-70 20 z" fill="var(--muted)" />
+        <path d="M650 300 l55 -25 l30 45 l-55 25 z" fill="var(--on-dark)" />
+        <path d="M680 345 l55 -25 v8 l-55 25 z" fill="var(--muted)" />
+        <path d="M380 560 C 460 430, 560 380, 650 320" fill="none" stroke="var(--on-dark)" stroke-opacity=".75" stroke-width="1.4" stroke-dasharray="6 7" />
+        <path d="M1000 420 C 900 400, 830 330, 800 250" fill="none" stroke="var(--motif2)" stroke-width="1.6" stroke-dasharray="6 7" />
+        <g font-family="Literata, serif" font-style="italic" font-size="13" fill="var(--muted)"><text x="470" y="440">Projects</text><text x="880" y="370" fill="var(--motif2)">Write-ups</text><text x="820" y="196">Workshop A</text></g>
+      </svg>
+      <div class="copy">
+        <p class="eyebrow" id="eyebrow"></p>
+        <h1 class="headline" id="headline"></h1>
+        <p class="lede" id="lede"></p>
+      </div>
+      <div class="actions" style="position: relative; z-index: 1">
+        <span class="btn btn--primary">See the projects</span>
+        <span class="btn btn--ghost">About me</span>
+      </div>
+    </section>
+    <div class="strip">
+      <div class="band light">
+        <h3>Off-white band</h3>
+        <p>Project cards and longer reading sit on this band. Check that body text stays comfortable here.</p>
+        <span class="btn">Read the write-up</span>
+      </div>
+      <div class="band accent">
+        <h3>Accent band</h3>
+        <p>Used for emphasis sections and calls to action, like the About teaser.</p>
+      </div>
+    </div>
+  </main>
+
+  <aside class="panel" aria-label="Tuner">
+    <h1>Hero tuner</h1>
+    <p>Pick a starting point, tune it, then copy your settings and paste them back into the chat.</p>
+    <div class="readout" id="readout"></div>
+    <button class="action" id="hide-panel" type="button">Hide panel (preview at full width)</button>
+    <div class="presets" id="presets" role="group" aria-label="Starting points"></div>
+    <div id="groups"></div>
+    <div class="export">
+      <div class="row">
+        <button class="action primary" id="copy" type="button">Copy settings</button>
+        <button class="action" id="copy-all" type="button">Copy all edited</button>
+        <button class="action" id="reset" type="button">Reset this preset</button>
+        <span class="status" id="status" role="status"></span>
+      </div>
+      <label for="out" class="status">Settings to paste back:</label>
+      <textarea id="out" readonly></textarea>
+    </div>
+  </aside>
+</div>
+<div class="float-ctl" id="float-ctl" hidden>
+  <span id="readout-float"></span>
+  <button type="button" id="show-panel">Show tuner</button>
+</div>
+
+<script>
+  const FONTS = {
+    display: ['Fraunces', 'Instrument Serif', 'Bricolage Grotesque', 'Newsreader', 'Young Serif', 'Cormorant Garamond', 'Literata', 'Hanken Grotesk', 'Manrope', 'Work Sans', 'IBM Plex Sans'],
+    body: ['Hanken Grotesk', 'Manrope', 'Work Sans', 'IBM Plex Sans', 'Literata', 'Newsreader'],
+    label: ['Hanken Grotesk', 'Manrope', 'Work Sans', 'IBM Plex Sans', 'JetBrains Mono', 'IBM Plex Mono', 'Space Mono', 'Bricolage Grotesque'],
+    accent: ['Same as display', 'Instrument Serif', 'Fraunces', 'Newsreader', 'Cormorant Garamond', 'Literata'],
+  };
+  // Fonts with a single weight; accent words use 400 so the browser doesn't fake a bold.
+  const SINGLE_WEIGHT = ['Instrument Serif', 'Young Serif'];
+  const TYPE_DEFAULTS = {
+    accentFont: 'Same as display', accentScale: 1, shadowStrength: 0, shadowBlur: 12, shadowOffset: 3, shadowGlow: false,
+    // Fluid sizing: sizes are interpolated by hero width between two reference widths.
+    fluid: false, refSmall: 390, sizeSmall: 2.2, refLarge: 1440, sizeLarge: 3.6, ledeSmall: 1, ledeLarge: 1.12,
+  };
+  // copyWidth 28rem matches the old fixed cap, so existing settings look the same until changed.
+  const LAYOUT_DEFAULTS = { copyWidth: 28, ribbonShadow: 0, ribbonOverlap: 0, heroFull: true, tintStrength: 100, valign: 'center' };
+  const FALLBACK = (f) =>
+    /Mono/.test(f) ? 'ui-monospace, monospace' : /(Fraunces|Serif|Newsreader|Garamond|Literata)/.test(f) ? 'Georgia, serif' : 'system-ui, sans-serif';
+
+  const COPY = {
+    eyebrow: 'Projects · Write-ups · Resume',
+    headline: 'Things I’ve built, and the *curiosity* behind them.',
+    lede: 'A portfolio of projects and interactive write-ups: the math, the models, and the things I learned along the way.',
+  };
+
+  const PRESETS = {
+    'A1 Hearth · glow': {
+      colors: { ink: '#1b1714', paper: '#f1e9dc', green: '#2e4a3b', highlight: '#e3a857', onDark: '#f1e9dc', muted: '#bcb0a0', motif: '#e3a857', motif2: '#2e4a3b', tint: '#3a2a1e' },
+      type: { display: 'Fraunces', displayWeight: 400, displayMax: 4.6, tracking: -0.01, lineHeight: 1.04, accentItalic: true, body: 'Hanken Grotesk', label: 'Hanken Grotesk', labelTracking: 0.16, navUpper: false },
+      layout: { align: 'left', heroHeight: 30, textWidth: 16, radius: 14, tint: false },
+      grain: { amount: 0.12, scale: 220 },
+      motif: { kind: 'glow', overlay: 'none', posX: 0.82, posY: 0.28, size: 0.42, intensity: 0.38, speed: 1 },
+      copy: { ...COPY },
+    },
+    'A2 Hearth · globe': {
+      colors: { ink: '#232b2d', paper: '#dcd7c9', green: '#3f4e4f', highlight: '#c99a72', onDark: '#e6e1d4', muted: '#aab0aa', motif: '#e7a060', motif2: '#dcd7c9', tint: '#33302a' },
+      type: { display: 'Fraunces', displayWeight: 400, displayMax: 4.6, tracking: -0.01, lineHeight: 1.04, accentItalic: true, body: 'Hanken Grotesk', label: 'Hanken Grotesk', labelTracking: 0.18, navUpper: false },
+      layout: { align: 'left', heroHeight: 30, textWidth: 16, radius: 999, tint: false },
+      grain: { amount: 0.12, scale: 220 },
+      motif: { kind: 'globe', overlay: 'none', posX: 0.73, posY: 0.5, size: 0.4, intensity: 1, speed: 1, count: 2600, dot: 1.3 },
+      copy: { ...COPY },
+    },
+    'B1 Field Notes · stars': {
+      colors: { ink: '#131716', paper: '#eeebe3', green: '#24483a', highlight: '#dcc57f', onDark: '#eeebe3', muted: '#a7afa7', motif: '#eeebe3', motif2: '#dcc57f', tint: '#1d2a26' },
+      type: { display: 'Instrument Serif', displayWeight: 400, displayMax: 5.4, tracking: 0, lineHeight: 1.02, accentItalic: true, body: 'Manrope', label: 'JetBrains Mono', labelTracking: 0.16, navUpper: true },
+      layout: { align: 'left', heroHeight: 30, textWidth: 16, radius: 4, tint: false },
+      grain: { amount: 0.12, scale: 220 },
+      motif: { kind: 'stars', overlay: 'none', density: 1, intensity: 1, speed: 1, constellation: true },
+      copy: { ...COPY, eyebrow: 'Notes from the workbench', headline: 'Building things, and *wondering* how they work.' },
+    },
+    'B2 Survey · map': {
+      colors: { ink: '#121a18', paper: '#e4e1d6', green: '#2c4239', highlight: '#d8c690', onDark: '#e4e1d6', muted: '#9fb0a8', motif: '#8fbca4', motif2: '#d8c690', tint: '#1d2a26' },
+      type: { display: 'Instrument Serif', displayWeight: 400, displayMax: 5.4, tracking: 0, lineHeight: 1.02, accentItalic: true, body: 'Manrope', label: 'JetBrains Mono', labelTracking: 0.18, navUpper: true },
+      layout: { align: 'left', heroHeight: 32, textWidth: 16, radius: 2, tint: false },
+      grain: { amount: 0.12, scale: 220 },
+      motif: { kind: 'contours', overlay: 'survey', field: 'survey', levels: 22, intensity: 0.55, detail: 7, variation: 1, seed: 3 },
+      copy: { ...COPY, eyebrow: 'Field notes from the workbench', headline: 'Building things, and *wondering* how they work.' },
+    },
+    'C1 Workshop · rings': {
+      colors: { ink: '#191817', paper: '#f4eee4', green: '#345c3b', highlight: '#e08453', onDark: '#f4eee4', muted: '#b9b0a5', motif: '#e08453', motif2: '#345c3b', tint: '#3a2a1e' },
+      type: { display: 'Bricolage Grotesque', displayWeight: 600, displayMax: 4.6, tracking: -0.025, lineHeight: 1.04, accentItalic: true, body: 'Literata', label: 'Bricolage Grotesque', labelTracking: 0.16, navUpper: false },
+      layout: { align: 'left', heroHeight: 30, textWidth: 16, radius: 22, tint: false },
+      grain: { amount: 0.12, scale: 220 },
+      motif: { kind: 'rings', overlay: 'none', spacing: 22, intensity: 0.22, speed: 1 },
+      copy: { ...COPY, eyebrow: 'Maker · Engineer · Tinkerer', headline: 'I make things, then *take them apart* on paper.' },
+    },
+    'C2 Site Model · kraft': {
+      colors: { ink: '#1d1814', paper: '#e7e3dc', green: '#3a5444', highlight: '#e07b47', onDark: '#efe9df', muted: '#bcae9f', motif: '#c4a080', motif2: '#e07b47', tint: '#3a2a1e' },
+      type: { display: 'Bricolage Grotesque', displayWeight: 600, displayMax: 4.6, tracking: -0.025, lineHeight: 1.04, accentItalic: true, body: 'Literata', label: 'Bricolage Grotesque', labelTracking: 0.16, navUpper: false },
+      layout: { align: 'left', heroHeight: 32, textWidth: 16, radius: 22, tint: true },
+      grain: { amount: 0.12, scale: 220 },
+      motif: { kind: 'contours', overlay: 'model', field: 'kraft', levels: 34, intensity: 0.5, detail: 7, variation: 1, seed: 5 },
+      copy: { ...COPY, eyebrow: 'Maker · Engineer · Tinkerer', headline: 'I make things, then *take them apart* on paper.' },
+    },
+    // Zach's mix of A1 + B1 + B2, exactly as pasted back.
+    'D1 Zach’s mix': {
+      colors: { ink: '#121a18', paper: '#e4e1d6', green: '#2e4a3b', highlight: '#e3a857', onDark: '#e4e1d6', muted: '#9fb0a8', motif: '#8fbca4', motif2: '#d8c690', tint: '#1d2a26' },
+      type: { display: 'Bricolage Grotesque', displayWeight: 550, displayMax: 5.7, tracking: 0.015, lineHeight: 1.02, accentItalic: true, body: 'Manrope', label: 'JetBrains Mono', labelTracking: 0.18, navUpper: true },
+      layout: { align: 'left', heroHeight: 32, textWidth: 16, radius: 2, tint: false },
+      grain: { amount: 0.24, scale: 330 },
+      motif: { kind: 'stars', overlay: 'survey', intensity: 0.55, speed: 1.7, density: 2.7, constellation: false },
+      copy: { eyebrow: 'Field notes from the world to the workbench', headline: 'Motivated by *wonder*, and the deep desire to *improve the world*', lede: 'A portfolio of projects and interactive write-ups: math, models, design, art, and the lessons learned.' },
+    },
+    // Zach's chosen baseline (from D2), tint strength corrected to 15%.
+    'E1 Baseline': {
+      colors: { ink: '#141917', paper: '#e6e0d2', green: '#2f4b3c', highlight: '#e3a857', onDark: '#ece5d6', muted: '#aaa99a', motif: '#e9dcc4', motif2: '#e3a857', tint: '#3a2a1c' },
+      type: { accentFont: 'Instrument Serif', accentScale: 1.06, shadowStrength: 0.39, shadowBlur: 9, shadowOffset: 2, shadowGlow: false, display: 'Bricolage Grotesque', displayWeight: 400, displayMax: 4.1, tracking: 0.005, lineHeight: 0.96, accentItalic: true, body: 'Manrope', label: 'JetBrains Mono', labelTracking: 0.17, navUpper: true },
+      layout: { copyWidth: 40, ribbonShadow: 0.27, ribbonOverlap: 0, heroFull: true, tintStrength: 15, align: 'left', heroHeight: 34, textWidth: 15, radius: 3, tint: true },
+      grain: { amount: 0.34, scale: 340 },
+      motif: { kind: 'stars', overlay: 'survey', intensity: 0.9, speed: 1.5, density: 3, constellation: false, probeSpeed: 53, trail: 140 },
+      copy: { eyebrow: 'Field notes from the world to the workbench', headline: 'Motivated by *wonder*, and the deep desire to improve the world', lede: 'A portfolio of projects and interactive write-ups: math, models, design, art, and the lessons learned.' },
+    },
+    // E1 as last tuned by Zach, with fluid sizing and locked line breaks (marked with |).
+    'E2 Baseline · fluid': {
+      colors: { ink: '#141917', paper: '#e6e0d2', green: '#2f4b3c', highlight: '#e3a857', onDark: '#ece5d6', muted: '#aaa99a', motif: '#e9dcc4', motif2: '#e3a857', tint: '#3a2a1c' },
+      type: { accentFont: 'Instrument Serif', accentScale: 1.06, shadowStrength: 0.39, shadowBlur: 9, shadowOffset: 2, shadowGlow: false, display: 'Bricolage Grotesque', displayWeight: 400, displayMax: 3.6, tracking: 0.005, lineHeight: 0.96, accentItalic: true, body: 'Manrope', label: 'JetBrains Mono', labelTracking: 0.17, navUpper: true, fluid: true, refSmall: 390, sizeSmall: 2.1, refLarge: 1440, sizeLarge: 3.6, ledeSmall: 1, ledeLarge: 1.12 },
+      layout: { copyWidth: 40, ribbonShadow: 0.27, ribbonOverlap: 0, heroFull: true, tintStrength: 15, valign: 'center', align: 'left', heroHeight: 34, textWidth: 15, radius: 3, tint: true },
+      grain: { amount: 0.34, scale: 340 },
+      motif: { kind: 'stars', overlay: 'survey', intensity: 0.9, speed: 1.5, density: 3, constellation: false, probeSpeed: 53, trail: 140, sideMin: 35, zoneMargin: 20 },
+      copy: { eyebrow: 'Field notes from the world to the workbench', headline: 'Motivated by *wonder*, | and the deep desire | to improve the world', lede: 'A portfolio of projects and interactive write-ups: math, models, design, art, and the lessons learned.' },
+    },
+    // Refinement: more Hearth warmth. Warm starlight, a lamplight glow behind the map,
+    // amber waypoints, and a true serif italic for the accent words.
+    'D2 Lamplit survey': {
+      colors: { ink: '#141917', paper: '#e6e0d2', green: '#2e4a3b', highlight: '#e3a857', onDark: '#ece5d6', muted: '#aaa99a', motif: '#e9dcc4', motif2: '#e3a857', tint: '#3a2a1c' },
+      type: { display: 'Bricolage Grotesque', displayWeight: 500, displayMax: 4.8, tracking: -0.015, lineHeight: 1.02, accentItalic: true, accentFont: 'Instrument Serif', accentScale: 1.14, body: 'Manrope', label: 'JetBrains Mono', labelTracking: 0.18, navUpper: true },
+      layout: { align: 'left', heroHeight: 34, textWidth: 20, radius: 2, tint: true },
+      grain: { amount: 0.18, scale: 300 },
+      motif: { kind: 'stars', overlay: 'survey', intensity: 0.6, speed: 1.2, density: 2.4, constellation: false },
+      copy: { eyebrow: 'Field notes from the world to the workbench', headline: 'Motivated by *wonder*, and the deep desire to *improve the world*', lede: 'A portfolio of projects and interactive write-ups: math, models, design, art, and the lessons learned.' },
+    },
+    // Refinement: more Field Notes intention. Cool starfield with a constellation, the survey
+    // route on top, a faint warm glow, and a softer Fraunces italic for the accent words.
+    'D3 Night navigator': {
+      colors: { ink: '#121a18', paper: '#e4e1d6', green: '#2e4a3b', highlight: '#e3a857', onDark: '#e4e1d6', muted: '#9fb0a8', motif: '#c9d6cc', motif2: '#e3a857', tint: '#2b2418' },
+      type: { display: 'Bricolage Grotesque', displayWeight: 600, displayMax: 4.6, tracking: -0.02, lineHeight: 1.03, accentItalic: true, accentFont: 'Fraunces', accentScale: 1.02, body: 'Manrope', label: 'JetBrains Mono', labelTracking: 0.18, navUpper: true },
+      layout: { align: 'left', heroHeight: 34, textWidth: 20, radius: 2, tint: true },
+      grain: { amount: 0.2, scale: 320 },
+      motif: { kind: 'stars', overlay: 'survey', intensity: 0.7, speed: 1, density: 2.2, constellation: true },
+      copy: { eyebrow: 'Field notes from the world to the workbench', headline: 'Motivated by *wonder*, and the deep desire to *improve the world*', lede: 'A portfolio of projects and interactive write-ups: math, models, design, art, and the lessons learned.' },
+    },
+  };
+
+  // Every motif param has a default so switching kinds always works.
+  const MOTIF_DEFAULTS = { posX: 0.73, posY: 0.5, size: 0.4, intensity: 0.5, speed: 1, count: 2600, dot: 1.3, density: 1, constellation: true, field: 'survey', levels: 24, detail: 7, variation: 1, seed: 3, spacing: 22, probeSpeed: 40, trail: 90, sideMin: 35, zoneMargin: 28, showZone: false };
+
+  const is = (...kinds) => (s) => kinds.includes(s.motif.kind);
+  const GROUPS = [
+    {
+      title: 'Colors',
+      open: true,
+      fields: [
+        ['colors.ink', 'Near-black', 'color'],
+        ['colors.paper', 'Off-white', 'color'],
+        ['colors.green', 'Accent band', 'color'],
+        ['colors.highlight', 'Highlight', 'color'],
+        ['colors.onDark', 'Text on dark', 'color'],
+        ['colors.muted', 'Muted text', 'color'],
+        ['colors.motif', 'Motif color', 'color'],
+        ['colors.motif2', 'Motif color 2', 'color'],
+        ['colors.tint', 'Hero tint', 'color'],
+      ],
+    },
+    {
+      title: 'Type',
+      fields: [
+        ['type.display', 'Display font', 'select', FONTS.display],
+        ['type.displayWeight', 'Display weight', 'range', [300, 800, 50]],
+        ['type.displayMax', 'Headline size (rem)', 'range', [2.5, 7, 0.1]],
+        ['type.lineHeight', 'Line height', 'range', [0.9, 1.4, 0.01]],
+        ['type.tracking', 'Tracking (em)', 'range', [-0.05, 0.05, 0.005]],
+        ['type.accentItalic', 'Italic accent', 'checkbox'],
+        ['type.accentFont', 'Accent font', 'select', FONTS.accent],
+        ['type.accentScale', 'Accent size', 'range', [0.85, 1.35, 0.01]],
+        ['type.body', 'Body font', 'select', FONTS.body],
+        ['type.label', 'Label font', 'select', FONTS.label],
+        ['type.labelTracking', 'Label tracking', 'range', [0, 0.3, 0.01]],
+        ['type.navUpper', 'Uppercase nav', 'checkbox'],
+      ],
+    },
+    {
+      title: 'Layout',
+      fields: [
+        ['layout.align', 'Alignment', 'select', ['left', 'center']],
+        ['layout.valign', 'Vertical position', 'select', ['top', 'center', 'bottom']],
+        ['layout.heroFull', 'Full-screen hero', 'checkbox'],
+        ['layout.heroHeight', 'Hero height (rem)', 'range', [20, 48, 1], (s) => !s.layout.heroFull],
+        ['layout.copyWidth', 'Copy column (rem)', 'range', [20, 90, 1]],
+        ['layout.textWidth', 'Headline width (ch)', 'range', [10, 40, 1]],
+        ['layout.radius', 'Corner radius', 'range', [0, 40, 1]],
+        ['layout.tint', 'Hero tint glow', 'checkbox'],
+        ['layout.tintStrength', 'Tint strength (%)', 'range', [0, 100, 1], (s) => s.layout.tint],
+      ],
+    },
+    {
+      title: 'Fluid sizing',
+      open: true,
+      fields: [
+        ['type.fluid', 'Fluid sizing', 'checkbox'],
+        ['type.refSmall', 'Small ref (hero px)', 'range', [320, 900, 10], (s) => s.type.fluid],
+        ['type.sizeSmall', 'Headline @ small (rem)', 'range', [1.4, 4, 0.05], (s) => s.type.fluid],
+        ['type.refLarge', 'Large ref (hero px)', 'range', [900, 2400, 10], (s) => s.type.fluid],
+        ['type.sizeLarge', 'Headline @ large (rem)', 'range', [2, 7, 0.05], (s) => s.type.fluid],
+        ['type.ledeSmall', 'Intro @ small (rem)', 'range', [0.85, 1.4, 0.01], (s) => s.type.fluid],
+        ['type.ledeLarge', 'Intro @ large (rem)', 'range', [0.9, 1.6, 0.01], (s) => s.type.fluid],
+      ],
+    },
+    {
+      title: 'Depth & shadows',
+      fields: [
+        ['layout.ribbonShadow', 'Ribbon shadow', 'range', [0, 1, 0.01]],
+        ['layout.ribbonOverlap', 'Ribbon overlap (px)', 'range', [0, 48, 1]],
+        ['type.shadowStrength', 'Display shadow', 'range', [0, 1, 0.01]],
+        ['type.shadowBlur', 'Shadow blur (px)', 'range', [0, 48, 1]],
+        ['type.shadowOffset', 'Shadow drop (px)', 'range', [0, 16, 1]],
+        ['type.shadowGlow', 'Glow (highlight color)', 'checkbox'],
+      ],
+    },
+    {
+      title: 'Grain',
+      fields: [
+        ['grain.amount', 'Strength', 'range', [0, 0.4, 0.01]],
+        ['grain.scale', 'Grain size (px)', 'range', [80, 400, 10]],
+      ],
+    },
+    {
+      title: 'Background motif',
+      open: true,
+      fields: [
+        ['motif.kind', 'Motif', 'select', ['none', 'glow', 'globe', 'stars', 'contours', 'rings']],
+        ['motif.overlay', 'Annotations', 'select', ['none', 'survey', 'model']],
+        ['motif.intensity', 'Intensity', 'range', [0, 1.2, 0.01]],
+        ['motif.speed', 'Speed', 'range', [0, 3, 0.1], is('glow', 'globe', 'stars', 'rings')],
+        ['motif.posX', 'Position X', 'range', [0, 1, 0.01], is('glow', 'globe')],
+        ['motif.posY', 'Position Y', 'range', [0, 1, 0.01], is('glow', 'globe')],
+        ['motif.size', 'Size', 'range', [0.1, 0.8, 0.01], is('glow', 'globe')],
+        ['motif.count', 'Particles', 'range', [400, 6000, 100], is('globe')],
+        ['motif.dot', 'Particle size', 'range', [0.5, 3, 0.1], is('globe')],
+        ['motif.density', 'Star density', 'range', [0.2, 3, 0.1], is('stars')],
+        ['motif.constellation', 'Constellation', 'checkbox', null, is('stars')],
+        ['motif.probeSpeed', 'Probe speed (px/s)', 'range', [0, 200, 1], (s) => s.motif.kind === 'stars' && s.motif.overlay === 'survey'],
+        ['motif.trail', 'Probe trail (px)', 'range', [0, 300, 5], (s) => s.motif.kind === 'stars' && s.motif.overlay === 'survey'],
+        ['motif.sideMin', 'Side route min (%)', 'range', [15, 60, 1], is('stars')],
+        ['motif.zoneMargin', 'Text keep-out (px)', 'range', [0, 80, 1], is('stars')],
+        ['motif.showZone', 'Show keep-out zone', 'checkbox', null, is('stars')],
+        ['motif.field', 'Terrain', 'select', ['survey', 'kraft'], is('contours')],
+        ['motif.levels', 'Contour lines', 'range', [6, 60, 1], is('contours')],
+        ['motif.detail', 'Cell size (px)', 'range', [3, 14, 1], is('contours')],
+        ['motif.variation', 'Ripple', 'range', [0, 3, 0.1], is('contours')],
+        ['motif.seed', 'Terrain seed', 'range', [1, 20, 1], is('contours')],
+        ['motif.spacing', 'Ring spacing', 'range', [8, 60, 1], is('rings')],
+      ],
+    },
+    {
+      title: 'Copy',
+      fields: [
+        ['copy.eyebrow', 'Eyebrow', 'text'],
+        ['copy.headline', 'Headline (*accent*)', 'text'],
+        ['copy.lede', 'Lede', 'text'],
+      ],
+    },
+  ];
+
+  // Accepts "#A27B5B", "a27b5b", "#abc" (with stray spaces or quotes from pasting); returns "#a27b5b" or null.
+  function normalizeHex(text) {
+    const m = text.trim().replace(/^['"]|['"]$/g, '').match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (!m) return null;
+    const h = m[1].length === 3 ? [...m[1]].map((c) => c + c).join('') : m[1];
+    return '#' + h.toLowerCase();
+  }
+
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const get = (o, path) => path.split('.').reduce((a, k) => a?.[k], o);
+  const set = (o, path, v) => {
+    const ks = path.split('.');
+    ks.slice(0, -1).reduce((a, k) => a[k], o)[ks.at(-1)] = v;
+  };
+
+  // Each preset keeps its own working copy in ALL, so switching presets never discards edits.
+  // Only "Reset this preset" restores a preset's original values.
+  const fresh = (name) => {
+    const s = clone(PRESETS[name]);
+    s.type = { ...TYPE_DEFAULTS, ...s.type };
+    s.layout = { ...LAYOUT_DEFAULTS, ...s.layout };
+    s.motif = { ...MOTIF_DEFAULTS, ...s.motif };
+    return s;
+  };
+  let presetName = 'E1 Baseline';
+  let ALL = {};
+  let S;
+  try {
+    const saved = JSON.parse(localStorage.getItem('hero-tuner-v2') || 'null');
+    const legacy = JSON.parse(localStorage.getItem('hero-tuner') || 'null');
+    if (saved?.all) {
+      ALL = saved.all;
+      if (PRESETS[saved.preset]) presetName = saved.preset;
+    } else if (legacy && PRESETS[legacy.preset]) {
+      ALL[legacy.preset] = legacy.settings;
+      presetName = legacy.preset;
+    }
+  } catch {}
+  for (const k of Object.keys(ALL)) {
+    if (!PRESETS[k]) delete ALL[k];
+    else {
+      ALL[k].type = { ...TYPE_DEFAULTS, ...ALL[k].type };
+      ALL[k].layout = { ...LAYOUT_DEFAULTS, ...ALL[k].layout };
+      ALL[k].motif = { ...MOTIF_DEFAULTS, ...ALL[k].motif };
+    }
+  }
+  function selectPreset(name) {
+    presetName = name;
+    if (!ALL[name]) ALL[name] = fresh(name);
+    S = ALL[name];
+  }
+  function resetPreset() {
+    ALL[presetName] = fresh(presetName);
+    S = ALL[presetName];
+  }
+  const isEdited = (name) => !!ALL[name] && JSON.stringify(ALL[name]) !== JSON.stringify(fresh(name));
+  selectPreset(presetName);
+
+  // ---------- Panel ----------
+  const presetsEl = document.getElementById('presets');
+  Object.keys(PRESETS).forEach((name) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.name = name;
+    b.innerHTML = `${name}<span class="edited" hidden>edited</span>`;
+    b.addEventListener('click', () => {
+      selectPreset(name);
+      buildGroups();
+      apply();
+    });
+    presetsEl.append(b);
+  });
+
+  const openState = {};
+  function buildGroups() {
+    const root = document.getElementById('groups');
+    root.querySelectorAll('details').forEach((d) => (openState[d.dataset.title] = d.open));
+    root.innerHTML = '';
+    GROUPS.forEach((g) => {
+      const d = document.createElement('details');
+      d.dataset.title = g.title;
+      d.open = openState[g.title] ?? !!g.open;
+      d.innerHTML = `<summary>${g.title}</summary>`;
+      g.fields.forEach(([path, label, type, opt, when]) => {
+        if (when && !when(S)) return;
+        const id = 'f-' + path.replace('.', '-');
+        const row = document.createElement('div');
+        row.className = 'field';
+        const v = get(S, path);
+        let input;
+        if (type === 'select') {
+          input = `<select id="${id}">${opt.map((o) => `<option${o === v ? ' selected' : ''}>${o}</option>`).join('')}</select>`;
+        } else if (type === 'range') {
+          input = `<input id="${id}" type="range" min="${opt[0]}" max="${opt[1]}" step="${opt[2]}" value="${v}">`;
+        } else if (type === 'checkbox') {
+          input = `<input id="${id}" type="checkbox"${v ? ' checked' : ''}>`;
+        } else if (type === 'color') {
+          input = `<input id="${id}" type="color" value="${v}">`;
+        } else {
+          input = `<input id="${id}" type="text">`;
+        }
+        if (type === 'color') {
+          row.classList.add('field--color');
+          row.innerHTML = `<label for="${id}-hex">${label}</label><input type="color" value="${v}" aria-label="${label} picker" tabindex="-1"><input id="${id}-hex" class="hex" type="text" value="${v.toUpperCase()}" spellcheck="false" autocomplete="off" maxlength="9">`;
+          const picker = row.querySelector('input[type=color]');
+          const hex = row.querySelector('.hex');
+          const commit = (val) => {
+            set(S, path, val);
+            picker.value = val;
+            hex.value = val.toUpperCase();
+            hex.removeAttribute('aria-invalid');
+            apply();
+          };
+          picker.addEventListener('input', () => commit(picker.value));
+          hex.addEventListener('input', () => {
+            const val = normalizeHex(hex.value);
+            if (val) commit(val);
+            else hex.setAttribute('aria-invalid', 'true');
+          });
+          hex.addEventListener('focus', () => hex.select());
+          hex.addEventListener('blur', () => {
+            hex.value = get(S, path).toUpperCase();
+            hex.removeAttribute('aria-invalid');
+          });
+          d.append(row);
+          return;
+        }
+        row.innerHTML = `<label for="${id}">${label}</label>${input}<output>${type === 'range' ? v : ''}</output>`;
+        if (type === 'text') row.querySelector('input').value = v;
+        const el = row.querySelector('input, select');
+        el.addEventListener('input', () => {
+          let nv = type === 'checkbox' ? el.checked : el.value;
+          if (type === 'range') nv = Number(nv);
+          set(S, path, nv);
+          const out = row.querySelector('output');
+          if (type === 'range') out.textContent = nv;
+          if (['motif.kind', 'motif.overlay', 'layout.heroFull', 'layout.tint', 'type.fluid'].includes(path)) buildGroups();
+          apply();
+        });
+        d.append(row);
+      });
+      root.append(d);
+    });
+  }
+
+  // ---------- Apply settings to the preview ----------
+  const preview = document.getElementById('preview');
+  const hero = document.getElementById('hero');
+  const nav = document.getElementById('nav');
+  const out = document.getElementById('out');
+  const copyAllBtn = document.getElementById('copy-all');
+  // Keep the nav height available to CSS for the full-screen hero calculation.
+  new ResizeObserver(() => preview.style.setProperty('--nav-h', nav.offsetHeight + 'px')).observe(nav);
+  const esc = (t) => t.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+
+  function apply() {
+    const c = S.colors;
+    const t = S.type;
+    const vars = {
+      '--ink': c.ink,
+      '--paper': c.paper,
+      '--green': c.green,
+      '--highlight': c.highlight,
+      '--on-dark': c.onDark,
+      '--muted': c.muted,
+      '--motif': c.motif,
+      '--motif2': c.motif2,
+      '--tint': c.tint,
+      '--display': `'${t.display}', ${FALLBACK(t.display)}`,
+      '--body': `'${t.body}', ${FALLBACK(t.body)}`,
+      '--label': `'${t.label}', ${FALLBACK(t.label)}`,
+      '--display-weight': t.displayWeight,
+      '--display-max': t.displayMax + 'rem',
+      '--display-vw': t.displayMax * 1.45 + 'vw',
+      '--display-lh': t.lineHeight,
+      '--tracking': t.tracking + 'em',
+      '--label-tracking': t.labelTracking + 'em',
+      '--accent-style': t.accentItalic ? 'italic' : 'normal',
+      '--accent-font': t.accentFont === 'Same as display' ? 'inherit' : `'${t.accentFont}', ${FALLBACK(t.accentFont)}`,
+      '--accent-scale': t.accentScale,
+      '--accent-weight': SINGLE_WEIGHT.includes(t.accentFont) ? 400 : 'inherit',
+      '--accent-tracking': t.accentFont === 'Same as display' ? 'inherit' : '0',
+      '--radius': S.layout.radius + 'px',
+      // Full-screen: nav + hero together fill the viewport, so the next band starts at the fold.
+      '--hero-height': S.layout.heroFull ? 'calc(100svh - var(--nav-h, 64px))' : S.layout.heroHeight + 'rem',
+      '--tint-strength': S.layout.tintStrength + '%',
+      '--copy-width': S.layout.copyWidth + 'rem',
+      '--ribbon-a': S.layout.ribbonShadow,
+      '--ribbon-overlap': S.layout.ribbonOverlap + 'px',
+      '--display-shadow':
+        t.shadowStrength > 0
+          ? `0 ${t.shadowOffset}px ${t.shadowBlur}px ${rgba(t.shadowGlow ? c.highlight : '#000000', t.shadowStrength)}`
+          : 'none',
+      '--grain': S.grain.amount,
+      '--grain-scale': S.grain.scale + 'px',
+    };
+    for (const [k, v] of Object.entries(vars)) preview.style.setProperty(k, v);
+    // Headline: in fluid mode, "|" marks locked line breaks; otherwise it's ignored.
+    const hlHtml = esc(S.copy.headline).replace(/\*(.+?)\*/g, '<em>$1</em>');
+    const parts = hlHtml.split('|');
+    const locked = S.type.fluid && parts.length > 1;
+    const hlEl = document.getElementById('headline');
+    hlEl.innerHTML = locked
+      ? parts.map((p) => `<span class="hl-line">${p.trim()}</span>`).join('')
+      : hlHtml.replace(/\s*\|\s*/g, ' ');
+    hlEl.style.maxWidth = locked ? 'none' : S.layout.textWidth + 'ch';
+    hero.classList.toggle('center', S.layout.align === 'center');
+    hero.style.alignContent = { top: 'start', center: 'center', bottom: 'end' }[S.layout.valign];
+    hero.classList.toggle('tinted', !!S.layout.tint);
+    nav.classList.toggle('upper', !!t.navUpper);
+    document.getElementById('eyebrow').textContent = S.copy.eyebrow;
+    document.getElementById('lede').textContent = S.copy.lede;
+    // SVG elements have no `hidden` property, so toggle the attribute.
+    // Over the star field, the survey route is drawn on the canvas through real stars instead.
+    document.getElementById('overlay-survey').toggleAttribute('hidden', S.motif.overlay !== 'survey' || S.motif.kind === 'stars');
+    document.getElementById('overlay-model').toggleAttribute('hidden', S.motif.overlay !== 'model');
+    presetsEl.querySelectorAll('button').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.dataset.name === presetName));
+      b.querySelector('.edited').hidden = !isEdited(b.dataset.name);
+    });
+    out.value = JSON.stringify(exportSettings(presetName, S), null, 1);
+    const edited = Object.keys(PRESETS).filter(isEdited);
+    copyAllBtn.disabled = edited.length === 0;
+    copyAllBtn.textContent = edited.length ? `Copy all edited (${edited.length})` : 'Copy all edited';
+    try {
+      localStorage.setItem('hero-tuner-v2', JSON.stringify({ preset: presetName, all: ALL }));
+    } catch {}
+    fitHeadline();
+    dirty = true;
+  }
+
+  // ---------- Fluid headline fitting ----------
+  // Target size is interpolated by hero width. With locked lines, the headline shrinks to keep
+  // its widest line inside the available width; below 80% of the small size it falls back to
+  // normal wrapping. The intro text is then set to the headline's width.
+  let fitInfo = null;
+  function textWidth(el) {
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    return r.getBoundingClientRect().width;
+  }
+  function fitHeadline() {
+    const t = S.type;
+    const hl = document.getElementById('headline');
+    const copyEl = hero.querySelector('.copy');
+    if (!t.fluid) {
+      hl.style.fontSize = '';
+      hl.classList.remove('wrap');
+      copyEl.classList.remove('fluid');
+      preview.style.removeProperty('--lede-size');
+      preview.style.removeProperty('--lede-max');
+      fitInfo = null;
+      return;
+    }
+    copyEl.classList.add('fluid');
+    const cs = getComputedStyle(hero);
+    const avail = hero.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const k = Math.min(1, Math.max(0, (hero.clientWidth - t.refSmall) / Math.max(1, t.refLarge - t.refSmall)));
+    const target = 16 * (t.sizeSmall + k * (t.sizeLarge - t.sizeSmall));
+    preview.style.setProperty('--lede-size', 16 * (t.ledeSmall + k * (t.ledeLarge - t.ledeSmall)) + 'px');
+    hl.classList.remove('wrap');
+    hl.style.fontSize = target + 'px';
+    const lines = [...hl.querySelectorAll('.hl-line')];
+    let size = target;
+    let fitted = true;
+    if (lines.length) {
+      const widest = Math.max(...lines.map(textWidth));
+      if (widest > avail) size = ((target * avail) / widest) * 0.99;
+      const min = 16 * t.sizeSmall * 0.8;
+      if (size < min) {
+        size = min;
+        fitted = false;
+        hl.classList.add('wrap');
+      }
+      hl.style.fontSize = size + 'px';
+    }
+    const blockW = lines.length && fitted ? Math.max(...lines.map(textWidth)) : avail;
+    preview.style.setProperty('--lede-max', Math.max(blockW, 280) + 'px');
+    fitInfo = { size: Math.round(size), fitted, locked: lines.length > 0 };
+  }
+  let lastHeroW = 0;
+  new ResizeObserver(() => {
+    if (hero.clientWidth === lastHeroW) return;
+    lastHeroW = hero.clientWidth;
+    fitHeadline();
+  }).observe(hero);
+  document.fonts?.ready.then(() => fitHeadline());
+
+  // Only export the motif params that matter for the chosen kind.
+  function exportSettings(name, s) {
+    const keep = {
+      none: [],
+      glow: ['posX', 'posY', 'size', 'intensity', 'speed'],
+      globe: ['posX', 'posY', 'size', 'intensity', 'speed', 'count', 'dot'],
+      stars: ['intensity', 'speed', 'density', 'constellation', 'probeSpeed', 'trail', 'sideMin', 'zoneMargin'],
+      contours: ['field', 'levels', 'intensity', 'detail', 'variation', 'seed'],
+      rings: ['intensity', 'speed', 'spacing'],
+    }[s.motif.kind];
+    const motif = { kind: s.motif.kind, overlay: s.motif.overlay };
+    keep.forEach((k) => (motif[k] = s.motif[k]));
+    return { basedOn: name, ...s, motif };
+  }
+
+  document.getElementById('reset').addEventListener('click', () => {
+    resetPreset();
+    buildGroups();
+    apply();
+    document.getElementById('status').textContent = `${presetName} reset.`;
+  });
+  async function copyText(text, label) {
+    const status = document.getElementById('status');
+    try {
+      await navigator.clipboard.writeText(text);
+      status.textContent = `Copied ${label}. Paste it into the chat.`;
+    } catch {
+      out.value = text;
+      out.focus();
+      out.select();
+      status.textContent = 'Selected. Press Ctrl+C or ⌘C to copy.';
+    }
+  }
+  document.getElementById('copy').addEventListener('click', () => copyText(out.value, 'this preset'));
+  copyAllBtn.addEventListener('click', () => {
+    const all = Object.keys(PRESETS)
+      .filter(isEdited)
+      .map((n) => exportSettings(n, ALL[n]));
+    copyText(JSON.stringify(all, null, 1), `${all.length} edited preset${all.length === 1 ? '' : 's'}`);
+  });
+
+  // ---------- Motif renderer ----------
+  const canvas = document.getElementById('motif');
+  const ctx = canvas.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W = 0;
+  let H = 0;
+  let dirty = true;
+  let cache = null;
+  let cacheKey = '';
+
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    W = canvas.clientWidth;
+    H = canvas.clientHeight;
+    canvas.width = Math.max(1, W * dpr);
+    canvas.height = Math.max(1, H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cacheKey = '';
+    dirty = true;
+  }
+  new ResizeObserver(resize).observe(canvas);
+
+  const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const rgba = (h, a) => `rgba(${hexRgb(h).join(',')},${Math.max(0, Math.min(1, a)).toFixed(3)})`;
+  function seeded(seed) {
+    let s = Math.floor(seed * 9973) % 2147483647 || 1;
+    return () => (s = (s * 16807) % 2147483647) / 2147483647;
+  }
+
+  // Globe points, rebuilt only when the particle count changes.
+  let globe = { n: 0, pts: [] };
+  function globePoints(n) {
+    if (globe.n === n) return globe.pts;
+    const rand = seeded(11);
+    const golden = Math.PI * (3 - Math.sqrt(5));
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const y = 1 - (i / (n - 1)) * 2;
+      const r = Math.sqrt(1 - y * y);
+      const th = golden * i + rand() * 0.6;
+      const j = 1 + (rand() - 0.5) * 0.08;
+      pts.push([Math.cos(th) * r * j, y * j, Math.sin(th) * r * j, rand()]);
+    }
+    globe = { n, pts };
+    return pts;
+  }
+
+  // Contours: marching squares over a seeded height field; cached to an offscreen canvas.
+  const CASES = { 1: [[3, 2]], 2: [[2, 1]], 3: [[3, 1]], 4: [[0, 1]], 5: [[3, 0], [2, 1]], 6: [[0, 2]], 7: [[3, 0]], 8: [[3, 0]], 9: [[0, 2]], 10: [[0, 1], [3, 2]], 11: [[0, 1]], 12: [[3, 1]], 13: [[2, 1]], 14: [[3, 2]] };
+  function contourImage(m, color) {
+    const key = [W, H, m.field, m.levels, m.intensity, m.detail, m.variation, m.seed, color].join('|');
+    if (key === cacheKey && cache) return cache;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const off = document.createElement('canvas');
+    off.width = Math.max(1, W * dpr);
+    off.height = Math.max(1, H * dpr);
+    const c = off.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rand = seeded(m.seed);
+    const nh = 5;
+    const hills = Array.from({ length: nh }, (_, i) => [
+      0.35 + rand() * 0.65,
+      rand(),
+      0.15 + rand() * 0.2,
+      i === 0 ? 1 : (rand() - 0.35) * 1.2,
+    ]);
+    const s = m.detail;
+    const cols = Math.ceil(W / s) + 1;
+    const rows = Math.ceil(H / s) + 1;
+    const vals = new Float32Array(cols * rows);
+    let min = Infinity;
+    let max = -Infinity;
+    const ph = rand() * 6.28;
+    for (let j = 0; j < rows; j++) {
+      for (let i = 0; i < cols; i++) {
+        const x = (i * s) / W;
+        const y = (j * s) / Math.max(W, 1);
+        const yy = y * (W / Math.max(H, 1)) * (H / W);
+        let v = 0;
+        for (const [hx, hy, r, a] of hills) {
+          const dx = (x - hx) / r;
+          const dy = ((j * s) / H - hy) / (r * 1.4);
+          v += a * Math.exp(-(dx * dx + dy * dy));
+        }
+        v += m.variation * (0.06 * Math.sin(x * 9 + yy * 40 + ph) + 0.04 * Math.sin(yy * 60 - x * 3 + ph));
+        vals[j * cols + i] = v;
+        if (v < min) min = v;
+        if (v > max) max = v;
+      }
+    }
+    c.lineWidth = 1;
+    for (let k = 1; k < m.levels; k++) {
+      const L = min + ((max - min) * k) / m.levels;
+      const a = m.field === 'survey' ? (0.2 + 0.8 * (k / m.levels)) * m.intensity : (k % 5 === 0 ? 1 : 0.5) * m.intensity;
+      c.strokeStyle = rgba(color, a);
+      c.beginPath();
+      for (let j = 0; j < rows - 1; j++) {
+        for (let i = 0; i < cols - 1; i++) {
+          const tl = vals[j * cols + i];
+          const tr = vals[j * cols + i + 1];
+          const br = vals[(j + 1) * cols + i + 1];
+          const bl = vals[(j + 1) * cols + i];
+          const segs = CASES[(tl > L ? 8 : 0) | (tr > L ? 4 : 0) | (br > L ? 2 : 0) | (bl > L ? 1 : 0)];
+          if (!segs) continue;
+          const x = i * s;
+          const y = j * s;
+          const pt = (e) =>
+            e === 0 ? [x + (s * (L - tl)) / (tr - tl), y]
+            : e === 1 ? [x + s, y + (s * (L - tr)) / (br - tr)]
+            : e === 2 ? [x + (s * (L - bl)) / (br - bl), y + s]
+            : [x, y + (s * (L - tl)) / (bl - tl)];
+          for (const [a1, b1] of segs) {
+            const p = pt(a1);
+            const q = pt(b1);
+            c.moveTo(p[0], p[1]);
+            c.lineTo(q[0], q[1]);
+          }
+        }
+      }
+      c.stroke();
+    }
+    cache = off;
+    cacheKey = key;
+    return off;
+  }
+
+  // ---------- Star field + layout-aware trajectory ----------
+  // The field is a seeded list of stars. The route is planned separately around a keep-out zone
+  // measured from the hero text, then threaded through the nearest real stars outside that zone.
+  let field = { key: '', list: [] };
+  function starField(density) {
+    const key = [W, H, density].join('|');
+    if (field.key === key) return field;
+    const rand = seeded(7);
+    field = {
+      key,
+      list: Array.from({ length: Math.max(12, Math.round(((W * H) / 2600) * density)) }, () => ({
+        x: rand() * W, y: rand() * H, r: rand() * 1.2 + 0.3, p: rand() * 6.28, s: rand() * 0.8 + 0.4,
+      })),
+    };
+    return field;
+  }
+
+  // Tight bounds of the visible hero text and buttons (text ranges, not their wider boxes),
+  // in canvas coordinates, grown by the keep-out margin.
+  function copyZone(margin) {
+    const c = canvas.getBoundingClientRect();
+    const rects = [];
+    for (const id of ['eyebrow', 'headline', 'lede']) {
+      const range = document.createRange();
+      range.selectNodeContents(document.getElementById(id));
+      rects.push(range.getBoundingClientRect());
+    }
+    hero.querySelectorAll('.actions .btn').forEach((b) => rects.push(b.getBoundingClientRect()));
+    const live = rects.filter((r) => r.width > 0 && r.height > 0);
+    return {
+      l: Math.min(...live.map((r) => r.left)) - c.left - margin,
+      t: Math.min(...live.map((r) => r.top)) - c.top - margin,
+      r: Math.max(...live.map((r) => r.right)) - c.left + margin,
+      b: Math.max(...live.map((r) => r.bottom)) - c.top + margin,
+    };
+  }
+
+  let routeMode = 'side';
+  let route = { key: '' };
+  function planRoute(f, z, m) {
+    // Side mode needs enough free width to the right of the text; switch with a little
+    // hysteresis so the layout doesn't flicker when resizing near the threshold.
+    // If neither layout has its preferred room (short, wide screens), take whichever has more.
+    const freeRight = W - z.r;
+    const need = Math.max((W * m.sideMin) / 100, 240);
+    const band = Math.max(z.t, H - z.b);
+    const hyst = routeMode === 'side' ? -16 : 16;
+    if (freeRight >= need + hyst) routeMode = 'side';
+    else if (band >= 90) routeMode = 'stacked';
+    else routeMode = freeRight >= 160 ? 'side' : 'stacked';
+    const key = [f.key, routeMode, ...[z.l, z.t, z.r, z.b].map((v) => Math.round(v / 12))].join('|');
+    if (route.key === key) return route;
+
+    const outside = (s) => s.x < z.l || s.x > z.r || s.y < z.t || s.y > z.b;
+    const used = new Set();
+    const snap = ([x, y]) => {
+      let best = null;
+      let bd = Infinity;
+      for (const s of f.list) {
+        if (used.has(s) || !outside(s)) continue;
+        const d = (s.x - x) ** 2 + (s.y - y) ** 2;
+        if (d < bd) {
+          bd = d;
+          best = s;
+        }
+      }
+      best = best || { x, y, r: 1.5, p: 0, s: 1 };
+      used.add(best);
+      return best;
+    };
+
+    let anchors;
+    let start;
+    let end;
+    let branchStar = null;
+    let constellation = [];
+    if (routeMode === 'side') {
+      // Route runs top to bottom through the free region right of the text.
+      const x0 = z.r + freeRight * 0.04;
+      const fw = W - x0 - 24;
+      const P = (fx, fy) => [x0 + fx * fw, fy * H];
+      anchors = [P(0.18, 0.18), P(0.26, 0.42), P(0.58, 0.58), P(0.44, 0.8)].map(snap);
+      start = { x: x0 + 0.1 * fw, y: -24 };
+      end = { x: x0 + 0.62 * fw, y: H + 24 };
+      branchStar = snap(P(0.94, 0.4));
+      constellation = [P(0.66, 0.12), P(0.8, 0.2), P(0.72, 0.28), P(0.9, 0.32)].map(snap);
+    } else {
+      // Route runs left to right through the larger free band above or below the text.
+      const above = Math.max(0, z.t);
+      const below = Math.max(0, H - z.b);
+      const useBelow = below >= above;
+      const y0 = useBelow ? z.b : 0;
+      const bh = useBelow ? below : above;
+      const P = (fx, fy) => [fx * W, y0 + fy * bh];
+      anchors = [P(0.16, 0.42), P(0.4, 0.7), P(0.64, 0.36), P(0.86, 0.64)].map(snap);
+      start = { x: -24, y: y0 + 0.62 * bh };
+      end = { x: W + 24, y: y0 + 0.44 * bh };
+      // The branch stays in the route's band (a line to the other band would cross the text);
+      // the constellation goes in the other band when it has room.
+      const oy0 = useBelow ? 0 : z.b;
+      const obh = useBelow ? above : below;
+      const O = (fx, fy) => [fx * W, oy0 + fy * obh];
+      branchStar = snap(P(0.97, useBelow ? 0.15 : 0.85));
+      if (obh >= 80) constellation = [O(0.12, 0.3), O(0.24, 0.55), O(0.34, 0.35), O(0.46, 0.6)].map(snap);
+    }
+    const path = sampleSpline([start, ...anchors, end]);
+    route = {
+      key,
+      mode: routeMode,
+      zone: z,
+      anchors,
+      path,
+      branch: [anchors[2], branchStar],
+      constellation,
+      waypoints: [
+        { star: anchors[0], label: 'WP-01 · ARMADA', size: 15 },
+        { star: anchors[2], label: 'WP-02 · NEXT', size: 10 },
+      ],
+      anchorSet: new Set([...anchors, branchStar, ...constellation]),
+    };
+    return route;
+  }
+
+  // Pick the first label position (up-right, down-right, up-left, down-left) that stays inside
+  // the hero and clear of the text zone.
+  function placeLabel(x, y, tw, z) {
+    const dx = 40;
+    const dy = 26;
+    for (const [sx, sy] of [[1, -1], [1, 1], [-1, -1], [-1, 1]]) {
+      const ex = x + sx * dx;
+      const ey = y + sy * dy;
+      const bx = sx > 0 ? ex + 4 : ex - 4 - tw;
+      const by = sy < 0 ? ey - 14 : ey;
+      const box = { l: bx, r: bx + tw, t: by, b: by + 14 };
+      const inside = box.l >= 4 && box.r <= W - 4 && box.t >= 4 && box.b <= H - 4;
+      const clear = box.r < z.l || box.l > z.r || box.b < z.t || box.t > z.b;
+      if (inside && clear) return { sx, sy, ex, ey, bx, by };
+    }
+    const ex = x + dx;
+    const ey = y - dy;
+    return { sx: 1, sy: -1, ex, ey, bx: ex + 4, by: ey - 14 };
+  }
+  function sampleSpline(pts) {
+    const out = [];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+      for (let k = 0; k < 64; k++) {
+        const t = k / 64;
+        const t2 = t * t;
+        const t3 = t2 * t;
+        const f = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
+        out.push({ x: f(p0.x, p1.x, p2.x, p3.x), y: f(p0.y, p1.y, p2.y, p3.y) });
+      }
+    }
+    out.push(pts.at(-1));
+    // Cumulative arc length, so the probe can move by distance rather than by sample index.
+    let total = 0;
+    out[0].d = 0;
+    for (let i = 1; i < out.length; i++) {
+      total += Math.hypot(out[i].x - out[i - 1].x, out[i].y - out[i - 1].y);
+      out[i].d = total;
+    }
+    out.total = total;
+    return out;
+  }
+  // Point at distance d along the path, interpolated between samples (binary search).
+  function pointAt(path, d) {
+    let lo = 0;
+    let hi = path.length - 1;
+    while (hi - lo > 1) {
+      const mid = (lo + hi) >> 1;
+      if (path[mid].d < d) lo = mid;
+      else hi = mid;
+    }
+    const a = path[lo];
+    const b = path[hi];
+    const f = b.d > a.d ? (d - a.d) / (b.d - a.d) : 0;
+    return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
+  }
+  function drawTrajectory(route, t, c, m, clock) {
+    const path = route.path;
+    const z = route.zone;
+    // Path line
+    ctx.strokeStyle = rgba(c.onDark, 0.55);
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    path.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+    ctx.stroke();
+    // Dashed branch toward a future star
+    const [a, b] = route.branch;
+    ctx.setLineDash([5, 7]);
+    ctx.strokeStyle = rgba(c.onDark, 0.3);
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.quadraticCurveTo((a.x + b.x) / 2, Math.min(a.y, b.y) - 40, b.x, b.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle = rgba(c.motif2, 0.7);
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 6, 0, 6.283);
+    ctx.stroke();
+    // Small ticks on the stars the route passes through
+    for (const s of route.anchors) {
+      ctx.fillStyle = rgba(c.motif2, 0.9);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 2.2, 0, 6.283);
+      ctx.fill();
+    }
+    // Waypoint rings, leader lines, labels
+    ctx.font = `11px '${S.type.label}', ${FALLBACK(S.type.label)}`;
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '1px';
+    for (const w of route.waypoints) {
+      const { x, y } = w.star;
+      ctx.strokeStyle = rgba(c.motif2, 0.95);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x, y, w.size, 0, 6.283);
+      ctx.stroke();
+      if (!reduce) {
+        const k = ((t / 3200 + w.size / 10) % 1);
+        ctx.strokeStyle = rgba(c.motif2, 0.6 * (1 - k));
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(x, y, w.size * (0.6 + 1.8 * k), 0, 6.283);
+        ctx.stroke();
+      }
+      const L = placeLabel(x, y, ctx.measureText(w.label).width, z);
+      ctx.strokeStyle = rgba(c.muted, 0.6);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x + L.sx * w.size * 0.7, y + L.sy * w.size * 0.7);
+      ctx.lineTo(L.ex, L.ey);
+      ctx.stroke();
+      ctx.fillStyle = c.muted;
+      ctx.fillText(w.label, L.bx, L.by + 11);
+    }
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    // A probe drifting along the trajectory at a constant speed (px/s, real time),
+    // positioned by arc length so it moves smoothly at any speed, with a fading trail.
+    if (!reduce && m.probeSpeed > 0) {
+      const total = path.total;
+      const trail = m.trail;
+      const cycle = total + trail + 160; // short pause off-screen before the next pass
+      const head = ((clock / 1000) * m.probeSpeed) % cycle;
+      const step = 1.5;
+      for (let k = Math.floor(trail / step); k >= 1; k--) {
+        const dd = head - k * step;
+        if (dd < 0 || dd > total) continue;
+        const p = pointAt(path, dd);
+        const f = 1 - (k * step) / trail;
+        ctx.fillStyle = rgba(c.motif2, 0.55 * f * f);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 0.4 + 1.3 * f, 0, 6.283);
+        ctx.fill();
+      }
+      if (head <= total) {
+        const p = pointAt(path, head);
+        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 10);
+        g.addColorStop(0, rgba(c.motif2, 0.55));
+        g.addColorStop(1, rgba(c.motif2, 0));
+        ctx.fillStyle = g;
+        ctx.fillRect(p.x - 10, p.y - 10, 20, 20);
+        ctx.fillStyle = rgba(c.motif2, 1);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.4, 0, 6.283);
+        ctx.fill();
+      }
+    }
+  }
+
+  function frame(time) {
+    const m = S.motif;
+    const c = S.colors;
+    const animated =
+      !reduce &&
+      ((['glow', 'globe', 'stars', 'rings'].includes(m.kind) && m.speed > 0) ||
+        (m.kind === 'stars' && m.overlay === 'survey' && m.probeSpeed > 0));
+    if (animated || dirty) {
+      dirty = false;
+      const t = reduce ? 0 : time * (m.speed ?? 1);
+      ctx.clearRect(0, 0, W, H);
+      if (m.kind === 'glow') {
+        const breathe = 0.82 + 0.18 * Math.sin(t / 1400);
+        const R = Math.max(W, H) * m.size;
+        const g = ctx.createRadialGradient(W * m.posX, H * m.posY, 0, W * m.posX, H * m.posY, R * breathe);
+        g.addColorStop(0, rgba(c.motif, m.intensity));
+        g.addColorStop(1, rgba(c.motif, 0));
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+        const g2 = ctx.createRadialGradient(W * (m.posX - 0.12), H * 0.85, 0, W * (m.posX - 0.12), H * 0.85, R * 1.1);
+        g2.addColorStop(0, rgba(c.motif2, m.intensity * 1.4));
+        g2.addColorStop(1, rgba(c.motif2, 0));
+        ctx.fillStyle = g2;
+        ctx.fillRect(0, 0, W, H);
+      } else if (m.kind === 'globe') {
+        const pts = globePoints(m.count);
+        const R = Math.min(W, H * 1.1) * m.size;
+        const cx = W * m.posX;
+        const cy = H * m.posY;
+        const a = t * 0.00012;
+        const ca = Math.cos(a);
+        const sa = Math.sin(a);
+        const g = ctx.createRadialGradient(cx, cy - R * 0.5, 0, cx, cy, R * 1.5);
+        g.addColorStop(0, rgba(c.motif, 0.22 * m.intensity));
+        g.addColorStop(1, rgba(c.motif, 0));
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+        for (const [x, y, z, n] of pts) {
+          const rx = x * ca - z * sa;
+          const rz = x * sa + z * ca;
+          const depth = (rz + 1.4) / 2.4;
+          const band = Math.pow(Math.abs(y), 0.7);
+          const alpha = Math.min(1, (0.2 + 1.1 * band) * depth * (0.7 + 0.5 * n) * m.intensity);
+          ctx.fillStyle = rgba(y < 0 ? c.motif : c.motif2, alpha);
+          const sz = (0.5 + depth) * m.dot;
+          ctx.fillRect(cx + rx * R, cy + y * R, sz, sz);
+        }
+      } else if (m.kind === 'stars') {
+        const f = starField(m.density);
+        const plan = planRoute(f, copyZone(m.zoneMargin), m);
+        for (const s of f.list) {
+          // Anchor stars (on the route or in the constellation) shine steadily and a little brighter.
+          const anchor = plan.anchorSet.has(s) && (m.overlay === 'survey' || plan.constellation.includes(s));
+          const a = anchor ? 1 : reduce ? 0.6 : 0.35 + 0.45 * (0.5 + 0.5 * Math.sin((t / 1000) * s.s + s.p));
+          if (anchor) {
+            const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 9);
+            g.addColorStop(0, rgba(c.motif, 0.45 * m.intensity));
+            g.addColorStop(1, rgba(c.motif, 0));
+            ctx.fillStyle = g;
+            ctx.fillRect(s.x - 9, s.y - 9, 18, 18);
+          }
+          ctx.fillStyle = rgba(c.motif, a * Math.max(m.intensity, anchor ? 0.8 : 0));
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, anchor ? Math.max(s.r, 1.5) : s.r, 0, 6.283);
+          ctx.fill();
+        }
+        if (m.constellation && plan.constellation.length) {
+          const shape = plan.constellation;
+          ctx.strokeStyle = rgba(c.motif2, 0.4 * Math.max(0.5, m.intensity));
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          shape.forEach((s, i) => (i ? ctx.lineTo(s.x, s.y) : ctx.moveTo(s.x, s.y)));
+          ctx.stroke();
+        }
+        if (m.overlay === 'survey') drawTrajectory(plan, t, c, m, time);
+        if (m.showZone) {
+          const z = plan.zone;
+          ctx.setLineDash([4, 6]);
+          ctx.strokeStyle = 'rgba(255,90,90,0.8)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(z.l, z.t, z.r - z.l, z.b - z.t);
+          ctx.setLineDash([]);
+          ctx.fillStyle = 'rgba(255,90,90,0.9)';
+          ctx.font = '11px JetBrains Mono, monospace';
+          ctx.fillText(`keep-out zone · route: ${plan.mode}`, z.l + 6, z.t + 16);
+        }
+      } else if (m.kind === 'contours') {
+        ctx.drawImage(contourImage(m, c.motif), 0, 0, W, H);
+      } else if (m.kind === 'rings') {
+        const dx = Math.sin(t / 8000) * W * 0.03;
+        const dy = Math.cos(t / 9000) * H * 0.02;
+        const centers = [[0.75, 0.4, c.motif, m.intensity], [0.35, 0.95, c.motif2, m.intensity * 2.6]];
+        const maxR = Math.hypot(W, H);
+        for (const [x, y, col, a] of centers) {
+          ctx.strokeStyle = rgba(col, a);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let r = m.spacing; r < maxR; r += m.spacing) {
+            ctx.moveTo(W * x + dx + r, H * y + dy);
+            ctx.arc(W * x + dx, H * y + dy, r, 0, 6.283);
+          }
+          ctx.stroke();
+        }
+        // fade toward the text side
+        const fade = ctx.createLinearGradient(0, 0, W, 0);
+        fade.addColorStop(0, rgba(c.ink, 0.95));
+        fade.addColorStop(0.55, rgba(c.ink, 0));
+        ctx.fillStyle = fade;
+        ctx.fillRect(0, 0, W, H);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- Size readout + hide/show panel ----------
+  const app = document.querySelector('.app');
+  const floatCtl = document.getElementById('float-ctl');
+  const readoutEls = [document.getElementById('readout'), document.getElementById('readout-float')];
+  let lastReadout = '';
+  function updateReadout() {
+    const hr = hero.getBoundingClientRect();
+    const hl = document.getElementById('headline');
+    const cs = getComputedStyle(hl);
+    const lh = parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * S.type.lineHeight;
+    const lines = Math.max(1, Math.round(hl.getBoundingClientRect().height / lh));
+    const mode = S.motif.kind === 'stars' && route.mode ? route.mode : '—';
+    const size = fitInfo ? ` @ ${fitInfo.size}px${fitInfo.locked && !fitInfo.fitted ? ' (too narrow: wrapping)' : ''}` : '';
+    const text = `Hero ${Math.round(hr.width)} × ${Math.round(hr.height)} · route: ${mode} · headline: ${lines} line${lines === 1 ? '' : 's'}${size} · window ${innerWidth}`;
+    if (text !== lastReadout) {
+      lastReadout = text;
+      readoutEls.forEach((el) => (el.textContent = text));
+    }
+  }
+  setInterval(updateReadout, 250);
+  function setPanelHidden(hidden) {
+    app.classList.toggle('panel-hidden', hidden);
+    floatCtl.hidden = !hidden;
+    try {
+      localStorage.setItem('hero-tuner-panel-hidden', hidden ? '1' : '');
+    } catch {}
+    updateReadout();
+  }
+  document.getElementById('hide-panel').addEventListener('click', () => setPanelHidden(true));
+  document.getElementById('show-panel').addEventListener('click', () => setPanelHidden(false));
+  try {
+    if (localStorage.getItem('hero-tuner-panel-hidden')) setPanelHidden(true);
+  } catch {}
+
+  buildGroups();
+  apply();
+  requestAnimationFrame(frame);
+  updateReadout();
+</script>
