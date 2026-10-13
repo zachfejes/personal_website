@@ -58,16 +58,42 @@ Trade-off: writing prose in templates is a bit more verbose than Markdown. If a 
 
 ## Visual direction
 
+Baseline settled in the Hero Tuner; exact values in [`design/hero-baseline.json`](design/hero-baseline.json).
+The look is a warm "lamplit survey": Hearth's warmth with Field Notes' sense of intention.
+
 - **Mood:** warm, inviting, cozy, with a sense of wonder.
-- **Grain:** every band has a subtle film-grain texture (a tiled noise overlay), with one site-wide strength setting.
-- **Palette:** full-width sections alternating between three bands.
-  - Near-black / charcoal (e.g. `#151515`) with off-white text.
-  - Off-white / warm paper (e.g. `#F3F1EC`) with charcoal text.
-  - Dark green accent (e.g. `#1E4D3A`) with off-white text, used for emphasis sections and calls to action.
-  - Defined as CSS custom properties; a section picks its band with a class (`band--dark`, `band--light`, `band--accent`).
-- **Typography:** professional pairing, self-hosted for performance, final pick still open. Candidates: Inter or IBM Plex Sans for body, with a refined serif such as Source Serif 4 or Fraunces for headings.
-- **Motion:** scroll-reveal fade/slide-ins (IntersectionObserver), subtle parallax or hover effects on project cards, smooth anchor scrolling. Everything respects `prefers-reduced-motion`.
+- **Palette:** full-width sections alternating between three bands, defined as CSS custom properties;
+  a section picks its band with a class (`band--dark`, `band--light`, `band--accent`).
+
+  | Token        | Value     | Use                                                |
+  | ------------ | --------- | -------------------------------------------------- |
+  | Near-black   | `#141917` | Dark bands, hero                                   |
+  | Off-white    | `#E6E0D2` | Light bands, reading                               |
+  | Accent green | `#2F4B3C` | Accent bands, calls to action                      |
+  | Highlight    | `#E3A857` | Amber: accent words, buttons, waypoints, the probe |
+  | Text on dark | `#ECE5D6` | Body and headings on dark bands                    |
+  | Muted        | `#AAA99A` | Secondary text, labels                             |
+  | Starlight    | `#E9DCC4` | Star field                                         |
+  | Hero tint    | `#3A2A1C` | Warm lamplight glow in the hero, at 15%            |
+
+- **Typography** (self-hosted):
+  - Display: Bricolage Grotesque 400, line height 0.96, tracking +0.005em, soft drop shadow.
+  - Accent words: Instrument Serif italic, in the highlight color, at 1.06× the headline size.
+  - Body: Manrope. Labels and nav: JetBrains Mono, uppercase, tracking 0.17em.
+- **Fluid hero sizing:** headline line breaks are fixed by the copy; its size interpolates by hero
+  width from 2.1rem at 320px to 3.6rem at 1440px, and shrinks rather than wraps if a line won't fit.
+  The intro scales from 0.86rem to 1.4rem and wraps to the headline's width.
+- **Hero:** full screen height (nav + hero fill the viewport). Animated star field with a survey
+  trajectory threaded through real stars: waypoints, a dashed branch, and a probe drifting along
+  the route. The route avoids the text, running beside it when there's room and above/below it
+  when there isn't.
+- **Grain:** film grain on every band (strength 0.34, 340px tile).
+- **Depth:** bands cast soft shadows onto the band above (strength 0.27); corner radius 3px.
+- **Motion:** scroll-reveal fade/slide-ins (IntersectionObserver), subtle hover effects on project
+  cards, smooth anchor scrolling. Everything respects `prefers-reduced-motion`.
 - **Fixed theme:** the alternating bands are the design, so there is no light/dark mode toggle.
+- **Still to design:** mobile nav (links currently wrap on phones) and a shorter eyebrow on small
+  screens.
 
 ## Project pages: visual storytelling
 

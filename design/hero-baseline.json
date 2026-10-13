@@ -1,0 +1,73 @@
+{
+  "_note": "Hero baseline tuned in the Hero Tuner artifact (based on preset 'E2 Baseline \u00b7 fluid'). Source of truth for milestone 2 design tokens and the landing-page hero.",
+  "colors": {
+    "ink": "#141917",
+    "paper": "#e6e0d2",
+    "green": "#2f4b3c",
+    "highlight": "#e3a857",
+    "onDark": "#ece5d6",
+    "muted": "#aaa99a",
+    "motif": "#e9dcc4",
+    "motif2": "#e3a857",
+    "tint": "#3a2a1c"
+  },
+  "type": {
+    "accentFont": "Instrument Serif",
+    "accentScale": 1.06,
+    "shadowStrength": 0.39,
+    "shadowBlur": 9,
+    "shadowOffset": 2,
+    "shadowGlow": false,
+    "fluid": true,
+    "refSmall": 320,
+    "sizeSmall": 2.1,
+    "refLarge": 1440,
+    "sizeLarge": 3.6,
+    "ledeSmall": 0.86,
+    "ledeLarge": 1.4,
+    "display": "Bricolage Grotesque",
+    "displayWeight": 400,
+    "displayMax": 3.6,
+    "tracking": 0.005,
+    "lineHeight": 0.96,
+    "accentItalic": true,
+    "body": "Manrope",
+    "label": "JetBrains Mono",
+    "labelTracking": 0.17,
+    "navUpper": true
+  },
+  "layout": {
+    "copyWidth": 40,
+    "ribbonShadow": 0.27,
+    "ribbonOverlap": 0,
+    "heroFull": true,
+    "tintStrength": 15,
+    "valign": "center",
+    "align": "left",
+    "heroHeight": 34,
+    "textWidth": 15,
+    "radius": 3,
+    "tint": true
+  },
+  "grain": {
+    "amount": 0.34,
+    "scale": 340
+  },
+  "motif": {
+    "kind": "stars",
+    "overlay": "survey",
+    "intensity": 0.9,
+    "speed": 1.5,
+    "density": 3,
+    "constellation": false,
+    "probeSpeed": 53,
+    "trail": 140,
+    "sideMin": 35,
+    "zoneMargin": 20
+  },
+  "copy": {
+    "eyebrow": "Field notes from the world to the workbench",
+    "headline": "Motivated by *wonder*, | and the deep desire | to improve the world",
+    "lede": "A portfolio of projects and interactive write-ups: math, models, design, art, and the lessons learned."
+  }
+}
