@@ -150,6 +150,36 @@ Rebuild the old "Armada Scaling" write-up as the first project page and the refe
   - Possibly an input that predicts model size for a given canon length.
 - **Port:** the chart data and regression helper (`linearRegression.js`) carry over as typed TypeScript. Equations move from MathJax to KaTeX.
 
+## Project backlog
+
+Future write-ups to add after Armada Scaling. Tracking only: not scheduled yet. Topics double as
+draft tags for the project registry.
+
+| #   | Project                                 | Topics                                                                                                                    |
+| --- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 1   | The Mandalorian Cosplay                 | cosplay, CAD, 3D printing, fabrication, sewing, design, research, coding, electronics, props, Star Wars                   |
+| 2   | Generic Graphing Library                | coding, software, Angular, TypeScript, graph theory, multi-purpose, tooling, GUI, HMI, utility, math                      |
+| 3   | HI-SEAS Analog Mission                  | research, exploration, astronautics, space, physical, travel                                                              |
+| 4   | HI-SEAS Photogrammetry                  | research, study, photography, photogrammetry, machine learning, space, experiment, data                                   |
+| 5   | Mystery Novel                           | writing, fiction, science, detective, space, mystery                                                                      |
+| 6   | Armada Electronic Conversion            | electronics, CAD, design, 3D printing, modeling, Star Wars, miniatures, tabletop, fabrication                             |
+| 7   | Christmas Village                       | design, CAD, 3D printing, Christmas, miniatures                                                                           |
+| 8   | Modular Cave Terrain                    | design, CAD, 3D printing, research, fabrication, OpenForge 2.0, Dungeons & Dragons, D&D, DnD, miniatures, tabletop, TTRPG |
+| 9   | Hand Lamp                               | design, CAD, 3D printing, woodwork, fabrication, electronics                                                              |
+| 10  | Kodiak Dropship Model                   | design, research, 3D printing, CAD, Mass Effect, space, spaceship, science fiction, miniature, model kit                  |
+| 11  | Lavender Town Art                       | design, art, drawing, ink, perspective, exploration, Japan, Pokémon, creative                                             |
+| 12  | Kyoto Art                               | design, art, drawing, ink, perspective, travel, exploration, Japan                                                        |
+| 13  | Mew Carved Relief Art Piece             | design, CAD, 3D printing, art, fabrication, Pokémon                                                                       |
+| 14  | Ornithopter Model                       | design, CAD, 3D printing, fabrication, mechanics, kinetic                                                                 |
+| 15  | Pokémon Tissue Box Covers               | design, CAD, 3D printing, fabrication, Pokémon                                                                            |
+| 16  | Soap Dish                               | design, CAD, 3D printing, fabrication                                                                                     |
+| 17  | Tak Tile Set                            | board game, design, CAD, 3D printing, fabrication                                                                         |
+| 18  | Spider's Clasp Dicebox                  | design, CAD, 3D printing, fabrication, Dungeons & Dragons, D&D, DnD, dice, tabletop, TTRPG                                |
+| 19  | Portal Drawing Series                   | art, perspective, design, ink, illusion, creative                                                                         |
+| 20  | Curvilinear Perspective Investigation   | research, books, exploration, art, history, math, design                                                                  |
+| 21  | Untitled Art Nouveau Drawing            | research, art, design, ink, drawing, Art Nouveau, texture, motion                                                         |
+| 22  | Inconsistent Perspective Drawing Series | art, perspective, illusion, creative, ink, design                                                                         |
+
 ## Milestones
 
 1. ✅ **Scaffold & staging deploy:** Angular app with prerendering, environment configs, placeholder landing page, deployed to GitHub Pages.
@@ -167,7 +197,7 @@ Rebuild the old "Armada Scaling" write-up as the first project page and the refe
 - Final font pairing and exact palette values (decide in milestone 2 with visual mock-ups).
 - Charting library: leaning D3, since the storytelling visuals above need custom drawing that
   Chart.js can't do.
-- Which projects follow Armada?
+- Which backlog projects to write up first, after Armada?
 
 ## Future ideas
 
