@@ -2,27 +2,23 @@ import { Component, inject } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 import { environment } from '../environments/environment';
+import { SiteFooter } from './layout/site-footer';
+import { SiteHeader } from './layout/site-header';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, SiteHeader, SiteFooter],
   selector: 'app-root',
   styleUrl: './app.scss',
   template: `
-    <main>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <app-site-header />
+    <main id="main">
       <router-outlet />
     </main>
-    <footer class="footer">
-      <p>© {{ year }} Zach Fejes</p>
-      @if (environmentName !== 'production') {
-        <p class="footer__env">{{ environmentName }} build</p>
-      }
-    </footer>
+    <app-site-footer />
   `,
 })
 export class App {
-  protected readonly year = new Date().getFullYear();
-  protected readonly environmentName = environment.name;
-
   constructor() {
     if (!environment.indexable) {
       inject(Meta).updateTag({ name: 'robots', content: 'noindex, nofollow' });

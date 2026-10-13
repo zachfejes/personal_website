@@ -1,0 +1,51 @@
+// Design tokens. Values come from design/hero-baseline.json (tuned in the Hero Tuner).
+:root {
+  // Palette
+  --color-ink: #141917; // near-black: dark bands, hero
+  --color-paper: #e6e0d2; // off-white: light bands, reading
+  --color-green: #2f4b3c; // accent bands, calls to action
+  --color-highlight: #e3a857; // amber: accent words, buttons, waypoints, probe
+  --color-highlight-on-paper: #8a5a1c; // amber darkened for text on the light band
+  --color-on-dark: #ece5d6; // text on dark/green bands
+  --color-muted: #aaa99a; // secondary text, labels
+  --color-starlight: #e9dcc4; // star field
+  --color-tint: #3a2a1c; // lamplight glow in the hero
+  --tint-strength: 15%;
+
+  // Type
+  --font-display: 'Bricolage Grotesque Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-accent: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --font-body: 'Manrope Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-label: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --display-weight: 400;
+  --display-tracking: 0.005em;
+  --display-line-height: 0.96;
+  --display-shadow: 0 2px 0 rgb(0 0 0 / 0.08);
+  --accent-scale: 1.06;
+  --label-tracking: 0.17em;
+
+  // Hero sizing: headline/intro sizes interpolate by hero width between these references.
+  --hero-ref-small: 320;
+  --hero-ref-large: 1440;
+  --hero-headline-small: 2.1rem;
+  --hero-headline-large: 3.6rem;
+  --hero-lede-small: 1rem;
+  --hero-lede-large: 1.4rem;
+
+  // Surfaces
+  --radius: 3px;
+  --grain: 0.34;
+  --grain-size: 340px;
+  --ribbon-shadow: 0.15;
+  --header-height: 4rem;
+
+  // Layout: content caps at --content-max; full-bleed backgrounds keep going.
+  --content-max: 1920px;
+  --gutter: max(16px, min(6vw, 86px));
+  --pad-inline: max(var(--gutter), calc((100% - var(--content-max)) / 2 + var(--gutter)));
+
+  // Film grain texture (tiled fractal noise).
+  --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+
+  color-scheme: dark;
+}

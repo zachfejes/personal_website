@@ -1,0 +1,15 @@
+<canvas #sky class="hero__sky" aria-hidden="true"></canvas>
+<div #copy class="hero__copy">
+  <p class="eyebrow">{{ eyebrow() }}</p>
+  <h1 #headlineEl class="hero__headline">
+    @for (line of lines(); track $index) {
+      <!-- Kept on one line: whitespace between segments would show as a stray space. The space between
+           lines is invisible (lines are blocks) but keeps words apart for screen readers. -->
+      <!-- prettier-ignore -->
+      <span class="hero__line">@for (seg of line; track $index) {<span [class.accent]="seg.accent">{{ seg.text }}</span>}</span
+      >{{ $last ? '' : ' ' }}
+    }
+  </h1>
+  <p class="hero__lede">{{ lede() }}</p>
+  <div class="hero__actions btn-row"><ng-content /></div>
+</div>

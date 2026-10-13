@@ -1,0 +1,134 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  overflow: visible;
+  // Sticky above everything, so it casts its own shadow onto the band beneath it.
+  box-shadow: 0 12px 26px -12px rgb(0 0 0 / var(--ribbon-shadow));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: var(--header-height);
+  padding-inline: var(--pad-inline);
+}
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: var(--display-tracking);
+  text-decoration: none;
+  text-shadow: var(--display-shadow);
+}
+
+.nav ul {
+  display: flex;
+  gap: 1.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav a {
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--color-muted);
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--color-on-dark);
+  }
+}
+
+.menu-toggle {
+  display: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-right: -0.6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.menu-icon,
+.menu-icon::before,
+.menu-icon::after {
+  display: block;
+  width: 1.25rem;
+  height: 1.5px;
+  margin-inline: auto;
+  background: currentColor;
+  transition: transform 0.2s ease;
+}
+
+.menu-icon {
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+  }
+
+  &::before {
+    top: -6px;
+  }
+
+  &::after {
+    top: 6px;
+  }
+
+  &.is-open {
+    background: transparent;
+
+    &::before {
+      transform: translateY(6px) rotate(45deg);
+    }
+
+    &::after {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+  }
+}
+
+// Phones: links move into a drop-down panel behind a menu button.
+@media (max-width: 640px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .nav {
+    display: none;
+    position: absolute;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    padding: 0.5rem var(--gutter) 1.25rem;
+    background: var(--color-ink);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-on-dark) 12%, transparent);
+
+    &.is-open {
+      display: block;
+    }
+
+    ul {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    a {
+      display: block;
+      padding-block: 0.85rem;
+      font-size: 0.85rem;
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "_note": "Hero baseline tuned in the Hero Tuner artifact (based on preset 'E2 Baseline \u00b7 fluid'). Source of truth for milestone 2 design tokens and the landing-page hero.",
+  "_note": "Final hero settings from the Hero Tuner (based on preset 'E3 Experiments'), chosen 2026-10-13. Source of truth for the milestone 2 design tokens and hero. The earlier E2-based baseline is in git history.",
   "colors": {
     "ink": "#141917",
     "paper": "#e6e0d2",
@@ -14,8 +14,8 @@
   "type": {
     "accentFont": "Instrument Serif",
     "accentScale": 1.06,
-    "shadowStrength": 0.39,
-    "shadowBlur": 9,
+    "shadowStrength": 0.08,
+    "shadowBlur": 0,
     "shadowOffset": 2,
     "shadowGlow": false,
     "fluid": true,
@@ -23,7 +23,7 @@
     "sizeSmall": 2.1,
     "refLarge": 1440,
     "sizeLarge": 3.6,
-    "ledeSmall": 0.86,
+    "ledeSmall": 1,
     "ledeLarge": 1.4,
     "display": "Bricolage Grotesque",
     "displayWeight": 400,
@@ -38,11 +38,12 @@
   },
   "layout": {
     "copyWidth": 40,
-    "ribbonShadow": 0.27,
+    "ribbonShadow": 0.15,
     "ribbonOverlap": 0,
     "heroFull": true,
     "tintStrength": 15,
     "valign": "center",
+    "contentMax": 1920,
     "align": "left",
     "heroHeight": 34,
     "textWidth": 15,
@@ -63,7 +64,10 @@
     "probeSpeed": 53,
     "trail": 140,
     "sideMin": 35,
-    "zoneMargin": 20
+    "zoneMargin": 20,
+    "routeShape": "under",
+    "narrowRoute": "hide",
+    "routeEnd": "fade"
   },
   "copy": {
     "eyebrow": "Field notes from the world to the workbench",

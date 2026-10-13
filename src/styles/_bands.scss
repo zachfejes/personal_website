@@ -1,0 +1,46 @@
+// Full-width bands. Each band has film grain, and casts a soft shadow onto the band above it
+// (bands paint in document order, so a later band's shadow lands on the earlier one).
+.band {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  box-shadow: 0 -14px 30px -10px rgb(0 0 0 / var(--ribbon-shadow));
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background-image: var(--noise);
+    background-size: var(--grain-size) var(--grain-size);
+    mix-blend-mode: overlay;
+    opacity: var(--grain);
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.band--dark {
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+}
+
+.band--light {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  color-scheme: light;
+}
+
+.band--accent {
+  background: var(--color-green);
+  color: var(--color-on-dark);
+}
+
+// Standard vertical rhythm for content sections.
+.section {
+  padding-block: clamp(3rem, 7vw, 5.5rem);
+}

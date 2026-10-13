@@ -5,18 +5,25 @@ import { RouterLink } from '@angular/router';
   selector: 'app-not-found-page',
   imports: [RouterLink],
   template: `
-    <section class="band band--dark">
-      <h1>Page not found</h1>
-      <p>The page you're looking for doesn't exist or has moved.</p>
-      <p><a routerLink="/">Back to the home page</a></p>
+    <section class="band band--dark section not-found">
+      <div class="container">
+        <p class="eyebrow">Off the map</p>
+        <h1 class="section-title">Page not found</h1>
+        <p class="section-lede">The page you're looking for doesn't exist or has moved.</p>
+        <a class="btn btn--primary" routerLink="/">Back to the home page</a>
+      </div>
     </section>
   `,
   styles: `
-    section {
-      min-height: 60vh;
+    .not-found {
+      flex: 1;
+      display: grid;
+      align-content: center;
     }
-    a {
-      color: var(--color-accent-bright);
+    .container {
+      display: grid;
+      gap: 1rem;
+      justify-items: start;
     }
   `,
 })

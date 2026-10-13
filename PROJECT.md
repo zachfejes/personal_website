@@ -152,8 +152,8 @@ Rebuild the old "Armada Scaling" write-up as the first project page and the refe
 
 ## Milestones
 
-1. **Scaffold & staging deploy:** Angular app with prerendering, environment configs, placeholder landing page, deployed to GitHub Pages.
-2. **Design system:** tokens, fonts, color bands, header/nav/footer, scroll-reveal animations.
+1. ✅ **Scaffold & staging deploy:** Angular app with prerendering, environment configs, placeholder landing page, deployed to GitHub Pages.
+2. ✅ **Design system:** tokens, fonts, color bands, header/nav/footer, scroll-reveal animations.
 3. **Landing page:** long-scroll home with all sections (placeholder copy is fine).
 4. **Project framework:** registry, projects grid, article building blocks, routing and prerendering per slug.
 5. **Armada Scaling:** port the first project using the framework.
