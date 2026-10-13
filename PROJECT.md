@@ -179,6 +179,8 @@ draft tags for the project registry.
 | 20  | Curvilinear Perspective Investigation   | research, books, exploration, art, history, math, design                                                                  |
 | 21  | Untitled Art Nouveau Drawing            | research, art, design, ink, drawing, Art Nouveau, texture, motion                                                         |
 | 22  | Inconsistent Perspective Drawing Series | art, perspective, illusion, creative, ink, design                                                                         |
+| 23  | PADI Open Water Certification           | scuba, exploration, travel, learning, training                                                                            |
+| 24  | PADI Advanced Open Water Certification  | scuba, exploration, travel, learning, training                                                                            |
 
 ## Milestones
 

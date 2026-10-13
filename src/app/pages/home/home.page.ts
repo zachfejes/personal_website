@@ -57,9 +57,9 @@ export class HomePage {
   ];
 
   protected readonly facts = [
-    { label: 'Based in', value: 'Lorem, Ipsum' },
-    { label: 'Currently', value: 'Dolor sit amet' },
-    { label: 'Focus', value: 'Data · Design · Engineering' },
-    { label: 'Write-ups', value: '01' },
+    { label: 'Based in', value: 'Mississauga, Ontario' },
+    { label: 'Currently', value: 'Ground Segment Architect, MDA Space' },
+    { label: 'Focus', value: 'Space robotics · Ground systems · Software architecture' },
+    { label: 'Goal', value: 'Astronaut' },
   ];
 }
