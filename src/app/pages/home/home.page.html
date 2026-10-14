@@ -9,8 +9,8 @@
       <p class="eyebrow">Selected work</p>
       <h2 id="work-title" class="section-title">Projects &amp; write-ups</h2>
       <p class="section-lede">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante
-        venenatis dapibus, posuere velit aliquet.
+        Things I’ve built, studied and explored. Write-ups are on the way, starting with Armada
+        Scaling.
       </p>
     </header>
     <div class="cards">
@@ -67,36 +67,106 @@
                   <circle cx="300" cy="100" r="2.5" class="fill-accent" />
                 </svg>
               }
-              @case ('flows') {
+              @case ('dive') {
                 <svg viewBox="0 0 400 225">
-                  <g fill="none" class="stroke-light" stroke-width="1.1">
-                    <path d="M40 20 C 40 120, 200 100, 200 205" />
-                    <path d="M110 20 C 110 130, 190 100, 200 205" />
-                    <path d="M290 20 C 290 130, 210 110, 200 205" />
-                    <path d="M360 20 C 360 120, 220 100, 200 205" />
+                  <g fill="none" class="stroke-light">
+                    <path d="M0 40 C 60 34, 120 46, 180 40 S 300 34, 400 40" />
+                    <path
+                      d="M0 52 C 70 47, 130 57, 200 52 S 330 47, 400 52"
+                      stroke-dasharray="3 6"
+                    />
                   </g>
                   <path
-                    d="M180 20 C 180 120, 215 110, 200 205"
+                    d="M40 40 L 90 120 L 150 120 L 190 170 L 260 170 L 300 110 L 340 110 L 370 40"
+                    fill="none"
+                    class="stroke-accent"
+                    stroke-width="2"
+                  />
+                  <g class="fill-light">
+                    <circle cx="90" cy="120" r="3" />
+                    <circle cx="190" cy="170" r="3" />
+                    <circle cx="300" cy="110" r="3" />
+                  </g>
+                  <line x1="225" y1="170" x2="225" y2="200" class="stroke-muted" />
+                  <text x="232" y="204" class="label">max depth 30 m</text>
+                  <g class="fill-muted">
+                    <circle cx="120" cy="96" r="2" />
+                    <circle cx="126" cy="84" r="1.6" />
+                    <circle cx="131" cy="73" r="1.2" />
+                  </g>
+                </svg>
+              }
+              @case ('graph') {
+                <svg viewBox="0 0 400 225">
+                  <g class="stroke-light" stroke-width="1.2">
+                    <line x1="70" y1="60" x2="160" y2="110" />
+                    <line x1="160" y1="110" x2="110" y2="180" />
+                    <line x1="160" y1="110" x2="260" y2="70" />
+                    <line x1="260" y1="70" x2="340" y2="130" />
+                    <line x1="260" y1="70" x2="250" y2="170" />
+                    <line x1="110" y1="180" x2="250" y2="170" />
+                    <line x1="340" y1="130" x2="250" y2="170" />
+                  </g>
+                  <path
+                    d="M70 60 L160 110 L260 70 L340 130"
                     fill="none"
                     class="stroke-accent"
                     stroke-width="2.2"
                   />
                   <g class="fill-light">
-                    <circle cx="40" cy="20" r="3" />
-                    <circle cx="110" cy="20" r="3" />
-                    <circle cx="290" cy="20" r="3" />
-                    <circle cx="360" cy="20" r="3" />
+                    <circle cx="110" cy="180" r="6" />
+                    <circle cx="250" cy="170" r="6" />
                   </g>
-                  <circle cx="180" cy="20" r="4" class="fill-accent" />
-                  <circle cx="200" cy="205" r="6" class="fill-light" />
+                  <g class="fill-accent">
+                    <circle cx="70" cy="60" r="7" />
+                    <circle cx="160" cy="110" r="6" />
+                    <circle cx="260" cy="70" r="6" />
+                    <circle cx="340" cy="130" r="7" />
+                  </g>
+                </svg>
+              }
+              @case ('visor') {
+                <svg viewBox="0 0 400 225">
+                  <g fill="none" class="stroke-light" stroke-width="1.2">
+                    <path d="M140 200 V 90 C 140 45, 260 45, 260 90 V 200" />
+                    <path d="M150 200 L 150 175 L 175 160 M250 200 L 250 175 L 225 160" />
+                    <line x1="100" y1="200" x2="300" y2="200" stroke-dasharray="3 5" />
+                  </g>
+                  <path
+                    d="M155 100 H 245 V 116 H 210 V 160 H 190 V 116 H 155 Z"
+                    class="fill-accent"
+                  />
+                  <line x1="260" y1="80" x2="300" y2="56" class="stroke-muted" />
+                  <circle cx="300" cy="56" r="2.5" class="fill-muted" />
+                  <text x="306" y="52" class="label">beskar</text>
+                </svg>
+              }
+              @case ('tiles') {
+                <svg viewBox="0 0 400 225">
+                  <g fill="none" class="stroke-light" stroke-width="1.1">
+                    <path d="M200 40 L 300 90 L 200 140 L 100 90 Z" />
+                    <path d="M150 65 L 250 115 M250 65 L 150 115" />
+                    <path d="M100 90 V 120 L 200 170 L 300 120 V 90 M200 140 V 170" />
+                  </g>
+                  <path
+                    d="M150 78 C 170 70, 190 84, 205 78 S 235 92, 252 100"
+                    fill="none"
+                    class="stroke-accent"
+                    stroke-width="2"
+                  />
+                  <g class="fill-accent">
+                    <circle cx="150" cy="78" r="3" />
+                    <circle cx="252" cy="100" r="3" />
+                  </g>
+                  <text x="306" y="96" class="label">2″ grid</text>
                 </svg>
               }
             }
           </div>
           <div class="card__body">
             <p class="card__meta">
-              <span>{{ project.year }}</span
-              ><span>{{ project.category }}</span>
+              <span>{{ project.category }}</span
+              ><span>{{ project.status }}</span>
             </p>
             <h3 class="card__title">{{ project.title }}</h3>
             <p class="card__summary">{{ project.summary }}</p>
@@ -119,18 +189,13 @@
       <p class="eyebrow">About</p>
       <h2 id="about-title" class="section-title">A little about me</h2>
       <p>
-        I'm a software architect in the space industry. At MDA Space I'm the Ground Segment
-        Architect, setting the direction and design for the ground systems of several programs. For
-        the past five years I've led the ground software architecture for Canadarm3, the robotic arm
-        Canada is building for Gateway, the international space station planned to orbit the Moon:
-        the software that mission control on Earth, and crew aboard the station, use to operate it.
+        I'm a software architect in the space industry, working as the Ground Segment Architect at
+        MDA Space. For the past five years I've led the ground software architecture for Canadarm3,
+        Canada's robotic arm for the Gateway lunar space station.
       </p>
       <p>
-        My goal is to become an astronaut, and to help build what humanity needs to live and explore
-        beyond Earth. I trained as an electrical engineer, moved into software because it let me
-        experiment faster, and have co-founded three companies along the way. Outside of work I draw
-        in ink and pencil, model in Blender, play piano, read constantly, and pick up new skills
-        wherever I can.
+        My goal is to become an astronaut, and to help humanity explore beyond Earth. Outside of
+        work I draw, design and 3D print things, play piano, and am always learning something new.
       </p>
       <a class="btn btn--primary" routerLink="/" fragment="about">More about me</a>
     </div>

@@ -10,8 +10,13 @@
 // Project cards
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-  gap: clamp(1rem, 2vw, 1.5rem);
+  --card-gap: clamp(1rem, 2vw, 1.5rem);
+  // At most three columns, so six featured projects read as two even rows.
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, max(18rem, (100% - 2 * var(--card-gap)) / 3)), 1fr)
+  );
+  gap: var(--card-gap);
 }
 
 .card {

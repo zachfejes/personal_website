@@ -181,6 +181,7 @@ draft tags for the project registry.
 | 22  | Inconsistent Perspective Drawing Series | art, perspective, illusion, creative, ink, design                                                                         |
 | 23  | PADI Open Water Certification           | scuba, exploration, travel, learning, training                                                                            |
 | 24  | PADI Advanced Open Water Certification  | scuba, exploration, travel, learning, training                                                                            |
+| 25  | Running Training                        | running, training, fitness                                                                                                |
 
 ## Milestones
 

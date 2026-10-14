@@ -7,17 +7,12 @@ version is for the About / Resume page (milestone 6).
 
 **Title:** A little about me
 
-I'm a software architect in the space industry. At MDA Space I'm the Ground Segment Architect,
-setting the direction and design for the ground systems of several programs. For the past five
-years I've led the ground software architecture for Canadarm3, the robotic arm Canada is building
-for Gateway, the international space station planned to orbit the Moon: the software that mission
-control on Earth, and crew aboard the station, use to operate it.
+I'm a software architect in the space industry, working as the Ground Segment Architect at MDA
+Space. For the past five years I've led the ground software architecture for Canadarm3, Canada's
+robotic arm for the Gateway lunar space station.
 
-My goal is to become an astronaut, and to help build what humanity needs to live and explore
-beyond Earth. I trained as an electrical engineer, moved into software because it let me
-experiment faster, and have co-founded three companies along the way. Outside of work I draw in
-ink and pencil, model in Blender, play piano, read constantly, and pick up new skills wherever I
-can.
+My goal is to become an astronaut, and to help humanity explore beyond Earth. Outside of work I
+draw, design and 3D print things, play piano, and am always learning something new.
 
 **Facts**
 
