@@ -238,7 +238,8 @@ the hero); fix them in the same change that turns the gates on, so they start gr
 
 1. ✅ **Scaffold & staging deploy:** Angular app with prerendering, environment configs, placeholder landing page, deployed to GitHub Pages.
 2. ✅ **Design system:** tokens, fonts, color bands, header/nav/footer, scroll-reveal animations.
-3. **Landing page:** long-scroll home with all sections (placeholder copy is fine).
+3. ✅ **Landing page:** long-scroll home with hero, featured projects, About and Contact. The
+   featured-project summaries are drafts, to be written alongside each project's write-up.
 4. **Engineering workflow:** set up the branching strategy, CI gates on pull requests and the
    branch ruleset described in [Engineering workflow](#engineering-workflow-milestone-4), and fix
    whatever the stricter checks flag. From here on, every change lands through a pull request;
