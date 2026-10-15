@@ -183,6 +183,57 @@ draft tags for the project registry.
 | 24  | PADI Advanced Open Water Certification  | scuba, exploration, travel, learning, training                                                                            |
 | 25  | Running Training                        | running, training, fitness                                                                                                |
 
+## Engineering workflow (planned)
+
+Not set up yet. Once the site has more shape, we'll add more rigor to how changes land: a
+gitflow-like branching strategy, with CI-enforced gates on every merge request.
+
+### Branching
+
+- `master`: what's deployed. Protected: no direct pushes or force-pushes; changes arrive only
+  through merged pull requests.
+- `develop` (optional, gitflow-style): an integration branch that feature branches merge into. It
+  would get its own preview deploy, and `master` would be updated by release merges. Decide when
+  setting this up whether the extra branch earns its keep for a one-person site, or whether
+  short-lived branches straight into `master` are enough.
+- Short-lived branches per change: `feature/…`, `fix/…`, `content/…`, `chore/…`, plus
+  `release/…` / `hotfix/…` if we adopt `develop`.
+- Every change goes through a pull request, and merges only once the required checks are green.
+
+### CI gates on pull requests
+
+Split the current workflow into a `checks` workflow that runs on pull requests, and a deploy
+workflow that runs only on the protected branch(es). Required checks:
+
+1. **Format:** Prettier.
+2. **Lint:** ESLint with the type-aware typescript-eslint rule sets (no floating promises, no
+   unsafe `any`, no unnecessary conditions), plus Angular rules (prefer `OnPush`, no `innerHTML`
+   bindings) and the template accessibility rules already in place.
+3. **Types:** TypeScript `strict` and Angular `strictTemplates`, set explicitly in `tsconfig.json`.
+4. **Styles:** Stylelint for SCSS (invalid properties, unknown custom properties, typos).
+5. **Spelling (optional):** cspell over the copy.
+6. **Tests:** unit tests, later with a coverage threshold.
+7. **Build:** staging and production builds both succeed.
+8. **Dependencies:** `npm audit --omit=dev` (fail on high severity) and GitHub dependency review
+   on PRs (new vulnerable or badly licensed dependencies).
+9. **Security:** CodeQL code scanning for the TypeScript.
+
+Enforced with a GitHub **branch ruleset** on `master` (and `develop`, if used): require a pull
+request, require the checks above to pass, block direct and force pushes. Rulesets are free for
+public repositories. **Dependabot** opens weekly dependency-update PRs, which go through the same
+gates.
+
+### Later
+
+- **Lighthouse CI** against the built site (performance, accessibility, SEO budgets): once there
+  are real pages, around milestone 4.
+- **Coverage thresholds** for unit tests.
+- Probably skip: SonarCloud (mostly duplicates the above at this size) and pre-commit hooks (CI is
+  the real gate), unless wanted later.
+
+Expect the stricter lint and type rules to flag a few existing issues (mostly canvas/DOM code in
+the hero); fix them in the same change that turns the gates on, so they start green.
+
 ## Milestones
 
 1. ✅ **Scaffold & staging deploy:** Angular app with prerendering, environment configs, placeholder landing page, deployed to GitHub Pages.
