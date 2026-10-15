@@ -12,7 +12,12 @@
     "test:ci": "ng test --watch=false",
     "lint": "ng lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "lint:styles": "stylelint \"src/**/*.scss\"",
+    "spellcheck": "cspell --no-progress --gitignore \"**/*.{ts,html,scss,md,json,yml}\"",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.spec.json --noEmit",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "check": "npm run format:check && npm run lint && npm run lint:styles && npm run spellcheck && npm run typecheck && npm run test:ci && npm run build && npm run build:staging"
   },
   "private": true,
   "packageManager": "npm@11.19.0",
@@ -39,9 +44,12 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.0.0",
     "angular-eslint": "22.6.0",
+    "cspell": "^10.4.0",
     "eslint": "^10.12.0",
     "jsdom": "^30.0.0",
     "prettier": "^3.8.1",
+    "stylelint": "^17.16.0",
+    "stylelint-config-standard-scss": "^17.0.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "8.71.0",
     "vitest": "^5.0.0"

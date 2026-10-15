@@ -4,6 +4,7 @@
   top: 0;
   z-index: 20;
   overflow: visible;
+
   // Sticky above everything, so it casts its own shadow onto the band beneath it.
   box-shadow: 0 12px 26px -12px rgb(0 0 0 / var(--ribbon-shadow));
 }
@@ -66,7 +67,7 @@
   width: 1.25rem;
   height: 1.5px;
   margin-inline: auto;
-  background: currentColor;
+  background: currentcolor;
   transition: transform 0.2s ease;
 }
 
@@ -101,7 +102,7 @@
 }
 
 // Phones: links move into a drop-down panel behind a menu button.
-@media (max-width: 640px) {
+@media (width <= 640px) {
   .menu-toggle {
     display: block;
   }

@@ -35,7 +35,7 @@ describe('App', () => {
     const links = (fixture.nativeElement as HTMLElement).querySelectorAll(
       'nav[aria-label="Main"] a',
     );
-    expect(Array.from(links).map((a) => a.textContent?.trim())).toEqual([
+    expect(Array.from(links).map((a) => a.textContent.trim())).toEqual([
       'Projects',
       'About',
       'Contact',

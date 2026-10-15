@@ -76,7 +76,7 @@ export class Hero {
             route: { shape: 'under', end: 'fade', sideMin: 35, labels: this.waypoints() },
           },
         );
-        document.fonts?.ready.then(() => renderer?.refresh());
+        void document.fonts.ready.then(() => renderer?.refresh());
       } catch {
         // No 2D canvas: the hero still works as plain text.
       }
