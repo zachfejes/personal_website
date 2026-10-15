@@ -25,7 +25,7 @@ export class HomePage {
     lede: 'A portfolio of projects and interactive write-ups: math, models, design, art, and the lessons learned.',
   };
 
-  // Featured projects (draft summaries) until the project registry lands in milestone 4.
+  // Featured projects (draft summaries) until the project registry lands in milestone 5.
   protected readonly projects: ProjectTeaser[] = [
     {
       title: 'Armada Scaling',

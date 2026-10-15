@@ -1,7 +1,7 @@
 # About: draft copy
 
 Working draft for editing. The short version is live in the home page's About section; the long
-version is for the About / Resume page (milestone 6).
+version is for the About / Resume page (milestone 7).
 
 ## Short version (home page)
 

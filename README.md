@@ -33,4 +33,4 @@ Output goes to `dist/personal-website/browser/`. Per-environment settings live i
 - **Staging:** every push to `master` runs `.github/workflows/deploy-staging.yml`, which checks
   formatting, lints, tests, builds, and deploys to GitHub Pages. Pull requests run the same checks
   without deploying.
-- **Production:** not set up yet (milestone 8 in `PROJECT.md`).
+- **Production:** not set up yet (milestone 9 in `PROJECT.md`).

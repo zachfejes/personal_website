@@ -183,9 +183,9 @@ draft tags for the project registry.
 | 24  | PADI Advanced Open Water Certification  | scuba, exploration, travel, learning, training                                                                            |
 | 25  | Running Training                        | running, training, fitness                                                                                                |
 
-## Engineering workflow (planned)
+## Engineering workflow (milestone 4)
 
-Not set up yet. Once the site has more shape, we'll add more rigor to how changes land: a
+Scheduled as milestone 4, before the project framework. We'll add more rigor to how changes land: a
 gitflow-like branching strategy, with CI-enforced gates on every merge request.
 
 ### Branching
@@ -226,7 +226,7 @@ gates.
 ### Later
 
 - **Lighthouse CI** against the built site (performance, accessibility, SEO budgets): once there
-  are real pages, around milestone 4.
+  are real pages, from milestone 5 onward.
 - **Coverage thresholds** for unit tests.
 - Probably skip: SonarCloud (mostly duplicates the above at this size) and pre-commit hooks (CI is
   the real gate), unless wanted later.
@@ -239,16 +239,20 @@ the hero); fix them in the same change that turns the gates on, so they start gr
 1. ✅ **Scaffold & staging deploy:** Angular app with prerendering, environment configs, placeholder landing page, deployed to GitHub Pages.
 2. ✅ **Design system:** tokens, fonts, color bands, header/nav/footer, scroll-reveal animations.
 3. **Landing page:** long-scroll home with all sections (placeholder copy is fine).
-4. **Project framework:** registry, projects grid, article building blocks, routing and prerendering per slug.
-5. **Armada Scaling:** port the first project using the framework.
-6. **About / Resume:** bio, experience timeline, skills, PDF download.
-7. **Polish:** SEO, sitemap, accessibility pass, Lighthouse performance check, favicon and social preview images.
-8. **Production:** choose a host, connect the domain, add the production deploy workflow.
+4. **Engineering workflow:** set up the branching strategy, CI gates on pull requests and the
+   branch ruleset described in [Engineering workflow](#engineering-workflow-milestone-4), and fix
+   whatever the stricter checks flag. From here on, every change lands through a pull request;
+   the project framework and Armada Scaling are the first real test of the branching strategy and
+   of unit-testing special features (interactive charts, fits, math).
+5. **Project framework:** registry, projects grid, article building blocks, routing and prerendering per slug.
+6. **Armada Scaling:** port the first project using the framework.
+7. **About / Resume:** bio, experience timeline, skills, PDF download.
+8. **Polish:** SEO, sitemap, accessibility pass, Lighthouse performance check, favicon and social preview images.
+9. **Production:** choose a host, connect the domain, add the production deploy workflow.
 
 ## Open questions
 
-- Which production host? (Decide by milestone 8; nothing earlier depends on it.)
-- Final font pairing and exact palette values (decide in milestone 2 with visual mock-ups).
+- Which production host? (Decide by milestone 9; nothing earlier depends on it.)
 - Charting library: leaning D3, since the storytelling visuals above need custom drawing that
   Chart.js can't do.
 - Which backlog projects to write up first, after Armada?
