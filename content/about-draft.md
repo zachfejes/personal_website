@@ -7,12 +7,14 @@ version is for the About / Resume page (milestone 7).
 
 **Title:** A little about me
 
-I'm a software architect in the space industry, working as the Ground Segment Architect at MDA
-Space. For the past five years I've led the ground software architecture for Canadarm3, Canada's
-robotic arm for the Gateway lunar space station.
+I'm a trained electrical engineerkinr turned software architect working in the industry I care most
+about: space. I have always dreamed of becoming an astronaut, and I'm still working toward that
+goal each day.
 
-My goal is to become an astronaut, and to help humanity explore beyond Earth. Outside of work I
-draw, design and 3D print things, play piano, and am always learning something new.
+For the past five years I've been the Ground Software Architect at MDA Space for the Canadarm3
+Program, Canada's robotic arm for the Lunar Gateway space station. More recently I've been
+working on a variety of Programs aimed at the Lunar Surface, Cis-Lunar Space, and LEO/GEO
+destinations.
 
 **Facts**
 
@@ -55,8 +57,39 @@ I was born and raised in Toronto, and now live in Mississauga, Ontario.
 
 ## Notes for editing
 
-- Gateway / Canadarm3 status: the copy says Canadarm3 "is being built" for Gateway, "planned to
-  orbit the Moon". Adjust the tense if the program's status has changed.
-- Other programs are deliberately unnamed ("several programs").
+- Gateway / Canadarm3 status: the Lunar Gateway space station program has been paused by NASA and,
+  consequently, all partner government agencies have also paused/re-evaluated the resources/money/
+  time they have already committed to this project. For Canada, this means Canadarm3. Technically,
+  the Gateway Program has not been cancelled, but it is paused (this is public information).
+- Other programs are deliberately unnamed ("several programs"), my work involves some level of
+  non-public-facing information.
+- My partner's name is Ellen, she is a web developer, and we've been seeing each other since February
+  8, 2026
+- My current working skill set is that of a Software Architect and a Systems Architect - I design
+  complex, distributed systems, manage relationships and knowledge with other engineering disciplines
+  (Guidance Navigation and Control, Mechanical Engineering, Systems Engineering, Thermal Engineering,
+  Electrical Engineering)
+- I have a bachelors degree (BASc.) in Electrical Engineering from the University of Toronto, class of
+  2014
+- I have a deep love for physics, and my academic specializations were in Electromagnetics, Photonics,
+  and Control Systems
+- I shifted into the software industry in my professional life because I found I could iterate on ideas
+  quickly in code
+- I have spend years in the startup space, and have founded/co-founded several companies (some of which
+  were successful, some of which were not.
+- The first Company I co-founded (technical co-founder) was Sensassure, a medical-device company focused
+  on addressing adult incontinence and bed sores in hospitals and long-term care facilities. I designed
+  custom sensors (material selection, research, properties, performance, etc.), electronics (custom pcbs,
+  research and selection of MCUs, circuit elements/op amps., etc.), and embedded code (C++). I managed
+  relationships with material suppliers, drafted patents, and got my first patent (as an inventor) for
+  the sensors and system I helped develop.
+- The second company I founded was Voyager, which was a software company focused on astrodynamics,
+  mission planning (orbital/for spacecraft), and visualization. Our target market was space agencies,
+  researchers, and education (professors, and students). This gave me my first deep exposure to professional
+  software design and development.
+- The third company I founded was Second Closet, a physical storage and moving company. I was a technical
+  co-founder, and I was responsible for building our web infrastructure, website, customer management tooling,
+  warehouse management tooling, barcode printing tooling, and otherwise enabling the company's service. I
+  also physically assisted with managing our warehouses, customers, investor relations, and advertising.
 - Left out for now (easy to add): your partner, and being a full-stack developer (implied by the
   career story; could go in the resume section instead).
