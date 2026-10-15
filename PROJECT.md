@@ -92,8 +92,8 @@ The look is a warm "lamplit survey": Hearth's warmth with Field Notes' sense of 
 - **Motion:** scroll-reveal fade/slide-ins (IntersectionObserver), subtle hover effects on project
   cards, smooth anchor scrolling. Everything respects `prefers-reduced-motion`.
 - **Fixed theme:** the alternating bands are the design, so there is no light/dark mode toggle.
-- **Still to design:** mobile nav (links currently wrap on phones) and a shorter eyebrow on small
-  screens.
+- **Small screens:** the nav collapses into a menu button below 640px, and the hero eyebrow switches
+  to "Field notes · world to workbench" when the full one would wrap.
 
 ## Project pages: visual storytelling
 

@@ -37,6 +37,8 @@ const REM = 16;
 })
 export class Hero {
   readonly eyebrow = input.required<string>();
+  /** Optional shorter eyebrow, shown instead of the full one when the hero is narrow (phones). */
+  readonly eyebrowShort = input<string>();
   readonly headline = input.required<string>();
   readonly lede = input.required<string>();
   /** Labels for the two route waypoints. */

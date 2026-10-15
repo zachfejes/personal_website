@@ -62,7 +62,25 @@
   margin-top: 0.3rem;
 }
 
-@media (max-width: 480px) {
+// Short eyebrow: swap it in when the full one (392px wide at the label tracking) would wrap.
+// Container sizes here are the hero's content width (inside its padding). Only one eyebrow is
+// displayed at a time, so screen readers announce just one.
+.eyebrow__short {
+  display: none;
+}
+
+@container (max-width: 391px) {
+  .eyebrow:has(.eyebrow__short) .eyebrow__full {
+    display: none;
+  }
+
+  .eyebrow__short {
+    display: inline;
+  }
+}
+
+// Smallest phones (320px): tighten the tracking slightly so the short eyebrow stays on one line.
+@container (max-width: 299px) {
   .eyebrow {
     letter-spacing: 0.12em;
   }

@@ -21,6 +21,7 @@ interface ProjectTeaser {
 export class HomePage {
   protected readonly hero = {
     eyebrow: 'Field notes from the world to the workbench',
+    eyebrowShort: 'Field notes · world to workbench',
     headline: 'Motivated by *wonder*, | and the deep desire | to improve the world',
     lede: 'A portfolio of projects and interactive write-ups: math, models, design, art, and the lessons learned.',
   };
