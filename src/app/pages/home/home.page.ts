@@ -87,6 +87,7 @@ export class HomePage {
     { label: 'Based in', value: 'Mississauga, Ontario' },
     { label: 'Currently', value: 'Ground Segment Architect, MDA Space' },
     { label: 'Focus', value: 'Space robotics · Ground systems · Software architecture' },
+    { label: 'Education', value: 'BASc Electrical Engineering, University of Toronto' },
     { label: 'Goal', value: 'Astronaut' },
   ];
 }

@@ -7,14 +7,12 @@ version is for the About / Resume page (milestone 7).
 
 **Title:** A little about me
 
-I'm a trained electrical engineerkinr turned software architect working in the industry I care most
-about: space. I have always dreamed of becoming an astronaut, and I'm still working toward that
-goal each day.
+I'm a trained electrical engineer turned software architect, working in the industry I care about
+most: space. I've always dreamed of becoming an astronaut, and I'm working towards it every day.
 
-For the past five years I've been the Ground Software Architect at MDA Space for the Canadarm3
-Program, Canada's robotic arm for the Lunar Gateway space station. More recently I've been
-working on a variety of Programs aimed at the Lunar Surface, Cis-Lunar Space, and LEO/GEO
-destinations.
+For five years I led the ground software architecture for Canadarm3, the robotic arm Canada
+designed for the Lunar Gateway space station. Today I'm the Ground Segment Architect at MDA Space,
+working across programs bound for the lunar surface, cislunar space and Earth orbit.
 
 **Facts**
 
@@ -23,6 +21,7 @@ destinations.
 | Based in  | Mississauga, Ontario                                    |
 | Currently | Ground Segment Architect, MDA Space                     |
 | Focus     | Space robotics · Ground systems · Software architecture |
+| Education | BASc Electrical Engineering, University of Toronto      |
 | Goal      | Astronaut                                               |
 
 ## Long version (About page)
@@ -31,21 +30,38 @@ I want to go to space. Becoming an astronaut is my primary professional goal, an
 is a broader one: helping humanity expand beyond Earth by building the infrastructure and
 capabilities that will get us there, and let us explore once we arrive.
 
-Today I work toward that as the Ground Segment Architect at MDA Space, where I've been for more
-than five years. I provide direction and design across the ground segment (software, systems and
-the disciplines around them) for several programs. For five of those years I was the lead
-software architect for Canadarm3's ground software. Canadarm3 is Canada's contribution to Gateway,
-the international space station planned to orbit the Moon: an extra-vehicular robotic arm that
-will help maintain and operate the station. My job was owning the design of all the software
-mission operations would use to control it, both from mission control on Earth and from crew on
-board the station.
+Today I'm the Ground Segment Architect at MDA Space. The ground segment is everything on Earth that
+makes a space mission work, and my job is to design how it fits together: the systems and
+interfaces for mission operations and mission planning, the ground network infrastructure, the
+mission control and training facilities where operators and crew do their work, and the
+integration with our external partners. It's as much systems architecture as software, so much of
+my work happens where disciplines meet: guidance, navigation and control, mechanical, thermal,
+electrical and systems engineering.
 
-I didn't take a straight line here. My background is in electrical engineering; I moved toward
-software early in my career because it offered the fastest way to experiment, build and learn.
-Before MDA I worked across a range of industries, mostly in software design, development and
-research. At RBC's Innovation Lab I founded the Voice Lab, exploring multi-modal interfaces with a
-focus on voice-first technology. I've also co-founded three companies in very different sectors:
-medical devices, space mission planning, and physical storage and moving.
+I've been at MDA Space for more than five years. For most of that time I led the ground software
+architecture for Canadarm3, the robotic arm Canada designed for the Lunar Gateway, the
+international space station planned for lunar orbit. I owned the design of all the software
+mission operations would use to control it, from mission control on Earth and from crew aboard
+the station. Now I work across a range of programs bound for the lunar surface, cislunar space and
+Earth orbit.
+
+I came to software by way of physics. I studied Electrical Engineering at the University of
+Toronto (BASc, 2014), specializing in electromagnetics, photonics and control systems, and I still
+love the physics underneath it all. I moved into software because code let me iterate on ideas
+faster than anything else.
+
+I've also spent years in startups. Some succeeded, some didn't, and all of them taught me
+something. I was the technical co-founder of Sensassure, a medical-device company tackling adult
+incontinence and bed sores in hospitals and long-term care. I designed its custom sensors (from
+materials research to performance testing), the electronics and custom circuit boards, and the
+embedded C++; I also managed our material suppliers and drafted patents, and earned my first
+patent as an inventor. Next I founded Voyager, a software company for astrodynamics, spacecraft
+mission planning and visualization, built for space agencies, researchers and educators. It was
+my first deep dive into professional software design. Then, as technical co-founder of Second
+Closet, a storage and moving company, I built the website and web infrastructure, our customer and
+warehouse management tools and barcode printing, and pitched in on everything else, from running
+warehouses to investor relations. Along the way I also worked at RBC's Innovation Lab, where I
+founded the Voice Lab to explore multi-modal interfaces, with a focus on voice-first technology.
 
 Away from work, I'm happiest learning something new and finding a way to use it. I draw, mostly in
 ink and pencil, and I'm fascinated by perspective and illusion. I model and design in Blender
@@ -57,39 +73,9 @@ I was born and raised in Toronto, and now live in Mississauga, Ontario.
 
 ## Notes for editing
 
-- Gateway / Canadarm3 status: the Lunar Gateway space station program has been paused by NASA and,
-  consequently, all partner government agencies have also paused/re-evaluated the resources/money/
-  time they have already committed to this project. For Canada, this means Canadarm3. Technically,
-  the Gateway Program has not been cancelled, but it is paused (this is public information).
-- Other programs are deliberately unnamed ("several programs"), my work involves some level of
-  non-public-facing information.
-- My partner's name is Ellen, she is a web developer, and we've been seeing each other since February
-  8, 2026
-- My current working skill set is that of a Software Architect and a Systems Architect - I design
-  complex, distributed systems, manage relationships and knowledge with other engineering disciplines
-  (Guidance Navigation and Control, Mechanical Engineering, Systems Engineering, Thermal Engineering,
-  Electrical Engineering)
-- I have a bachelors degree (BASc.) in Electrical Engineering from the University of Toronto, class of
-  2014
-- I have a deep love for physics, and my academic specializations were in Electromagnetics, Photonics,
-  and Control Systems
-- I shifted into the software industry in my professional life because I found I could iterate on ideas
-  quickly in code
-- I have spend years in the startup space, and have founded/co-founded several companies (some of which
-  were successful, some of which were not.
-- The first Company I co-founded (technical co-founder) was Sensassure, a medical-device company focused
-  on addressing adult incontinence and bed sores in hospitals and long-term care facilities. I designed
-  custom sensors (material selection, research, properties, performance, etc.), electronics (custom pcbs,
-  research and selection of MCUs, circuit elements/op amps., etc.), and embedded code (C++). I managed
-  relationships with material suppliers, drafted patents, and got my first patent (as an inventor) for
-  the sensors and system I helped develop.
-- The second company I founded was Voyager, which was a software company focused on astrodynamics,
-  mission planning (orbital/for spacecraft), and visualization. Our target market was space agencies,
-  researchers, and education (professors, and students). This gave me my first deep exposure to professional
-  software design and development.
-- The third company I founded was Second Closet, a physical storage and moving company. I was a technical
-  co-founder, and I was responsible for building our web infrastructure, website, customer management tooling,
-  warehouse management tooling, barcode printing tooling, and otherwise enabling the company's service. I
-  also physically assisted with managing our warehouses, customers, investor relations, and advertising.
-- Left out for now (easy to add): your partner, and being a full-stack developer (implied by the
-  career story; could go in the resume section instead).
+- Gateway is currently paused (public information). The copy says Canadarm3 was "designed for"
+  Gateway, "planned for lunar orbit", which stays accurate whatever the program's status.
+- The order of the RBC Innovation Lab role relative to the startups isn't stated; it's placed
+  "along the way". Adjust if the timeline matters.
+- Full-stack development and the systems/software architecture skill set could also go in a
+  resume or skills section on the About page.
