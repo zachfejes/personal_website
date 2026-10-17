@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { parseHeadline } from './accent';
-import { HeadlineFitter } from './headline-fitter';
+import { FluidScale, HeadlineFitter } from './headline-fitter';
 import { StarfieldConfig, StarfieldRenderer } from './starfield-renderer';
 
 /** Hero settings from design/hero-baseline.json. */
@@ -22,7 +22,25 @@ const STARFIELD: Omit<StarfieldConfig, 'route'> = {
   zoneMargin: 20,
 };
 
-const REM = 16;
+const REM_PX = 16;
+
+/** Headline and intro sizes from the 320px phone to the 1440px desktop, in rem. */
+const FLUID_SCALE: FluidScale = {
+  refSmall: 320,
+  refLarge: 1440,
+  headlineSmall: 2.1 * REM_PX,
+  headlineLarge: 3.6 * REM_PX,
+  ledeSmall: 1 * REM_PX,
+  ledeLarge: 1.4 * REM_PX,
+};
+
+const ROUTE: Omit<StarfieldConfig['route'], 'labels'> = {
+  shape: 'under',
+  end: 'fade',
+  sideMin: 35,
+};
+
+const DEFAULT_WAYPOINTS: [string, string] = ['WP-01 · ARMADA', 'WP-02 · NEXT'];
 
 /**
  * Full-screen hero: eyebrow, headline (authored line breaks with "|", accent words with *…*),
@@ -42,7 +60,7 @@ export class Hero {
   readonly headline = input.required<string>();
   readonly lede = input.required<string>();
   /** Labels for the two route waypoints. */
-  readonly waypoints = input<[string, string]>(['WP-01 · ARMADA', 'WP-02 · NEXT']);
+  readonly waypoints = input<[string, string]>(DEFAULT_WAYPOINTS);
 
   protected readonly lines = computed(() => parseHeadline(this.headline()));
 
@@ -55,14 +73,7 @@ export class Hero {
     const destroyRef = inject(DestroyRef);
 
     afterNextRender(() => {
-      const fitter = new HeadlineFitter(host, this.headlineEl().nativeElement, {
-        refSmall: 320,
-        refLarge: 1440,
-        headlineSmall: 2.1 * REM,
-        headlineLarge: 3.6 * REM,
-        ledeSmall: 1 * REM,
-        ledeLarge: 1.4 * REM,
-      });
+      const fitter = new HeadlineFitter(host, this.headlineEl().nativeElement, FLUID_SCALE);
       fitter.fit();
 
       let renderer: StarfieldRenderer | null = null;
@@ -73,7 +84,7 @@ export class Hero {
           () => Array.from(this.copy().nativeElement.children),
           {
             ...STARFIELD,
-            route: { shape: 'under', end: 'fade', sideMin: 35, labels: this.waypoints() },
+            route: { ...ROUTE, labels: this.waypoints() },
           },
         );
         void document.fonts.ready.then(() => renderer?.refresh());
