@@ -215,7 +215,7 @@ Plus **CodeQL** (`codeql.yml`) code scanning on PRs, on `master`, and weekly. **
 weekly update PRs for npm packages and GitHub Actions, which go through the same gates. Deploys
 (`deploy-staging.yml`) run only on `master`.
 
-**Branch ruleset on `master`** (set in GitHub: Settings → Rules → Rulesets): require a pull request
+**Branch ruleset on `master`** (in place; GitHub: Settings → Rules → Rulesets): require a pull request
 before merging; require status checks to pass (the five Checks jobs and CodeQL); block force
 pushes; restrict deletions.
 
@@ -233,7 +233,7 @@ pushes; restrict deletions.
 2. ✅ **Design system:** tokens, fonts, color bands, header/nav/footer, scroll-reveal animations.
 3. ✅ **Landing page:** long-scroll home with hero, featured projects, About and Contact. The
    featured-project summaries are drafts, to be written alongside each project's write-up.
-4. **Engineering workflow:** set up the branching strategy, CI gates on pull requests and the
+4. ✅ **Engineering workflow:** set up the branching strategy, CI gates on pull requests and the
    branch ruleset described in [Engineering workflow](#engineering-workflow-milestone-4), and fix
    whatever the stricter checks flag. From here on, every change lands through a pull request;
    the project framework and Armada Scaling are the first real test of the branching strategy and
