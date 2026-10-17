@@ -1,5 +1,8 @@
 import { Directive, DestroyRef, ElementRef, afterNextRender, inject } from '@angular/core';
 
+/** Reveal once the element is this far above the bottom of the viewport. */
+const REVEAL_MARGIN = '0px 0px -10% 0px';
+
 /**
  * Fades and slides an element in as it scrolls into view. Content is visible by default
  * (prerendered HTML, no JS, reduced motion); only elements that start below the fold in the
@@ -22,7 +25,7 @@ export class RevealDirective {
           el.classList.remove('reveal-pending');
           observer.disconnect();
         },
-        { rootMargin: '0px 0px -10% 0px' },
+        { rootMargin: REVEAL_MARGIN },
       );
       observer.observe(el);
       destroyRef.onDestroy(() => observer.disconnect());

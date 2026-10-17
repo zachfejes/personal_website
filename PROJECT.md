@@ -227,6 +227,47 @@ pushes; restrict deletions.
 - Not planned: SonarCloud (mostly duplicates the above at this size) and pre-commit hooks (CI is
   the real gate).
 
+## Code style & conventions
+
+General rules we've agreed on. They're added to as we make decisions that apply beyond one change;
+anything the linters already enforce isn't repeated here.
+
+### Code
+
+- **No magic values.** Give every number or string that encodes a decision a named constant, with
+  a short comment when the name alone doesn't explain it (units in the name: `…Px`, `…Ms`).
+  Group related values in a `const` object (`PROBE.trailStepPx`). Exceptions are values that are
+  part of the arithmetic rather than a choice: `0`, `1`, `2` for halving or doubling, a formula's
+  own coefficients (with a comment naming the formula).
+- **Settings come from one place.** Design values live in the design tokens
+  (`src/styles/_tokens.scss`) or, for the hero, in named constants traced to
+  `design/hero-baseline.json`. Don't copy them into component code.
+- **Generalize on second use.** Write a component, directive or helper for the place that needs it.
+  It becomes shared (moved to `src/app/shared/`, with its own tests) only when a second use
+  appears, even if both uses are in the same project page. Don't build shared pieces in advance.
+- **Keep logic pure where it can be.** Geometry, parsing and data shaping go in plain functions
+  with no DOM or Angular dependency, so they can be tested directly. Components and renderers
+  stay thin: measure, call the pure functions, draw.
+- **Pure refactors change no output.** When restructuring code that shouldn't change behavior,
+  prove it: compare outputs or screenshots before and after.
+
+### Tests
+
+- **Test behavior, not implementation.** A test should only fail when something a user or caller
+  would notice changes. For components, use Angular Testing Library and query the way a person
+  would: by role, label or text, not CSS classes or component internals. For pure functions, test
+  through the exported function with meaningful inputs.
+- **No markup snapshots.** They fail on harmless changes and pass on broken behavior.
+- **No magic values in tests either.** Name fixtures (`DESKTOP`, `PHONE`) and expected values
+  (`FULLY_FADED`, `STEP_PX`). Prefer comparing a whole result (`toEqual([...])`) over checking a
+  count and then an index.
+- **Shared components get tests when they become shared.** One-off code is tested where its logic
+  is non-trivial (math, parsing, layout rules).
+
+### Copy and docs
+
+- Code, copy and docs pass cspell. Add real words (names, jargon) to `cspell.json`; fix typos.
+
 ## Milestones
 
 1. ✅ **Scaffold & staging deploy:** Angular app with prerendering, environment configs, placeholder landing page, deployed to GitHub Pages.
