@@ -34,7 +34,7 @@ export class HeadlineFitter {
       if (hero.clientWidth !== this.lastWidth) this.fit();
     });
     this.observer.observe(hero);
-    document.fonts?.ready.then(() => this.fit());
+    void document.fonts.ready.then(() => this.fit());
   }
 
   fit(): void {

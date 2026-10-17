@@ -11,11 +11,25 @@ Requires Node 24 (see `.nvmrc`).
 
 ```sh
 npm install
-npm start            # dev server at http://localhost:4200
-npm test             # unit tests (watch mode)
-npm run lint
-npm run format       # Prettier
+npm start              # dev server at http://localhost:4200
+npm test               # unit tests (watch mode)
+npm run check          # everything CI checks: format, lint, styles, spelling, types, tests, builds
 ```
+
+Individual checks: `npm run format:check`, `lint`, `lint:styles`, `spellcheck`, `typecheck`,
+`test:ci`, `build`, `build:staging`, `audit:prod`. `npm run format` fixes formatting.
+
+New words the spell-checker doesn't know (names, jargon) go in the `words` list in `cspell.json`.
+
+## Contributing workflow
+
+- Every change goes through a pull request from a short-lived branch into `master`:
+  `feature/…`, `fix/…`, `content/…` or `chore/…`.
+- The **Checks** workflow (`.github/workflows/checks.yml`) runs on each pull request: formatting,
+  ESLint (type-aware), Stylelint, spelling, type checking, unit tests, staging and production
+  builds, `npm audit` and dependency review. **CodeQL** (`codeql.yml`) scans the TypeScript.
+- A branch ruleset on `master` requires those checks to pass and blocks direct pushes.
+- Dependabot opens weekly update PRs for npm packages and GitHub Actions.
 
 ## Builds and environments
 
@@ -30,7 +44,7 @@ Output goes to `dist/personal-website/browser/`. Per-environment settings live i
 
 ## Deployment
 
-- **Staging:** every push to `master` runs `.github/workflows/deploy-staging.yml`, which checks
-  formatting, lints, tests, builds, and deploys to GitHub Pages. Pull requests run the same checks
-  without deploying.
+- **Staging:** every merge to `master` runs `.github/workflows/deploy-staging.yml`, which builds the
+  staging configuration and deploys it to GitHub Pages. The checks run on the pull request before
+  the merge.
 - **Production:** not set up yet (milestone 9 in `PROJECT.md`).

@@ -5,6 +5,7 @@
   padding-block: clamp(2.5rem, 7vw, 5rem);
   padding-inline: var(--pad-inline);
   container-type: inline-size;
+
   // Lamplight: a faint warm glow toward the upper right.
   background: radial-gradient(
     ellipse 80% 90% at 70% 40%,
@@ -36,6 +37,7 @@
   line-height: var(--display-line-height);
   letter-spacing: var(--display-tracking);
   text-shadow: var(--display-shadow);
+
   // Before the fitter runs (and without JS): interpolate by hero width with container units,
   // 2.1rem at 320px to 3.6rem at 1440px.
   font-size: clamp(1.75rem, 2.143cqi + 1.671rem, 3.6rem);

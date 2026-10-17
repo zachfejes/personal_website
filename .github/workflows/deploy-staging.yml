@@ -1,9 +1,8 @@
 name: Deploy staging (GitHub Pages)
 
+# Deploys what's on master. Merges only reach master after the Checks workflow passes on the PR.
 on:
   push:
-    branches: [master]
-  pull_request:
     branches: [master]
   workflow_dispatch:
 
@@ -11,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: pages-${{ github.ref }}
+  group: pages
   cancel-in-progress: true
 
 jobs:
@@ -26,19 +25,14 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm run format:check
-      - run: npm run lint
-      - run: npm run test:ci
       - run: npm run build:staging
 
       - name: Upload Pages artifact
-        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4
         with:
           path: dist/personal-website/browser
 
   deploy:
-    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     permissions:

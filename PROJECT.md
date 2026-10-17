@@ -185,54 +185,47 @@ draft tags for the project registry.
 
 ## Engineering workflow (milestone 4)
 
-Scheduled as milestone 4, before the project framework. We'll add more rigor to how changes land: a
-gitflow-like branching strategy, with CI-enforced gates on every merge request.
+How changes land, set up in milestone 4. Day-to-day commands are in the README.
 
 ### Branching
 
-- `master`: what's deployed. Protected: no direct pushes or force-pushes; changes arrive only
-  through merged pull requests.
-- `develop` (optional, gitflow-style): an integration branch that feature branches merge into. It
-  would get its own preview deploy, and `master` would be updated by release merges. Decide when
-  setting this up whether the extra branch earns its keep for a one-person site, or whether
-  short-lived branches straight into `master` are enough.
-- Short-lived branches per change: `feature/…`, `fix/…`, `content/…`, `chore/…`, plus
-  `release/…` / `hotfix/…` if we adopt `develop`.
-- Every change goes through a pull request, and merges only once the required checks are green.
+- **Short-lived branches straight into `master`** (no `develop` branch): `feature/…`, `fix/…`,
+  `content/…`, `chore/…`.
+- Every change goes through a pull request and merges only once the required checks pass.
+- `master` is what's deployed to staging; it's protected by a branch ruleset (no direct or force
+  pushes).
 
 ### CI gates on pull requests
 
-Split the current workflow into a `checks` workflow that runs on pull requests, and a deploy
-workflow that runs only on the protected branch(es). Required checks:
+The **Checks** workflow (`.github/workflows/checks.yml`) runs these as separate jobs; all are
+required by the ruleset:
 
-1. **Format:** Prettier.
-2. **Lint:** ESLint with the type-aware typescript-eslint rule sets (no floating promises, no
-   unsafe `any`, no unnecessary conditions), plus Angular rules (prefer `OnPush`, no `innerHTML`
-   bindings) and the template accessibility rules already in place.
-3. **Types:** TypeScript `strict` and Angular `strictTemplates`, set explicitly in `tsconfig.json`.
-4. **Styles:** Stylelint for SCSS (invalid properties, unknown custom properties, typos).
-5. **Spelling (optional):** cspell over the copy.
-6. **Tests:** unit tests, later with a coverage threshold.
-7. **Build:** staging and production builds both succeed.
-8. **Dependencies:** `npm audit --omit=dev` (fail on high severity) and GitHub dependency review
-   on PRs (new vulnerable or badly licensed dependencies).
-9. **Security:** CodeQL code scanning for the TypeScript.
+1. **Format, lint, styles, spelling, types:** Prettier; ESLint with the type-aware
+   typescript-eslint rule sets (no floating promises, no unnecessary conditions, no unsafe `any`),
+   Angular rules (`OnPush` change detection) and template accessibility rules; Stylelint
+   (`stylelint-config-standard-scss`, BEM class names); cspell over code, copy and docs (project
+   words in `cspell.json`); TypeScript `strict` and Angular `strictTemplates`, checked for both the
+   app and the tests.
+2. **Unit tests:** Vitest.
+3. **Build:** staging and production builds.
+4. **Dependency audit:** `npm audit --omit=dev`, failing on high severity.
+5. **Dependency review:** GitHub's review of new or changed dependencies on the PR.
 
-Enforced with a GitHub **branch ruleset** on `master` (and `develop`, if used): require a pull
-request, require the checks above to pass, block direct and force pushes. Rulesets are free for
-public repositories. **Dependabot** opens weekly dependency-update PRs, which go through the same
-gates.
+Plus **CodeQL** (`codeql.yml`) code scanning on PRs, on `master`, and weekly. **Dependabot** opens
+weekly update PRs for npm packages and GitHub Actions, which go through the same gates. Deploys
+(`deploy-staging.yml`) run only on `master`.
+
+**Branch ruleset on `master`** (in place; GitHub: Settings → Rules → Rulesets): require a pull request
+before merging; require status checks to pass (the five Checks jobs and CodeQL); block force
+pushes; restrict deletions.
 
 ### Later
 
-- **Lighthouse CI** against the built site (performance, accessibility, SEO budgets): once there
+- **Lighthouse CI** against the built site (performance, accessibility, SEO budgets) once there
   are real pages, from milestone 5 onward.
 - **Coverage thresholds** for unit tests.
-- Probably skip: SonarCloud (mostly duplicates the above at this size) and pre-commit hooks (CI is
-  the real gate), unless wanted later.
-
-Expect the stricter lint and type rules to flag a few existing issues (mostly canvas/DOM code in
-the hero); fix them in the same change that turns the gates on, so they start green.
+- Not planned: SonarCloud (mostly duplicates the above at this size) and pre-commit hooks (CI is
+  the real gate).
 
 ## Milestones
 
@@ -240,7 +233,7 @@ the hero); fix them in the same change that turns the gates on, so they start gr
 2. ✅ **Design system:** tokens, fonts, color bands, header/nav/footer, scroll-reveal animations.
 3. ✅ **Landing page:** long-scroll home with hero, featured projects, About and Contact. The
    featured-project summaries are drafts, to be written alongside each project's write-up.
-4. **Engineering workflow:** set up the branching strategy, CI gates on pull requests and the
+4. ✅ **Engineering workflow:** set up the branching strategy, CI gates on pull requests and the
    branch ruleset described in [Engineering workflow](#engineering-workflow-milestone-4), and fix
    whatever the stricter checks flag. From here on, every change lands through a pull request;
    the project framework and Armada Scaling are the first real test of the branching strategy and
