@@ -1,6 +1,6 @@
 import { Type } from '@angular/core';
 import { render, screen, within } from '@testing-library/angular';
-import { ComingSoonProject, PublishedProject } from '../../projects/project';
+import { ComingSoonProject, PublishedProject, Timeline } from '../../projects/project';
 import { ProjectCard } from './project-card';
 
 class StubPage {}
@@ -31,6 +31,9 @@ const COMING_SOON: ComingSoonProject = {
   art: 'visor',
 };
 
+const ONGOING: Timeline = { start: '2020-05' };
+const ONGOING_LABEL = 'May 2020 – present';
+
 const renderCard = (project: PublishedProject | ComingSoonProject, headingLevel?: 2 | 3) =>
   render(ProjectCard, { inputs: { project, ...(headingLevel ? { headingLevel } : {}) } });
 
@@ -60,6 +63,16 @@ describe('ProjectCard', () => {
     it('does not show a posting date', async () => {
       await renderCard(COMING_SOON);
       expect(screen.queryByText(/posted/i)).toBeNull();
+    });
+
+    it('shows when the work happened, if known', async () => {
+      await renderCard({ ...COMING_SOON, timeline: ONGOING });
+      expect(screen.getByText(ONGOING_LABEL)).toBeTruthy();
+    });
+
+    it('leaves the timeline out when it is not known', async () => {
+      await renderCard(COMING_SOON);
+      expect(screen.queryByText(/present|\d{4}/)).toBeNull();
     });
   });
 

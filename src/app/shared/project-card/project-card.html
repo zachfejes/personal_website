@@ -141,8 +141,14 @@
 </div>
 <div class="card__body">
   <p class="card__meta">
-    <span>{{ project().category }}</span
-    ><span>{{ when() }}</span>
+    <span>{{ project().category }}</span>
+    @if (posted(); as posted) {
+      <span
+        >Posted <time [attr.datetime]="posted.iso">{{ posted.label }}</time></span
+      >
+    } @else {
+      <span>Coming soon</span>
+    }
   </p>
   @switch (headingLevel()) {
     @case (2) {
@@ -158,10 +164,8 @@
       <li>{{ tag }}</li>
     }
   </ul>
-  @if (posted(); as posted) {
-    <p class="card__posted">
-      Posted <time [attr.datetime]="posted.iso">{{ posted.label }}</time>
-    </p>
+  @if (timeline(); as timeline) {
+    <p class="card__timeline">{{ timeline }}</p>
   }
 </div>
 

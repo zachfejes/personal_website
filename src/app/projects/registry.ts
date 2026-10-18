@@ -12,6 +12,7 @@ export const PROJECTS: readonly Project[] = [
   {
     slug: 'armada-scaling',
     status: 'coming-soon',
+    timeline: { start: '2018-09', end: '2018-09' },
     title: 'Armada Scaling',
     category: 'Data · Tabletop',
     summary:
@@ -22,6 +23,7 @@ export const PROJECTS: readonly Project[] = [
   {
     slug: 'padi-advanced-open-water',
     status: 'coming-soon',
+    timeline: { start: '2026-08' },
     title: 'PADI Advanced Open Water',
     category: 'Exploration · Training',
     summary:
@@ -32,6 +34,7 @@ export const PROJECTS: readonly Project[] = [
   {
     slug: 'generic-graphing-library',
     status: 'coming-soon',
+    timeline: { start: '2026-06' },
     title: 'Generic Graphing Library',
     category: 'Software · Math',
     summary:
@@ -42,6 +45,7 @@ export const PROJECTS: readonly Project[] = [
   {
     slug: 'hi-seas-analog-mission',
     status: 'coming-soon',
+    timeline: { start: '2024-04', end: '2024-04' },
     title: 'HI-SEAS Analog Mission',
     category: 'Space · Research',
     summary:
@@ -52,6 +56,7 @@ export const PROJECTS: readonly Project[] = [
   {
     slug: 'mandalorian-cosplay',
     status: 'coming-soon',
+    timeline: { start: '2020-05' },
     title: 'Mandalorian Cosplay',
     category: 'Fabrication · Star Wars',
     summary:
@@ -62,6 +67,7 @@ export const PROJECTS: readonly Project[] = [
   {
     slug: 'modular-cave-terrain',
     status: 'coming-soon',
+    timeline: { start: '2022-05' },
     title: 'Modular Cave Terrain',
     category: 'Tabletop · Design',
     summary:
