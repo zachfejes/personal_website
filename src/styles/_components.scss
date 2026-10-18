@@ -100,6 +100,26 @@
   }
 }
 
+// Vertical stack of a section's parts
+.stack {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+// Grid of project cards
+.cards {
+  display: grid;
+
+  --card-gap: clamp(1rem, 2vw, 1.5rem);
+
+  // At most three columns, so six featured projects read as two even rows.
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, max(18rem, (100% - 2 * var(--card-gap)) / 3)), 1fr)
+  );
+  gap: var(--card-gap);
+}
+
 // Scroll reveal (see RevealDirective). Content is visible by default; the directive only adds
 // .reveal-pending to elements that start below the fold, in the browser.
 .reveal-pending {

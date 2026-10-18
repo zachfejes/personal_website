@@ -6,4 +6,5 @@ export const environment: Environment = {
   name: 'production',
   siteUrl: 'https://zachfejes.com',
   indexable: true,
+  showDrafts: false,
 };

@@ -45,14 +45,25 @@ Project write-ups like Armada mix prose with interactive charts, equations, and 
 **Recommendation: treat each project as code, and keep a small metadata registry for listing them.**
 
 - **One component per project:** `src/app/projects/<slug>/<slug>.page.ts`, lazy-loaded on its own route. The page can use any Angular code it needs: charts, sliders, canvas, 3D.
-- **Shared building blocks** keep pages consistent and quick to write:
-  - `<app-article>`: page shell with title, subtitle, date, reading width, and a table of contents.
-  - `<app-section>`: a section with heading and anchor link, supporting the alternating color bands.
-  - `<app-figure>`: an image or chart with a caption.
-  - `<app-math>`: an equation, rendered with KaTeX at build time.
-  - `<app-callout>`, `<app-code-block>`, `<app-footnote>` / `<app-references>`.
-  - `<app-chart>`: a thin wrapper around a charting library (D3 or Chart.js), themed to the site palette.
-- **Registry:** `src/app/projects/projects.registry.ts` lists each project's `slug`, `title`, `summary`, `tags`, `date`, `thumbnail`, `featured`, and `loadComponent`. The projects grid, the landing page's featured projects, routes, prerender paths, and the sitemap are all generated from this one list, so adding a project means adding one folder and one registry entry.
+- **Registry** (`src/app/projects/registry.ts`, built in milestone 5): one entry per project with
+  `slug`, `title`, `category`, `summary`, `tags`, cover `art`, `status`, `timeline` (when the work
+  happened, by month; no end means ongoing), `posted` (publication date) and `page` (the lazy
+  loader). The home page's cards, the `/projects` list and the project routes are all generated
+  from it, so adding a project means one folder and one registry entry. The type system requires
+  a timeline, posting date and page for anything published.
+- **Status decides visibility:**
+  - **published:** listed on `/projects` (newest first), first in line for the home page,
+    routed and prerendered.
+  - **coming-soon:** no page. Fills the home page's six slots that published projects leave
+    free, in registry order; the rest stay hidden.
+  - **draft:** has a page that's being written. Routed in development and staging builds so it
+    can be previewed, never in production, and never listed or linked.
+- **Shared pieces are extracted on second use** (see [Code style](#code-style--conventions)), not
+  planned up front. So far: the project card (home and `/projects`). Likely candidates once a
+  second project needs them: a page shell (title, dates, reading width, contents), figure with
+  caption, KaTeX equations, a D3 chart frame themed to the palette.
+- **Charts:** D3, used mostly as a math library (scales, shapes, axes), with Angular rendering
+  the SVG in templates.
 
 Trade-off: writing prose in templates is a bit more verbose than Markdown. If a future project is mostly text, a Markdown-rendering component can be added later without changing this structure.
 
@@ -124,7 +135,7 @@ axonometric, Air Pollution Sources, High-Rise Zoo, misty company timeline, parti
 | Route               | Page                  | Content                                                                                                                                                    |
 | ------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/`                 | Landing (long scroll) | Hero (name, title, one-liner) → short intro → featured projects → experience highlights → skills → contact call to action. Sections alternate color bands. |
-| `/projects`         | Projects              | Grid of project cards (thumbnail, title, summary, tags).                                                                                                   |
+| `/projects`         | Projects              | Grid of published project cards (art, title, summary, tags, dates).                                                                                        |
 | `/projects/:slug`   | Project write-up      | The project's own component (see above).                                                                                                                   |
 | `/about`            | About / Resume        | Full bio, experience timeline, skills, education, downloadable PDF resume.                                                                                 |
 | Footer (every page) | Contact               | Email, GitHub, LinkedIn. No form, so no backend needed.                                                                                                    |
@@ -279,7 +290,8 @@ anything the linters already enforce isn't repeated here.
    whatever the stricter checks flag. From here on, every change lands through a pull request;
    the project framework and Armada Scaling are the first real test of the branching strategy and
    of unit-testing special features (interactive charts, fits, math).
-5. **Project framework:** registry, projects grid, article building blocks, routing and prerendering per slug.
+5. ✅ **Project framework:** project registry, `/projects` page, shared project card, routes and
+   prerendering per slug. Article building blocks wait for a second project that needs them.
 6. **Armada Scaling:** port the first project using the framework.
 7. **About / Resume:** bio, experience timeline, skills, PDF download.
 8. **Polish:** SEO, sitemap, accessibility pass, Lighthouse performance check, favicon and social preview images.
