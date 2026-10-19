@@ -172,6 +172,10 @@ Rebuild the old "Armada Scaling" write-up as the first project page and the refe
   - Possibly an input that predicts model size for a given canon length.
 - **Port:** the chart data and regression helper (`linearRegression.js`) carry over as typed TypeScript. Equations move from MathJax to KaTeX.
 
+Data: `src/app/projects/armada-scaling/ships.json` holds the measured ships, the planned ships
+and their sources, kept apart from the code that does the math. Edit it to add or correct a ship;
+the fits, numbers, equations and charts all follow on the next build.
+
 Status (milestone 6, first version): the page is built as a preview on staging, with the three
 charts, the calculator (canon length → model length), the XQ2 wireframes and the tuning panel.
 Every number in the text is computed from the data; tests check them against the 2018 results.
