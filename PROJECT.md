@@ -230,6 +230,24 @@ weekly update PRs for npm packages and GitHub Actions, which go through the same
 before merging; require status checks to pass (the five Checks jobs and CodeQL); block force
 pushes; restrict deletions.
 
+### Dependency updates
+
+Dependabot opens weekly update PRs (`.github/dependabot.yml`); they go through the same checks and
+are merged like any other change. Closing one only skips that version: Dependabot offers the next
+release when it comes out. Two kinds of update are ignored on purpose, because each has to wait for
+something else to move first:
+
+- **TypeScript major versions.** Angular supports a narrow TypeScript range (Angular 22 needs
+  TypeScript 6.0.x), so a new TypeScript major breaks the build until an Angular release supports
+  it. Take the TypeScript major as part of that Angular upgrade (`ng update` sets the version);
+  minor and patch updates still come through.
+- **`@types/node` major versions.** The site builds and runs on the Node version in `.nvmrc`
+  (Node 24). Type definitions for a newer Node would let code compile against APIs that Node 24
+  doesn't have, so the types stay on the same major as Node. Move them together when `.nvmrc`
+  changes.
+
+Remove a rule from the `ignore` list once what it waits for has happened.
+
 ### Later
 
 - **Lighthouse CI** against the built site (performance, accessibility, SEO budgets) once there
