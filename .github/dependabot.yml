@@ -12,6 +12,12 @@ updates:
       lint-and-format:
         patterns: ['eslint*', '@eslint/*', 'typescript-eslint', 'prettier', 'stylelint*', 'cspell']
     open-pull-requests-limit: 5
+    # Majors that must wait for something else to move first. See "Dependency updates" in PROJECT.md.
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
