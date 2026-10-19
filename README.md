@@ -21,6 +21,13 @@ Individual checks: `npm run format:check`, `lint`, `lint:styles`, `spellcheck`, 
 
 New words the spell-checker doesn't know (names, jargon) go in the `words` list in `cspell.json`.
 
+## Adding a project
+
+Projects are listed in `src/app/projects/registry.ts`. Add an entry with `status: 'coming-soon'`
+to announce it, then build its page in `src/app/projects/<slug>/` and switch it to `draft`
+(viewable on staging at `/projects/<slug>`, never in production) and finally `published`, with
+its timeline and posting date. See "Project pages" in `PROJECT.md`.
+
 ## Contributing workflow
 
 - Every change goes through a pull request from a short-lived branch into `master`:

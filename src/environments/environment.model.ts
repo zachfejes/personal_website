@@ -5,4 +5,6 @@ export interface Environment {
   siteUrl: string;
   /** Whether search engines may index the site. */
   indexable: boolean;
+  /** Whether draft project pages get routes (never listed or linked). */
+  showDrafts: boolean;
 }

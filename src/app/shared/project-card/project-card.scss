@@ -1,0 +1,152 @@
+// The card itself is the host element.
+:host {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-paper) 55%, #fff 45%);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 50%),
+    0 10px 24px -16px rgb(0 0 0 / 45%);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+// Only cards that link somewhere lift on hover.
+:host(:has(.card__link)):hover,
+:host(:focus-within) {
+  transform: translateY(-4px);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 50%),
+    0 18px 34px -18px rgb(0 0 0 / 55%);
+}
+
+.card__art {
+  aspect-ratio: 16 / 9;
+  background: var(--color-ink);
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.card__body {
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+  padding: 1.1rem 1.25rem 1.35rem;
+}
+
+.card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-ink) 60%, var(--color-paper));
+
+  // Each half stays whole; on a narrow card the status drops below the category.
+  span {
+    white-space: nowrap;
+  }
+}
+
+.card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+  font-size: 1.5rem;
+  line-height: 1.1;
+  text-shadow: var(--display-shadow);
+}
+
+.card__summary {
+  margin: 0;
+  font-size: 0.98rem;
+  color: color-mix(in srgb, var(--color-ink) 78%, var(--color-paper));
+}
+
+// The title link covers the whole card, so the card is one click target with one accessible name.
+.card__link {
+  color: inherit;
+  text-decoration: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:focus-visible::after {
+    outline: 2px solid var(--color-highlight);
+    outline-offset: 3px;
+  }
+}
+
+.card__timeline {
+  margin: 0;
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-ink) 60%, var(--color-paper));
+}
+
+// Card artwork colors
+.ink-faint {
+  stroke: var(--color-on-dark);
+  stroke-opacity: 0.14;
+}
+
+.stroke-accent {
+  stroke: var(--color-highlight);
+}
+
+.stroke-light {
+  stroke: var(--color-on-dark);
+  stroke-opacity: 0.3;
+}
+
+.stroke-muted {
+  stroke: var(--color-muted);
+}
+
+.stroke-star {
+  stroke: var(--color-starlight);
+  stroke-opacity: 0.35;
+}
+
+.fill-light {
+  fill: var(--color-on-dark);
+}
+
+.fill-muted {
+  fill: var(--color-muted);
+}
+
+.fill-accent {
+  fill: var(--color-highlight);
+}
+
+.label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 1px;
+  fill: var(--color-muted);
+}
