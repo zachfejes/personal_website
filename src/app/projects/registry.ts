@@ -12,6 +12,7 @@ export const PROJECTS: readonly Project[] = [
   {
     slug: 'armada-scaling',
     status: 'coming-soon',
+    page: () => import('./armada-scaling/armada-scaling.page').then((m) => m.ArmadaScalingPage),
     timeline: { start: '2018-09', end: '2018-09' },
     title: 'Armada Scaling',
     category: 'Data · Tabletop',

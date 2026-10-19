@@ -1,0 +1,94 @@
+<button
+  type="button"
+  class="tuner__toggle"
+  [attr.aria-expanded]="open()"
+  aria-controls="tuner-panel"
+  (click)="open.set(!open())"
+>
+  {{ open() ? 'Close tuner' : 'Tune' }}
+</button>
+
+<section id="tuner-panel" class="tuner" [hidden]="!open()" [attr.aria-label]="title() + ' tuner'">
+  <header class="tuner__head">
+    <h2>{{ title() }}</h2>
+    <div class="tuner__actions">
+      <button type="button" (click)="copy()">Copy settings</button>
+      <button type="button" (click)="pasting.set(!pasting())" [attr.aria-pressed]="pasting()">
+        Paste settings
+      </button>
+      <button type="button" (click)="reset()">Reset</button>
+    </div>
+    <p class="tuner__status" role="status">{{ status() }}</p>
+    @if (pasting()) {
+      <label class="tuner__paste">
+        <span>Settings JSON</span>
+        <textarea #pasteBox rows="8" spellcheck="false">{{ json() }}</textarea>
+      </label>
+      <button type="button" (click)="apply(pasteBox.value)">Apply pasted settings</button>
+    }
+  </header>
+
+  @for (group of groups(); track group.key) {
+    <fieldset class="tuner__group">
+      <legend>{{ group.label }}</legend>
+      @for (row of group.rows; track row.key) {
+        @let current = value(group.key, row.key);
+        @let control = row.control;
+        @let id = 'tuner-' + group.key + '-' + row.key;
+        @if (control.type === 'range') {
+          <label class="tuner__row">
+            <span>{{ control.label }}</span>
+            <input
+              type="range"
+              [min]="control.min"
+              [max]="control.max"
+              [step]="control.step"
+              [value]="current"
+              (input)="setNumber(group.key, row.key, $event)"
+            />
+            <span class="tuner__value" aria-hidden="true"
+              >{{ current }}{{ control.unit ?? '' }}</span
+            >
+          </label>
+        } @else if (control.type === 'color') {
+          <div class="tuner__row">
+            <label [for]="id">{{ control.label }}</label>
+            <input
+              type="color"
+              [id]="id"
+              [value]="current"
+              (input)="setText(group.key, row.key, $event)"
+            />
+            <input
+              type="text"
+              class="tuner__hex"
+              [attr.aria-label]="control.label + ' hex code'"
+              [value]="current"
+              maxlength="7"
+              spellcheck="false"
+              (change)="setHex(group.key, row.key, $event)"
+            />
+          </div>
+        } @else if (control.type === 'select') {
+          <label class="tuner__row">
+            <span>{{ control.label }}</span>
+            <select (change)="setText(group.key, row.key, $event)">
+              @for (option of control.options; track option) {
+                <option [value]="option" [selected]="option === current">{{ option }}</option>
+              }
+            </select>
+          </label>
+        } @else {
+          <label class="tuner__row tuner__row--toggle">
+            <input
+              type="checkbox"
+              [checked]="current"
+              (change)="setToggle(group.key, row.key, $event)"
+            />
+            <span>{{ control.label }}</span>
+          </label>
+        }
+      }
+    </fieldset>
+  }
+</section>

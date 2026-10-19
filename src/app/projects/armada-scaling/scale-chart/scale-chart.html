@@ -1,0 +1,219 @@
+<figure class="chart">
+  @if (fits().length) {
+    <div class="chart__toggles" role="group" aria-label="Fits to show">
+      @for (fit of curves(); track fit.id) {
+        <button
+          type="button"
+          class="chart__toggle"
+          [attr.aria-pressed]="fit.on"
+          (click)="toggle(fit.id)"
+        >
+          <span class="chart__swatch chart__swatch--line" [style.background]="fit.color"></span>
+          {{ fit.label }}
+        </button>
+      }
+    </div>
+  }
+
+  <svg
+    #svg
+    class="chart__plot"
+    [attr.viewBox]="'0 0 ' + width() + ' ' + height()"
+    role="img"
+    tabindex="0"
+    [attr.aria-label]="caption() + '. Use the arrow keys to read each point.'"
+    (pointermove)="pick($event)"
+    (pointerdown)="pick($event)"
+    (pointerleave)="$event.pointerType === 'mouse' && active.set(null)"
+    (keydown)="step($event)"
+    (blur)="active.set(null)"
+  >
+    <defs>
+      <clipPath [attr.id]="clipId">
+        <rect
+          [attr.x]="view.margin.left"
+          [attr.y]="view.margin.top"
+          [attr.width]="width() - view.margin.left - view.margin.right"
+          [attr.height]="height() - view.margin.top - view.margin.bottom"
+        />
+      </clipPath>
+    </defs>
+
+    <!-- Grid and axes -->
+    <g class="chart__axis" [style.font-size.px]="design().labelSizePx">
+      @for (t of yTicks(); track t) {
+        @if (design().showGrid) {
+          <line
+            class="chart__grid"
+            [attr.x1]="view.margin.left"
+            [attr.x2]="width() - view.margin.right"
+            [attr.y1]="y()(t)"
+            [attr.y2]="y()(t)"
+            [attr.stroke-opacity]="design().gridOpacity"
+          />
+        }
+        <text
+          [attr.x]="view.margin.left - view.tickGap"
+          [attr.y]="y()(t)"
+          text-anchor="end"
+          dominant-baseline="middle"
+        >
+          {{ format(t) }}
+        </text>
+      }
+      @for (t of xTicks(); track t) {
+        @if (design().showGrid) {
+          <line
+            class="chart__grid"
+            [attr.x1]="x()(t)"
+            [attr.x2]="x()(t)"
+            [attr.y1]="view.margin.top"
+            [attr.y2]="height() - view.margin.bottom"
+            [attr.stroke-opacity]="design().gridOpacity"
+          />
+        }
+        <text
+          [attr.x]="x()(t)"
+          [attr.y]="height() - view.margin.bottom + view.tickGap"
+          text-anchor="middle"
+          dominant-baseline="hanging"
+        >
+          {{ format(t) }}
+        </text>
+      }
+      <line
+        class="chart__baseline"
+        [attr.x1]="view.margin.left"
+        [attr.x2]="width() - view.margin.right"
+        [attr.y1]="height() - view.margin.bottom"
+        [attr.y2]="height() - view.margin.bottom"
+      />
+      <text
+        class="chart__title"
+        [attr.x]="(view.margin.left + width() - view.margin.right) / 2"
+        [attr.y]="height() - view.margin.bottom + view.axisTitleGap.x"
+        text-anchor="middle"
+      >
+        Canon length (m)
+      </text>
+      <text
+        class="chart__title"
+        [attr.transform]="
+          'translate(' +
+          (view.margin.left - view.axisTitleGap.y) +
+          ' ' +
+          (height() - view.margin.bottom + view.margin.top) / 2 +
+          ') rotate(-90)'
+        "
+        text-anchor="middle"
+      >
+        Model length (mm)
+      </text>
+    </g>
+
+    <!-- Fits -->
+    <g [attr.clip-path]="'url(#' + clipId + ')'">
+      @for (fit of curves(); track fit.id) {
+        @if (fit.on) {
+          <path
+            class="chart__fit"
+            [attr.d]="fit.d"
+            [attr.stroke]="fit.color"
+            [attr.stroke-width]="design().fitWidth"
+          />
+        }
+      }
+    </g>
+
+    <!-- Points -->
+    @for (p of points(); track p.series + p.name) {
+      <circle
+        class="chart__point"
+        [class.chart__point--planned]="p.series === 'planned'"
+        [class.chart__point--highlight]="p.series === 'highlight'"
+        [class.is-active]="active() === p"
+        [attr.cx]="p.cx"
+        [attr.cy]="p.cy"
+        [attr.r]="radius(p)"
+        [attr.fill]="p.series === 'ship' ? design().pointColor : 'none'"
+        [attr.stroke]="p.series === 'ship' ? 'none' : design().plannedColor"
+      />
+      @if (p.series === 'highlight') {
+        <text
+          class="chart__callout"
+          [attr.x]="p.cx"
+          [attr.y]="p.cy - radius(p) - view.tickGap"
+          text-anchor="middle"
+          [attr.fill]="design().plannedColor"
+          [style.font-size.px]="design().labelSizePx"
+        >
+          {{ p.name }}
+        </text>
+      }
+    }
+
+    <!-- Tooltip -->
+    @if (tooltip(); as tip) {
+      <g class="chart__tooltip" [attr.transform]="'translate(' + tip.x + ' ' + tip.y + ')'">
+        <rect [attr.width]="tip.width" [attr.height]="tip.height" [attr.rx]="view.tooltip.radius" />
+        @for (text of tip.lines; track $index) {
+          <text
+            [attr.x]="view.tooltip.padX"
+            [attr.y]="view.tooltip.padY + $index * (tip.size + view.tooltip.lineGap)"
+            dominant-baseline="hanging"
+            [style.font-size.px]="tip.size"
+            [class.chart__tooltip-name]="$first"
+          >
+            {{ text }}
+          </text>
+        }
+      </g>
+    }
+  </svg>
+
+  <figcaption class="chart__caption">
+    <span>{{ caption() }}</span>
+    <span class="chart__legend">
+      <span
+        ><span class="chart__swatch" [style.background]="design().pointColor"></span>Armada
+        ships</span
+      >
+      @if (planned().length) {
+        <span
+          ><span
+            class="chart__swatch chart__swatch--ring"
+            [style.border-color]="design().plannedColor"
+          ></span
+          >Planned ships</span
+        >
+      }
+    </span>
+  </figcaption>
+
+  <details class="chart__data">
+    <summary>Show the data</summary>
+    <table>
+      <caption class="sr-only">
+        {{
+          caption()
+        }}
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Ship</th>
+          <th scope="col">Canon length (m)</th>
+          <th scope="col">Model length (mm)</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of points(); track p.series + p.name) {
+          <tr>
+            <th scope="row">{{ p.name }}{{ p.series === 'ship' ? '' : ' (predicted)' }}</th>
+            <td>{{ format(p.x) }}</td>
+            <td>{{ format(p.y) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </details>
+</figure>

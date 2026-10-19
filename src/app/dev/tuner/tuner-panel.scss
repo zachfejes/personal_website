@@ -1,0 +1,149 @@
+// Development tool: plain, compact and always readable, whatever band it floats over.
+:host {
+  --tuner-bg: #1d2320;
+  --tuner-fg: #ece5d6;
+  --tuner-line: rgb(236 229 214 / 18%);
+
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--tuner-fg);
+  accent-color: var(--color-highlight);
+}
+
+button {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--tuner-line);
+  border-radius: 0.3rem;
+  background: rgb(236 229 214 / 8%);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover,
+  &[aria-pressed='true'] {
+    background: rgb(236 229 214 / 18%);
+  }
+}
+
+.tuner__toggle {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 101;
+  background: var(--color-highlight);
+  border-color: transparent;
+  color: var(--color-ink);
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 35%);
+
+  &:hover {
+    background: var(--color-highlight);
+    filter: brightness(1.08);
+  }
+}
+
+.tuner {
+  position: fixed;
+  top: calc(var(--header-height, 4rem) + 0.5rem);
+  right: 0.5rem;
+  bottom: 3.75rem;
+  z-index: 100;
+  width: min(22rem, calc(100vw - 1rem));
+  overflow-y: auto;
+  padding: 0.75rem;
+  background: var(--tuner-bg);
+  border: 1px solid var(--tuner-line);
+  border-radius: 0.5rem;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 45%);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.tuner__head {
+  display: grid;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+
+  h2 {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+.tuner__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.tuner__status {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--color-highlight);
+}
+
+.tuner__paste {
+  display: grid;
+  gap: 0.25rem;
+
+  textarea {
+    width: 100%;
+    font-family: var(--font-label);
+    font-size: 0.72rem;
+    color: inherit;
+    background: rgb(0 0 0 / 30%);
+    border: 1px solid var(--tuner-line);
+    border-radius: 0.3rem;
+  }
+}
+
+.tuner__group {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem;
+  border: 1px solid var(--tuner-line);
+  border-radius: 0.4rem;
+
+  legend {
+    padding-inline: 0.25rem;
+    font-weight: 600;
+    color: var(--color-highlight);
+  }
+}
+
+.tuner__row {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding-block: 0.2rem;
+
+  .tuner__value {
+    min-width: 3.5rem;
+    font-family: var(--font-label);
+    text-align: right;
+  }
+
+  input[type='color'] {
+    width: 100%;
+    height: 1.6rem;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  select {
+    font: inherit;
+  }
+}
+
+.tuner__row--toggle {
+  grid-template-columns: auto 1fr;
+}
+
+.tuner__hex {
+  width: 5.2rem;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+}

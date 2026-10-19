@@ -24,9 +24,11 @@ New words the spell-checker doesn't know (names, jargon) go in the `words` list 
 ## Adding a project
 
 Projects are listed in `src/app/projects/registry.ts`. Add an entry with `status: 'coming-soon'`
-to announce it, then build its page in `src/app/projects/<slug>/` and switch it to `draft`
-(viewable on staging at `/projects/<slug>`, never in production) and finally `published`, with
-its timeline and posting date. See "Project pages" in `PROJECT.md`.
+to announce it, then build its page in `src/app/projects/<slug>/` and give the entry a `page`:
+the page is then viewable on staging at `/projects/<slug>` (never in production) while the card
+still says "Coming soon". Use `draft` instead to keep a project off the home page entirely.
+Finally switch it to `published`, with its timeline and posting date. See "Project pages" in
+`PROJECT.md`, including how to use the design tuning panel.
 
 ## Contributing workflow
 

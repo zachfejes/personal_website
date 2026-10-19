@@ -1,0 +1,283 @@
+<article class="article">
+  <header class="band section intro" [class]="'band--' + design().bands.intro">
+    <div class="container intro__inner">
+      <div class="intro__text">
+        <p class="eyebrow">Data · Tabletop</p>
+        <h1 class="intro__title">Armada Scaling</h1>
+        <p class="intro__dek">Working out the non-linear model scale in Star Wars: Armada.</p>
+        <dl class="intro__meta">
+          <div>
+            <dt>Project</dt>
+            <dd>Sep 2018</dd>
+          </div>
+          <div>
+            <dt>Method</dt>
+            <dd>Regression · Error analysis</dd>
+          </div>
+          <div>
+            <dt>Data</dt>
+            <dd>{{ n.shipCount }} ships and squadrons</dd>
+          </div>
+        </dl>
+      </div>
+      <figure class="wireframe intro__art">
+        <img
+          src="projects/armada-scaling/xq2-top.webp"
+          width="593"
+          height="540"
+          alt="Wireframe of the XQ2 Platform seen from above: a hexagonal core with three arms."
+        />
+        <figcaption>The XQ2 Platform, top view</figcaption>
+      </figure>
+    </div>
+  </header>
+
+  <section
+    class="band section"
+    [class]="'band--' + design().bands.problem"
+    aria-labelledby="background"
+  >
+    <div class="container prose" appReveal>
+      <h2 id="background">Background</h2>
+      <p>
+        I love the cinematic nature of Armada, and felt it would be great to use a real station
+        model in the game. The core game (before the Corellian Conflict expansion) featured only
+        unarmed repair stations, so my imagination immediately filled with the XQ platforms from the
+        TIE Fighter and X-Wing games of the 90s<a class="ref" href="#ref-1" aria-label="Reference 1"
+          ><sup>1</sup></a
+        >.
+      </p>
+
+      <h2>The problem</h2>
+      <p>After my first design iteration, I realized two important things:</p>
+      <ul>
+        <li>The station needed much more detail.</li>
+        <li>The scale felt wrong.</li>
+      </ul>
+      <p>
+        I'll cover the station's design and fabrication in a separate write-up; here I'd like to
+        focus on the second point. Ship and squadron models in Armada are built to a
+        <em>relative</em> scale: a CR90 model isn't at the same scale to its canon counterpart as a
+        Victory-class Star Destroyer is. For proof, try fitting the CR90 into the Victory's docking
+        bay. I'll wait.
+      </p>
+      <p>
+        I understand why Fantasy Flight chose a relative scale, but because model and canon sizes
+        don't have a linear relationship, it takes some thought to find the right size for my XQ2
+        Platform and have it <em>feel</em> correct during play. Fortunately, a little math can solve
+        this problem, and help scale any future models I design.
+      </p>
+    </div>
+    <div class="container figure-row" appReveal>
+      <figure class="wireframe">
+        <img
+          src="projects/armada-scaling/xq2-front.webp"
+          width="593"
+          height="216"
+          loading="lazy"
+          alt="Wireframe of the XQ2 Platform from the front: a domed tower on a wide, flat deck."
+        />
+        <figcaption>Front</figcaption>
+      </figure>
+      <figure class="wireframe">
+        <img
+          src="projects/armada-scaling/xq2-side.webp"
+          width="552"
+          height="216"
+          loading="lazy"
+          alt="Wireframe of the XQ2 Platform from the side, showing the tower and the angled arms."
+        />
+        <figcaption>Side</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="band section" [class]="'band--' + design().bands.method" aria-labelledby="method">
+    <div class="container prose" appReveal>
+      <h2 id="method">Method</h2>
+      <p>
+        We should be able to find a function that describes Armada's non-linear scale. To start,
+        let's plot the data<a class="ref" href="#ref-2" aria-label="Reference 2"><sup>2</sup></a
+        >: the canon length of each ship and squadron in the game against the measured length of its
+        model.
+      </p>
+    </div>
+    <div class="container figure" appReveal>
+      <app-scale-chart
+        caption="Canon length against Armada model length for {{ n.shipCount }} ships and squadrons"
+        [ships]="ships"
+        [design]="design().chart"
+      />
+    </div>
+    <div class="container prose" appReveal>
+      <p>Two things stand out:</p>
+      <ol>
+        <li>There does seem to be a relationship.</li>
+        <li>As expected, it isn't linear: big ships are scaled down much more than small ones.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section
+    class="band section"
+    [class]="'band--' + design().bands.fitting"
+    aria-labelledby="fitting"
+  >
+    <div class="container prose" appReveal>
+      <h2 id="fitting">Finding a fit</h2>
+      <p>
+        To define a <em>best fit</em>, we need a family of functions to try. By eye, I guessed the
+        relationship was either logarithmic or a power function. Fitting both shows which describes
+        the data better.
+      </p>
+      <p>A logarithmic function has the general form</p>
+      <app-tex class="equation" [display]="true" tex="y = a \ln(x) + b" />
+      <p>
+        Linear regression<a class="ref" href="#ref-3" aria-label="Reference 3"><sup>3</sup></a> on
+        <app-tex tex="\ln(x)" /> finds the <app-tex tex="a" /> and <app-tex tex="b" /> that give the
+        closest fit:
+      </p>
+      <app-tex class="equation" [display]="true" [tex]="tex.logFit" />
+      <p>A power function has the form</p>
+      <app-tex class="equation" [display]="true" tex="y = a x^{b}" />
+      <p>
+        Finding <app-tex tex="a" /> and <app-tex tex="b" /> directly is tough this time, but taking
+        the log of both sides gets us close:
+      </p>
+      <app-tex
+        class="equation"
+        [display]="true"
+        tex="\log_{10}(y) = \log_{10}(a) + b \log_{10}(x)"
+      />
+      <p>
+        That looks messy, but it's linear in <app-tex tex="\log_{10}(x)" />, so linear regression is
+        back on the table. It finds
+      </p>
+      <app-tex class="equation" [display]="true" [tex]="tex.powerCoefficients" />
+      <p>so the power function is</p>
+      <app-tex class="equation" [display]="true" [tex]="tex.powerFit" />
+      <p>Now let's plot both against the data. Switch either fit on or off to compare.</p>
+    </div>
+    <div class="container figure" appReveal>
+      <app-scale-chart
+        caption="Both fits against the data"
+        [ships]="ships"
+        [fits]="fits()"
+        [design]="design().chart"
+      />
+    </div>
+  </section>
+
+  <section
+    class="band section"
+    [class]="'band--' + design().bands.comparison"
+    aria-labelledby="comparison"
+  >
+    <div class="container prose" appReveal>
+      <h2 id="comparison">Which fit is better?</h2>
+      <p>
+        By eye, the power function follows the data much more closely. To confirm it, I measured
+        each fit's root-mean-square error (RMSE): the typical distance, in millimetres, between a
+        model's real length and the length the fit predicts.
+      </p>
+      <dl class="stats">
+        <div>
+          <dt>Logarithmic fit</dt>
+          <dd>{{ n.logRmse }}<span> mm RMSE</span></dd>
+        </div>
+        <div>
+          <dt>Power fit</dt>
+          <dd class="stats__winner">{{ n.powerRmse }}<span> mm RMSE</span></dd>
+        </div>
+      </dl>
+      <p>
+        The power function's error is nearly {{ n.ratio }}× smaller, so it's the one to use for
+        Armada's scale:
+      </p>
+      <app-tex class="equation" [display]="true" [tex]="tex.powerFit" />
+    </div>
+  </section>
+
+  <section
+    class="band section"
+    [class]="'band--' + design().bands.findings"
+    aria-labelledby="findings"
+  >
+    <div class="container prose" appReveal>
+      <h2 id="findings">Findings</h2>
+      <p>
+        With this function, we can find a reasonable model size for <em>any</em> Star Wars ship from
+        its canon length. The XQ2 Platform is {{ n.xq2CanonM }} m long<a
+          class="ref"
+          href="#ref-4"
+          aria-label="Reference 4"
+          ><sup>4</sup></a
+        >, which puts its model at {{ n.xq2ModelMm }} mm.
+      </p>
+      <p>Try it with a ship of your own:</p>
+      <app-scale-calculator [(canonM)]="canonM" [predict]="predict" />
+      <p>
+        I've added a few ships I'd like to design to the chart, along with yours. Let me know if you
+        think of others.
+      </p>
+    </div>
+    <div class="container figure" appReveal>
+      <app-scale-chart
+        caption="Planned ships, sized by the power fit"
+        [ships]="ships"
+        [fits]="fits().slice(0, 1)"
+        [planned]="planned"
+        [highlight]="calculated()"
+        [design]="design().chart"
+      />
+    </div>
+  </section>
+
+  <footer
+    class="band section"
+    [class]="'band--' + design().bands.references"
+    aria-labelledby="references"
+  >
+    <div class="container prose">
+      <h2 id="references">References</h2>
+      <ol class="references">
+        <li id="ref-1">
+          <a href="https://starwars.fandom.com/wiki/XQ_Platform_series" rel="noopener"
+            >XQ Platform series</a
+          >, Wookieepedia.
+        </li>
+        <li id="ref-2">
+          <a
+            href="https://community.fantasyflightgames.com/topic/250961-armada-sliding-scale-graph/"
+            rel="noopener"
+            >Armada sliding scale graph</a
+          >: ship data measured by Rune Taq, Fantasy Flight Games community forum.
+        </li>
+        <li id="ref-3">
+          Jason Brownlee,
+          <a
+            href="https://machinelearningmastery.com/implement-simple-linear-regression-scratch-python/"
+            rel="noopener"
+            >How to implement simple linear regression from scratch with Python</a
+          >, for a refresher on linear regression.
+        </li>
+        <li id="ref-4">
+          <a href="https://starwars.fandom.com/wiki/XQ2_Platform" rel="noopener">XQ2 Platform</a>,
+          Wookieepedia.
+        </li>
+      </ol>
+    </div>
+  </footer>
+
+  @if (showTuner) {
+    @defer (on idle) {
+      <app-tuner-panel
+        title="Armada page design"
+        storageKey="tuner:armada-scaling"
+        [schema]="designSchema"
+        [defaults]="designDefaults"
+        [(settings)]="settings"
+      />
+    }
+  }
+</article>

@@ -23,19 +23,23 @@ export function homeProjects(
   return [...publishedProjects(projects), ...projects.filter(isComingSoon)].slice(0, slots);
 }
 
-/** Routes for every project with a page: published ones, plus drafts when asked for. */
+/**
+ * Routes for every project with a page: published ones always; drafts and coming-soon previews
+ * only when drafts are shown.
+ */
 export function projectRoutes(projects: readonly Project[], showDrafts: boolean): Route[] {
-  return projects.flatMap((p) =>
-    p.status === 'published' || (p.status === 'draft' && showDrafts)
+  return projects.flatMap((p) => {
+    const page = p.status === 'published' || showDrafts ? p.page : undefined;
+    return page
       ? [
           {
             path: `${PROJECTS_PATH}/${p.slug}`,
             title: `${p.title} · ${SITE_NAME}`,
-            loadComponent: p.page,
+            loadComponent: page,
           },
         ]
-      : [],
-  );
+      : [];
+  });
 }
 
 const MONTHS = [

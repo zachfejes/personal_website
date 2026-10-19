@@ -1,0 +1,197 @@
+// The chart sits on its own dark panel so it reads the same on any band.
+:host {
+  display: block;
+  color: var(--color-on-dark);
+}
+
+.chart {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: clamp(0.75rem, 2vw, 1.25rem);
+  background: var(--chart-panel, var(--color-ink));
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow: 0 14px 30px -18px rgb(0 0 0 / 60%);
+}
+
+.chart__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chart__toggle {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--color-on-dark) 30%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  opacity: 0.55;
+
+  &[aria-pressed='true'] {
+    opacity: 1;
+    background: color-mix(in srgb, var(--color-on-dark) 10%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-highlight);
+    outline-offset: 2px;
+  }
+}
+
+.chart__plot {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  touch-action: pan-y;
+  border-radius: var(--radius);
+
+  &:focus-visible {
+    outline: 2px solid var(--color-highlight);
+    outline-offset: 4px;
+  }
+}
+
+.chart__axis text {
+  font-family: var(--font-label);
+  fill: var(--color-muted);
+}
+
+.chart__title {
+  fill: var(--color-on-dark);
+  letter-spacing: 0.04em;
+}
+
+.chart__grid {
+  stroke: var(--color-on-dark);
+}
+
+.chart__baseline {
+  stroke: color-mix(in srgb, var(--color-on-dark) 40%, transparent);
+}
+
+.chart__fit {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.chart__point {
+  transition: r 0.15s ease;
+  stroke-width: 2;
+
+  &.is-active {
+    stroke: var(--color-on-dark);
+    stroke-width: 2;
+  }
+}
+
+.chart__point--highlight {
+  stroke-width: 2.5;
+}
+
+.chart__callout {
+  font-family: var(--font-label);
+  letter-spacing: 0.04em;
+}
+
+.chart__tooltip {
+  pointer-events: none;
+
+  rect {
+    fill: color-mix(in srgb, var(--color-ink) 92%, var(--color-on-dark));
+    stroke: color-mix(in srgb, var(--color-on-dark) 25%, transparent);
+  }
+
+  text {
+    font-family: var(--font-label);
+    fill: var(--color-muted);
+  }
+
+  .chart__tooltip-name {
+    fill: var(--color-on-dark);
+    font-weight: 600;
+  }
+}
+
+.chart__caption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  font-size: 0.9rem;
+  color: color-mix(in srgb, var(--color-on-dark) 80%, transparent);
+}
+
+.chart__legend {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+
+  > span {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+}
+
+.chart__swatch {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+}
+
+.chart__swatch--line {
+  width: 1rem;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.chart__swatch--ring {
+  border: 2px solid;
+  background: transparent;
+}
+
+.chart__data {
+  font-size: 0.85rem;
+
+  summary {
+    cursor: pointer;
+    font-family: var(--font-label);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  table {
+    width: 100%;
+    margin-top: 0.5rem;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-on-dark) 15%, transparent);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th[scope='row'],
+  th[scope='col']:first-child {
+    text-align: left;
+    font-weight: 400;
+  }
+}
