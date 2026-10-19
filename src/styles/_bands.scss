@@ -1,4 +1,4 @@
-// Full-width bands. Each band has film grain, and casts a soft shadow onto the band above it
+// Full-width bands. --accent-text is the highlight color that reads on each band. Each band has film grain, and casts a soft shadow onto the band above it
 // (bands paint in document order, so a later band's shadow lands on the earlier one).
 .band {
   position: relative;
@@ -25,17 +25,23 @@
 }
 
 .band--dark {
+  --accent-text: var(--color-highlight);
+
   background: var(--color-ink);
   color: var(--color-on-dark);
 }
 
 .band--light {
+  --accent-text: var(--color-highlight-on-paper);
+
   background: var(--color-paper);
   color: var(--color-ink);
   color-scheme: light;
 }
 
 .band--accent {
+  --accent-text: var(--color-highlight);
+
   background: var(--color-green);
   color: var(--color-on-dark);
 }

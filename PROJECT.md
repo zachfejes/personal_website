@@ -54,8 +54,9 @@ Project write-ups like Armada mix prose with interactive charts, equations, and 
 - **Status decides visibility:**
   - **published:** listed on `/projects` (newest first), first in line for the home page,
     routed and prerendered.
-  - **coming-soon:** no page. Fills the home page's six slots that published projects leave
-    free, in registry order; the rest stay hidden.
+  - **coming-soon:** fills the home page's six slots that published projects leave free, in
+    registry order; the rest stay hidden. It may already have a page in progress: that page is
+    a preview, routed like a draft, while the card keeps saying "Coming soon".
   - **draft:** has a page that's being written. Routed in development and staging builds so it
     can be previewed, never in production, and never listed or linked.
 - **Shared pieces are extracted on second use** (see [Code style](#code-style--conventions)), not
@@ -63,7 +64,16 @@ Project write-ups like Armada mix prose with interactive charts, equations, and 
   second project needs them: a page shell (title, dates, reading width, contents), figure with
   caption, KaTeX equations, a D3 chart frame themed to the palette.
 - **Charts:** D3, used mostly as a math library (scales, shapes, axes), with Angular rendering
-  the SVG in templates.
+  the SVG in templates. Charts draw at their container's real width, so text keeps its size on
+  phones, and every chart has a data table for screen readers and the curious.
+- **Equations:** KaTeX, rendered during prerendering. Its stylesheet is a separate file
+  (`katex.css`) that only pages with equations link to.
+- **Design tuning:** a project page under active design keeps its adjustable values (layout,
+  type, section bands, chart styling) in one settings file, e.g.
+  `src/app/projects/armada-scaling/design.ts`. On development and staging builds the page shows
+  a **Tune** panel (`src/app/dev/tuner/`) that edits those values live, remembers them in the
+  browser, and can copy them as JSON. Pasting that JSON back into the settings file makes the
+  changes permanent. Production never loads the panel.
 
 Trade-off: writing prose in templates is a bit more verbose than Markdown. If a future project is mostly text, a Markdown-rendering component can be added later without changing this structure.
 
@@ -160,6 +170,13 @@ Rebuild the old "Armada Scaling" write-up as the first project page and the refe
   - Toggleable overlays for the log and power fits.
   - Possibly an input that predicts model size for a given canon length.
 - **Port:** the chart data and regression helper (`linearRegression.js`) carry over as typed TypeScript. Equations move from MathJax to KaTeX.
+
+Status (milestone 6, first version): the page is built as a preview on staging, with the three
+charts, the calculator (canon length → model length), the XQ2 wireframes and the tuning panel.
+Every number in the text is computed from the data; tests check them against the 2018 results.
+That check found a typo in the original: the logarithmic fit is y = 31.84 ln(x) − 78.25, not
+3.84 (the original's chart and error already used 31.84). Next: iterate on the design with the
+tuner, then publish (posted date, card link, header link to `/projects`).
 
 ## Project backlog
 
@@ -310,7 +327,8 @@ anything the linters already enforce isn't repeated here.
    of unit-testing special features (interactive charts, fits, math).
 5. ✅ **Project framework:** project registry, `/projects` page, shared project card, routes and
    prerendering per slug. Article building blocks wait for a second project that needs them.
-6. **Armada Scaling:** port the first project using the framework.
+6. **Armada Scaling:** port the first project using the framework. _In progress: preview on
+   staging, design iteration next._
 7. **About / Resume:** bio, experience timeline, skills, PDF download.
 8. **Polish:** SEO, sitemap, accessibility pass, Lighthouse performance check, favicon and social preview images.
 9. **Production:** choose a host, connect the domain, add the production deploy workflow.

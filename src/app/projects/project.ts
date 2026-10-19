@@ -38,9 +38,13 @@ export interface PublishedProject extends ProjectBase {
   page: PageLoader;
 }
 
-/** Announced on the home page while its slot is free; no page yet. */
+/**
+ * Announced on the home page while its slot is free. Its page, if one is being written, is a
+ * preview: routed only where environment.showDrafts is on, and not linked from the card.
+ */
 export interface ComingSoonProject extends ProjectBase {
   status: 'coming-soon';
+  page?: PageLoader;
 }
 
 /** Being written: routed only where environment.showDrafts is on, never listed. */

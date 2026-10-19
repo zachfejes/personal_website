@@ -31,7 +31,7 @@ const SOON_A: ComingSoonProject = {
   status: 'coming-soon',
 };
 const SOON_B: ComingSoonProject = { ...SOON_A, slug: 'soon-b', title: 'Soon B' };
-const SOON_C: ComingSoonProject = { ...SOON_A, slug: 'soon-c', title: 'Soon C' };
+const SOON_C: ComingSoonProject = { ...SOON_A, slug: 'soon-c', title: 'Soon C', page: loadStub };
 const DRAFT: DraftProject = {
   ...base,
   slug: 'draft',
@@ -73,12 +73,17 @@ describe('projectRoutes', () => {
   const paths = (showDrafts: boolean) =>
     projectRoutes(REGISTRY, showDrafts).map((route) => route.path);
 
-  it('routes published projects under /projects, and nothing else', () => {
+  it('routes only published projects when drafts are hidden', () => {
     expect(paths(false)).toEqual(['projects/older', 'projects/newer']);
   });
 
-  it('adds drafts when drafts are shown', () => {
-    expect(paths(true)).toEqual(['projects/older', 'projects/draft', 'projects/newer']);
+  it('adds drafts and coming-soon previews when drafts are shown', () => {
+    expect(paths(true)).toEqual([
+      'projects/older',
+      'projects/draft',
+      'projects/newer',
+      'projects/soon-c',
+    ]);
   });
 
   it('titles each page after its project and loads its page component', async () => {
