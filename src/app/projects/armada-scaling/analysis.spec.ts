@@ -1,41 +1,48 @@
-import { LOG_FIT, LOG_RMSE, POWER_FIT, POWER_RMSE, predictModelMm } from './analysis';
-import { XQ2 } from './ships';
+import { Measured, analyzeScale } from './analysis';
 
-/**
- * The 2018 write-up's results, which the port must reproduce. Each is checked to the precision
- * it was published at. (The write-up printed the log fit's a as 3.84, a typo for 31.84: its own
- * chart and error used 31.84.)
- */
-const PUBLISHED = {
-  power: { a: 3.42, b: 0.553, rmse: 6.64 },
-  log: { a: 31.84, b: -78.25, rmse: 24.8 },
-  xq2ModelMm: 146,
-} as const;
+/** Exact data has an exact fit, up to floating-point rounding. */
+const DIGITS = 9;
+const CANON_LENGTHS_M = [10, 50, 150, 400, 900, 1600];
 
-/** toBeCloseTo precision: within half a unit of the last published digit. */
-const HUNDREDTHS = 2;
-const THOUSANDTHS = 3;
-const TENTHS = 1;
-const WHOLE = 0;
+const onCurve = (model: (canonM: number) => number): Measured[] =>
+  CANON_LENGTHS_M.map((canonM) => ({ canonM, modelMm: model(canonM) }));
 
-describe('Armada scale analysis', () => {
-  it('reproduces the power fit', () => {
-    expect(POWER_FIT.a).toBeCloseTo(PUBLISHED.power.a, HUNDREDTHS);
-    expect(POWER_FIT.b).toBeCloseTo(PUBLISHED.power.b, THOUSANDTHS);
-    expect(POWER_RMSE).toBeCloseTo(PUBLISHED.power.rmse, HUNDREDTHS);
+describe('analyzeScale', () => {
+  describe('with ships that follow a power law exactly', () => {
+    const A = 2;
+    const B = 0.5;
+    const result = analyzeScale(onCurve((x) => A * x ** B));
+
+    it('recovers the power fit', () => {
+      expect(result.power.a).toBeCloseTo(A, DIGITS);
+      expect(result.power.b).toBeCloseTo(B, DIGITS);
+      expect(result.powerRmse).toBeCloseTo(0, DIGITS);
+    });
+
+    it('finds the logarithmic fit worse', () => {
+      expect(result.logRmse).toBeGreaterThan(result.powerRmse);
+    });
+
+    it('predicts model sizes from the power fit', () => {
+      const CANON_M = 100;
+      expect(result.predictModelMm(CANON_M)).toBeCloseTo(A * CANON_M ** B, DIGITS);
+    });
   });
 
-  it('reproduces the logarithmic fit', () => {
-    expect(LOG_FIT.a).toBeCloseTo(PUBLISHED.log.a, HUNDREDTHS);
-    expect(LOG_FIT.b).toBeCloseTo(PUBLISHED.log.b, HUNDREDTHS);
-    expect(LOG_RMSE).toBeCloseTo(PUBLISHED.log.rmse, TENTHS);
-  });
+  describe('with ships that follow a logarithm exactly', () => {
+    // Positive across CANON_LENGTHS_M: the power fit takes logarithms of model lengths.
+    const A = 30;
+    const B = 10;
+    const result = analyzeScale(onCurve((x) => A * Math.log(x) + B));
 
-  it('finds the power fit is the better one', () => {
-    expect(POWER_RMSE).toBeLessThan(LOG_RMSE);
-  });
+    it('recovers the logarithmic fit', () => {
+      expect(result.log.a).toBeCloseTo(A, DIGITS);
+      expect(result.log.b).toBeCloseTo(B, DIGITS);
+      expect(result.logRmse).toBeCloseTo(0, DIGITS);
+    });
 
-  it('sizes the XQ2 Platform model as published', () => {
-    expect(predictModelMm(XQ2.canonM)).toBeCloseTo(PUBLISHED.xq2ModelMm, WHOLE);
+    it('finds the power fit worse', () => {
+      expect(result.powerRmse).toBeGreaterThan(result.logRmse);
+    });
   });
 });

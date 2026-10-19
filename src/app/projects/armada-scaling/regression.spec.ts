@@ -5,7 +5,29 @@ const DIGITS = 9;
 
 const XS = [1, 2, 4, 8, 16];
 
+/**
+ * A worked example with scattered points. Means are (2, 2); covariance 1 and variance 2 give
+ * slope 1/2 and intercept 2 - 2·(1/2) = 1. That line predicts 1.5, 2, 2.5 against 1, 3, 2:
+ * errors 0.5, -1, 0.5, so the mean square error is 0.5.
+ */
+const WORKED = {
+  points: [
+    { x: 1, y: 1 },
+    { x: 2, y: 3 },
+    { x: 3, y: 2 },
+  ],
+  slope: 0.5,
+  intercept: 1,
+  meanSquareError: 0.5,
+};
+
 describe('linearRegression', () => {
+  it('fits scattered points (worked example)', () => {
+    const line = linearRegression(WORKED.points);
+    expect(line.slope).toBeCloseTo(WORKED.slope, DIGITS);
+    expect(line.intercept).toBeCloseTo(WORKED.intercept, DIGITS);
+  });
+
   it('recovers the line through points that lie on it', () => {
     const SLOPE = 2;
     const INTERCEPT = -3;
@@ -38,6 +60,11 @@ describe('logFit', () => {
 });
 
 describe('rmse', () => {
+  it('matches the worked example', () => {
+    const line = (x: number) => WORKED.slope * x + WORKED.intercept;
+    expect(rmse(WORKED.points, line)).toBeCloseTo(Math.sqrt(WORKED.meanSquareError), DIGITS);
+  });
+
   it('is zero for a perfect model', () => {
     const points = XS.map((x) => ({ x, y: x }));
     expect(rmse(points, (x) => x)).toBe(0);

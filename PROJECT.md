@@ -172,9 +172,13 @@ Rebuild the old "Armada Scaling" write-up as the first project page and the refe
   - Possibly an input that predicts model size for a given canon length.
 - **Port:** the chart data and regression helper (`linearRegression.js`) carry over as typed TypeScript. Equations move from MathJax to KaTeX.
 
-Data: `src/app/projects/armada-scaling/ships.json` holds the measured ships, the planned ships
-and their sources, kept apart from the code that does the math. Edit it to add or correct a ship;
-the fits, numbers, equations and charts all follow on the next build.
+Data: `src/app/projects/armada-scaling/ships.json` holds the measured ships and the planned ships,
+kept apart from the code that does the math. Each ship records its canon length (and, if
+measured, its Armada model length), faction (Rebel Alliance, Galactic Empire, Galactic Republic or
+Separatist Alliance (CIS)), era (Galactic Civil War Era or Clone Wars Era), where the canon and
+measured numbers came from (ids into a shared `sources` list) and the date they were collected.
+The build checks every entry and stops with a message naming the ship if anything is off. Edit
+the file to add or correct a ship; the fits, numbers, equations and charts all follow.
 
 Status (milestone 6, first version): the page is built as a preview on staging, with the three
 charts, the calculator (canon length → model length), the XQ2 wireframes and the tuning panel.
@@ -312,6 +316,11 @@ anything the linters already enforce isn't repeated here.
 - **No magic values in tests either.** Name fixtures (`DESKTOP`, `PHONE`) and expected values
   (`FULLY_FADED`, `STEP_PX`). Prefer comparing a whole result (`toEqual([...])`) over checking a
   count and then an index.
+- **Test calculations on known answers, not on the real data's results.** Feed a calculation
+  inputs whose answer is known (points on an exact curve, a worked example done by hand) and
+  check it gets that answer. Don't pin results computed from the site's real data: they change
+  whenever the data does, and they only prove the code still gives what it gave before. Checks
+  on the real data itself (unique names, positive lengths) are fine.
 - **Shared components get tests when they become shared.** One-off code is tested where its logic
   is non-trivial (math, parsing, layout rules).
 
