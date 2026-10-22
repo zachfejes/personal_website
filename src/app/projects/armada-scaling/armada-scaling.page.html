@@ -177,21 +177,24 @@
       <h2 id="comparison">Which fit is better?</h2>
       <p>
         By eye, the power function follows the data much more closely. To confirm it, I measured
-        each fit's root-mean-square error (RMSE): the typical distance, in millimetres, between a
-        model's real length and the length the fit predicts.
+        each fit's average error as a percentage of each model's real length. Percentages keep the
+        biggest ships from dominating: 20 mm off matters a lot for a 60 mm corvette, and much less
+        for a 600 mm Super Star Destroyer.
       </p>
       <dl class="stats">
         <div>
           <dt>Logarithmic fit</dt>
-          <dd>{{ n.logRmse }}<span> mm RMSE</span></dd>
+          <dd>{{ n.logPercent }}<span>% average error</span></dd>
+          <dd class="stats__detail">RMSE {{ n.logRmse }} mm</dd>
         </div>
         <div>
           <dt>Power fit</dt>
-          <dd class="stats__winner">{{ n.powerRmse }}<span> mm RMSE</span></dd>
+          <dd class="stats__winner">{{ n.powerPercent }}<span>% average error</span></dd>
+          <dd class="stats__detail">RMSE {{ n.powerRmse }} mm</dd>
         </div>
       </dl>
       <p>
-        The power function's error is nearly {{ n.ratio }}× smaller, so it's the one to use for
+        The power function's error is about {{ n.ratio }}× smaller, so it's the one to use for
         Armada's scale:
       </p>
       <app-tex class="equation" [display]="true" [tex]="tex.powerFit" />
@@ -246,12 +249,13 @@
             >XQ Platform series</a
           >, Wookieepedia.
         </li>
+        <!-- Kept on one line so each ; and . sits right after its title. -->
+        <!-- prettier-ignore -->
         <li id="ref-2">
-          <a
-            href="https://community.fantasyflightgames.com/topic/250961-armada-sliding-scale-graph/"
-            rel="noopener"
-            >Armada sliding scale graph</a
-          >: ship data measured by Rune Taq, Fantasy Flight Games community forum.
+          Ship data:
+          @for (source of dataSources; track source.title; let last = $last) {
+            @if (source.url) {<a [href]="source.url" rel="noopener">{{ source.title }}</a>} @else {<span>{{ source.title }}</span>}{{ last ? '.' : ';' }}
+          }
         </li>
         <li id="ref-3">
           Jason Brownlee,

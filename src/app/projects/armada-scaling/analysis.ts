@@ -1,5 +1,5 @@
 import { PLANNED_SHIPS, SHIPS } from './ships';
-import { Fit, Point, logFit, powerFit, rmse } from './regression';
+import { Fit, Point, logFit, meanPercentError, powerFit, rmse } from './regression';
 
 /** What the analysis needs from a ship: canon length (m) and measured model length (mm). */
 export interface Measured {
@@ -12,6 +12,9 @@ export interface ScaleAnalysis {
   log: Fit;
   powerRmse: number;
   logRmse: number;
+  /** Mean absolute percentage error of each fit, %. */
+  powerPercentError: number;
+  logPercentError: number;
   /** Model size for any canon length, from the power fit. */
   predictModelMm: (canonM: number) => number;
 }
@@ -26,6 +29,8 @@ export function analyzeScale(ships: readonly Measured[]): ScaleAnalysis {
     log,
     powerRmse: rmse(points, power.predict),
     logRmse: rmse(points, log.predict),
+    powerPercentError: meanPercentError(points, power.predict),
+    logPercentError: meanPercentError(points, log.predict),
     predictModelMm: power.predict,
   };
 }
@@ -37,6 +42,8 @@ export const POWER_FIT = ARMADA.power;
 export const LOG_FIT = ARMADA.log;
 export const POWER_RMSE = ARMADA.powerRmse;
 export const LOG_RMSE = ARMADA.logRmse;
+export const POWER_PERCENT_ERROR = ARMADA.powerPercentError;
+export const LOG_PERCENT_ERROR = ARMADA.logPercentError;
 export const predictModelMm = ARMADA.predictModelMm;
 
 /** The planned ships, sized by the power fit. */

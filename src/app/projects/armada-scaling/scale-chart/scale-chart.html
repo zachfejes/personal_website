@@ -1,19 +1,33 @@
 <figure class="chart">
-  @if (fits().length) {
-    <div class="chart__toggles" role="group" aria-label="Fits to show">
-      @for (fit of curves(); track fit.id) {
+  <div class="chart__controls">
+    @if (fits().length) {
+      <div class="chart__toggles" role="group" aria-label="Fits to show">
+        @for (fit of curves(); track fit.id) {
+          <button
+            type="button"
+            class="chart__toggle"
+            [attr.aria-pressed]="fit.on"
+            (click)="toggle(fit.id)"
+          >
+            <span class="chart__swatch chart__swatch--line" [style.background]="fit.color"></span>
+            {{ fit.label }}
+          </button>
+        }
+      </div>
+    }
+    <div class="chart__toggles chart__scale" role="group" aria-label="Axis scale">
+      @for (kind of scaleKinds; track kind) {
         <button
           type="button"
           class="chart__toggle"
-          [attr.aria-pressed]="fit.on"
-          (click)="toggle(fit.id)"
+          [attr.aria-pressed]="scale() === kind"
+          (click)="scale.set(kind)"
         >
-          <span class="chart__swatch chart__swatch--line" [style.background]="fit.color"></span>
-          {{ fit.label }}
+          {{ kind === 'log' ? 'Log' : 'Linear' }}
         </button>
       }
     </div>
-  }
+  </div>
 
   <svg
     #svg
@@ -94,7 +108,7 @@
         [attr.y]="height() - view.margin.bottom + view.axisTitleGap.x"
         text-anchor="middle"
       >
-        Canon length (m)
+        Canon length (m{{ scale() === 'log' ? ', log scale' : '' }})
       </text>
       <text
         class="chart__title"
@@ -107,7 +121,7 @@
         "
         text-anchor="middle"
       >
-        Model length (mm)
+        Model length (mm{{ scale() === 'log' ? ', log scale' : '' }})
       </text>
     </g>
 

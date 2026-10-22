@@ -180,6 +180,11 @@ measured numbers came from (ids into a shared `sources` list) and the date they 
 The build checks every entry and stops with a message naming the ship if anything is off. Edit
 the file to add or correct a ship; the fits, numbers, equations and charts all follow.
 
+Charts start on log axes, where the power law is a straight line and ships from 6 m fighters to
+the 19 km Executor all stay readable; readers can switch to linear. The fits are compared by
+average percentage error (with RMSE alongside), so the largest ships don't dominate the
+comparison. The page's data reference lists every measurement source used in `ships.json`.
+
 Status (milestone 6, first version): the page is built as a preview on staging, with the three
 charts, the calculator (canon length → model length), the XQ2 wireframes and the tuning panel.
 Every number in the text is computed from the data; tests check them against the 2018 results.

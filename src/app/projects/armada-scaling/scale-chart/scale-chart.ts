@@ -7,12 +7,13 @@ import {
   computed,
   inject,
   input,
+  linkedSignal,
   signal,
   viewChild,
 } from '@angular/core';
-import { scaleLinear } from 'd3-scale';
 import { line } from 'd3-shape';
 import { Design } from '../design';
+import { SCALE_KINDS, ScaleKind, axisTicks, makeScale, sampleRange } from './axis';
 
 export interface NamedPoint {
   name: string;
@@ -50,10 +51,8 @@ const TICK_SPACING = { x: 90, y: 50 } as const;
 const MIN_TICKS = 3;
 /** Fit curves are drawn through this many samples. */
 const FIT_SAMPLES = 160;
-/** The log fit is undefined at 0, so curves start just above it. */
+/** On linear axes, curves start just above 0: the log fit is undefined there. */
 const FIT_MIN_X = 1;
-/** Headroom above the largest value, as a fraction. */
-const DOMAIN_PADDING = 0.06;
 /** Pointer must be this close to a point (SVG units) to select it. */
 const HIT_RADIUS = 28;
 const TOOLTIP = {
@@ -101,6 +100,10 @@ export class ScaleChart {
     tooltip: TOOLTIP,
   };
 
+  protected readonly scaleKinds = SCALE_KINDS;
+  /** Linear or log axes: starts from the design setting; the reader can switch. */
+  protected readonly scale = linkedSignal<ScaleKind>(() => this.design().defaultScale);
+
   /** Fits switched off by the reader. */
   private readonly hidden = signal<ReadonlySet<string>>(new Set());
   protected readonly active = signal<Plotted | null>(null);
@@ -116,24 +119,34 @@ export class ScaleChart {
   });
 
   protected readonly x = computed(() =>
-    scaleLinear()
-      .domain([0, Math.max(...this.all().map((p) => p.x)) * (1 + DOMAIN_PADDING)])
-      .range([MARGIN.left, this.width() - MARGIN.right])
-      .nice(),
+    makeScale(
+      this.scale(),
+      this.all().map((p) => p.x),
+      [MARGIN.left, this.width() - MARGIN.right],
+    ),
   );
 
   protected readonly y = computed(() =>
-    scaleLinear()
-      .domain([0, Math.max(...this.all().map((p) => p.y)) * (1 + DOMAIN_PADDING)])
-      .range([this.height() - MARGIN.bottom, MARGIN.top])
-      .nice(),
+    makeScale(
+      this.scale(),
+      this.all().map((p) => p.y),
+      [this.height() - MARGIN.bottom, MARGIN.top],
+    ),
   );
 
   protected readonly xTicks = computed(() =>
-    this.x().ticks(Math.max(MIN_TICKS, Math.round(this.width() / TICK_SPACING.x))),
+    axisTicks(
+      this.scale(),
+      this.x(),
+      Math.max(MIN_TICKS, Math.round(this.width() / TICK_SPACING.x)),
+    ),
   );
   protected readonly yTicks = computed(() =>
-    this.y().ticks(Math.max(MIN_TICKS, Math.round(this.height() / TICK_SPACING.y))),
+    axisTicks(
+      this.scale(),
+      this.y(),
+      Math.max(MIN_TICKS, Math.round(this.height() / TICK_SPACING.y)),
+    ),
   );
 
   protected readonly points = computed((): Plotted[] => {
@@ -152,17 +165,22 @@ export class ScaleChart {
   private readonly ordered = computed(() => [...this.points()].sort((a, b) => a.x - b.x));
 
   protected readonly curves = computed(() => {
+    const kind = this.scale();
     const x = this.x();
     const y = this.y();
-    const [, maxX] = x.domain();
-    const step = (maxX - FIT_MIN_X) / FIT_SAMPLES;
-    const xs = Array.from({ length: FIT_SAMPLES + 1 }, (_, i) => FIT_MIN_X + i * step);
+    const [minX, maxX] = x.domain();
+    const xs = sampleRange(kind, kind === 'linear' ? FIT_MIN_X : minX, maxX, FIT_SAMPLES);
     const hidden = this.hidden();
     return this.fits().map((fit) => ({
       ...fit,
       on: !hidden.has(fit.id),
       d:
         line<number>()
+          // Skip where a fit has no value to plot (a log axis can't show zero or less).
+          .defined((v) => {
+            const value = fit.predict(v);
+            return Number.isFinite(value) && (kind === 'linear' || value > 0);
+          })
           .x((v) => x(v))
           .y((v) => y(fit.predict(v)))(xs) ?? '',
     }));

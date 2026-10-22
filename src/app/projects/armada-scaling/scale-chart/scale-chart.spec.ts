@@ -13,6 +13,8 @@ const FITS: FitLine[] = [
   { id: 'log', label: 'Logarithmic fit', color: '#8fb3a2', predict: (x) => Math.log(x) },
 ];
 const CAPTION = 'Test chart';
+/** The page's chart design, starting on log axes. */
+const CHART_DESIGN = { ...DESIGN.chart, defaultScale: 'log' as const };
 
 // jsdom doesn't lay anything out, so there's nothing to observe; the chart keeps its default width.
 beforeAll(() => {
@@ -28,7 +30,7 @@ afterAll(() => vi.unstubAllGlobals());
 
 const renderChart = (inputs: Partial<{ fits: FitLine[]; planned: NamedPoint[] }> = {}) =>
   render(ScaleChart, {
-    inputs: { caption: CAPTION, ships: SHIPS, design: DESIGN.chart, ...inputs },
+    inputs: { caption: CAPTION, ships: SHIPS, design: CHART_DESIGN, ...inputs },
   });
 
 describe('ScaleChart', () => {
@@ -67,7 +69,24 @@ describe('ScaleChart', () => {
 
   it('has no fit toggles when there are no fits', async () => {
     await renderChart();
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Fits to show' })).toBeNull();
+  });
+
+  it('starts on the scale the design sets, and says so on the axes', async () => {
+    await renderChart();
+    const scale = within(screen.getByRole('group', { name: 'Axis scale' }));
+    expect(scale.getByRole('button', { name: 'Log' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText(/Canon length \(m, log scale\)/)).toBeTruthy();
+  });
+
+  it('switches between log and linear axes', async () => {
+    const user = userEvent.setup();
+    await renderChart();
+    const scale = within(screen.getByRole('group', { name: 'Axis scale' }));
+    await user.click(scale.getByRole('button', { name: 'Linear' }));
+    expect(scale.getByRole('button', { name: 'Linear' }).getAttribute('aria-pressed')).toBe('true');
+    expect(scale.getByRole('button', { name: 'Log' }).getAttribute('aria-pressed')).toBe('false');
+    expect(screen.queryByText(/log scale/)).toBeNull();
   });
 
   it('reads out points from the keyboard', async () => {

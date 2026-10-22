@@ -5,20 +5,23 @@ import { Schema, Settings } from '../../dev/tuner/tuning';
 import { RevealDirective } from '../../shared/reveal.directive';
 import {
   LOG_FIT,
+  LOG_PERCENT_ERROR,
   LOG_RMSE,
   PLANNED_POINTS,
   POWER_FIT,
+  POWER_PERCENT_ERROR,
   POWER_RMSE,
   predictModelMm,
 } from './analysis';
 import { ScaleCalculator } from './calculator';
 import { DESIGN, DESIGN_SCHEMA, Design } from './design';
 import { FitLine, NamedPoint, ScaleChart } from './scale-chart/scale-chart';
-import { SHIPS, XQ2 } from './ships';
+import { MEASUREMENT_SOURCES, SHIPS, XQ2 } from './ships';
 import { Tex } from './tex';
+import { signedTerm } from './tex-format';
 
 /** Coefficients as published: a and b to 2–3 significant decimals. */
-const COEFFICIENT_DECIMALS = { a: 2, b: 3, rmse: 2 } as const;
+const COEFFICIENT_DECIMALS = { a: 2, b: 3, rmse: 1, percent: 1 } as const;
 const fixed = (value: number, decimals: number) => value.toFixed(decimals);
 
 /**
@@ -58,6 +61,8 @@ export class ArmadaScalingPage {
     y: s.modelMm,
   }));
   protected readonly planned: NamedPoint[] = PLANNED_POINTS;
+  /** Credited in the references, straight from ships.json. */
+  protected readonly dataSources = MEASUREMENT_SOURCES;
 
   protected readonly fits = computed((): FitLine[] => {
     const chart = this.design().chart;
@@ -83,10 +88,12 @@ export class ArmadaScalingPage {
     powerB: fixed(POWER_FIT.b, COEFFICIENT_DECIMALS.b),
     powerLogA: fixed(Math.log10(POWER_FIT.a), COEFFICIENT_DECIMALS.b),
     logA: fixed(LOG_FIT.a, COEFFICIENT_DECIMALS.a),
-    logB: fixed(Math.abs(LOG_FIT.b), COEFFICIENT_DECIMALS.a),
+    logB: signedTerm(LOG_FIT.b, COEFFICIENT_DECIMALS.a),
     powerRmse: fixed(POWER_RMSE, COEFFICIENT_DECIMALS.rmse),
     logRmse: fixed(LOG_RMSE, COEFFICIENT_DECIMALS.rmse),
-    ratio: Math.round(LOG_RMSE / POWER_RMSE),
+    powerPercent: fixed(POWER_PERCENT_ERROR, COEFFICIENT_DECIMALS.percent),
+    logPercent: fixed(LOG_PERCENT_ERROR, COEFFICIENT_DECIMALS.percent),
+    ratio: Math.round(LOG_PERCENT_ERROR / POWER_PERCENT_ERROR),
     xq2CanonM: XQ2.canonM,
     xq2ModelMm: Math.round(predictModelMm(XQ2.canonM)),
     shipCount: SHIPS.length,
@@ -94,7 +101,7 @@ export class ArmadaScalingPage {
 
   /** Equations that quote the computed coefficients. */
   protected readonly tex = {
-    logFit: `y = ${this.n.logA} \\ln(x) - ${this.n.logB}`,
+    logFit: `y = ${this.n.logA} \\ln(x) ${this.n.logB}`,
     powerCoefficients: [
       '\\begin{aligned}',
       `b &= ${this.n.powerB} \\\\`,
