@@ -1,17 +1,43 @@
 import { PLANNED_SHIPS, SHIPS } from './ships';
-import { Point, logFit, powerFit, rmse } from './regression';
+import { Fit, Point, logFit, powerFit, rmse } from './regression';
 
-/** Canon length (m) against model length (mm), one point per ship. */
-export const SHIP_POINTS: readonly Point[] = SHIPS.map((s) => ({ x: s.canonM, y: s.modelMm }));
+/** What the analysis needs from a ship: canon length (m) and measured model length (mm). */
+export interface Measured {
+  canonM: number;
+  modelMm: number;
+}
 
-export const POWER_FIT = powerFit(SHIP_POINTS);
-export const LOG_FIT = logFit(SHIP_POINTS);
+export interface ScaleAnalysis {
+  power: Fit;
+  log: Fit;
+  powerRmse: number;
+  logRmse: number;
+  /** Model size for any canon length, from the power fit. */
+  predictModelMm: (canonM: number) => number;
+}
 
-export const POWER_RMSE = rmse(SHIP_POINTS, POWER_FIT.predict);
-export const LOG_RMSE = rmse(SHIP_POINTS, LOG_FIT.predict);
+/** Fits both candidate functions to the ships and measures how well each does. */
+export function analyzeScale(ships: readonly Measured[]): ScaleAnalysis {
+  const points: Point[] = ships.map((s) => ({ x: s.canonM, y: s.modelMm }));
+  const power = powerFit(points);
+  const log = logFit(points);
+  return {
+    power,
+    log,
+    powerRmse: rmse(points, power.predict),
+    logRmse: rmse(points, log.predict),
+    predictModelMm: power.predict,
+  };
+}
 
-/** Model size for any canon length, from the power fit (the better of the two). */
-export const predictModelMm = (canonM: number): number => POWER_FIT.predict(canonM);
+/** The analysis of the page's data (ships.json). */
+export const ARMADA = analyzeScale(SHIPS);
+
+export const POWER_FIT = ARMADA.power;
+export const LOG_FIT = ARMADA.log;
+export const POWER_RMSE = ARMADA.powerRmse;
+export const LOG_RMSE = ARMADA.logRmse;
+export const predictModelMm = ARMADA.predictModelMm;
 
 /** The planned ships, sized by the power fit. */
 export const PLANNED_POINTS = PLANNED_SHIPS.map((s) => ({

@@ -1,0 +1,240 @@
+{
+  "sources": {
+    "rune-taq-2018": {
+      "title": "Armada sliding scale graph, by Rune Taq (Fantasy Flight Games community forum)",
+      "url": "https://community.fantasyflightgames.com/topic/250961-armada-sliding-scale-graph/"
+    },
+    "wookieepedia-xq2": {
+      "title": "XQ2 Platform, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/XQ2_Platform"
+    },
+    "unrecorded": {
+      "title": "Not recorded in the 2018 write-up"
+    }
+  },
+  "station": "XQ2 Platform",
+  "ships": [
+    {
+      "name": "GR75",
+      "canonM": 90,
+      "modelMm": 41.64,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Gozanti",
+      "canonM": 63.8,
+      "modelMm": 36.71,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "CR90",
+      "canonM": 150,
+      "modelMm": 57.62,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Raider",
+      "canonM": 150,
+      "modelMm": 57.81,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Arquitens",
+      "canonM": 250,
+      "modelMm": 73.03,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Pelta",
+      "canonM": 282,
+      "modelMm": 79.38,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Nebulon-B",
+      "canonM": 300,
+      "modelMm": 91.15,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Gladiator",
+      "canonM": 500,
+      "modelMm": 90.88,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "MC30c",
+      "canonM": 580,
+      "modelMm": 110.64,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Assault Frigate Mk II",
+      "canonM": 700,
+      "modelMm": 120,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Victory Star Destroyer",
+      "canonM": 900,
+      "modelMm": 137.39,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Interdictor",
+      "canonM": 1100,
+      "modelMm": 160,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "MC80 Liberty",
+      "canonM": 1200,
+      "modelMm": 176,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "MC80",
+      "canonM": 1200,
+      "modelMm": 185,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Imperial Star Destroyer",
+      "canonM": 1600,
+      "modelMm": 207,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "X-wing",
+      "canonM": 12.5,
+      "modelMm": 14,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "TIE Fighter",
+      "canonM": 6.3,
+      "modelMm": 7,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "TIE Interceptor",
+      "canonM": 6.6,
+      "modelMm": 12,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rune-taq-2018",
+      "canonSource": "rune-taq-2018",
+      "dateSourced": "2018-09-08"
+    }
+  ],
+  "planned": [
+    {
+      "name": "XQ2 Platform",
+      "canonM": 884,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "canonSource": "wookieepedia-xq2",
+      "dateSourced": "2018-09-10"
+    },
+    {
+      "name": "Consular Cruiser",
+      "canonM": 115,
+      "faction": "Galactic Republic",
+      "era": "Clone Wars Era",
+      "canonSource": "unrecorded",
+      "dateSourced": "2018-09-10"
+    },
+    {
+      "name": "Naboo Royal Cruiser",
+      "canonM": 76,
+      "faction": "Galactic Republic",
+      "era": "Clone Wars Era",
+      "canonSource": "unrecorded",
+      "dateSourced": "2018-09-10"
+    },
+    {
+      "name": "Providence",
+      "canonM": 1088,
+      "faction": "Separatist Alliance (CIS)",
+      "era": "Clone Wars Era",
+      "canonSource": "unrecorded",
+      "dateSourced": "2018-09-10"
+    },
+    {
+      "name": "MC40a",
+      "canonM": 550,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "canonSource": "unrecorded",
+      "dateSourced": "2018-09-10"
+    }
+  ]
+}

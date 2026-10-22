@@ -1,51 +1,118 @@
-/** A ship with its length in canon and its model's measured length in Star Wars: Armada. */
-export interface Ship {
+import data from './ships.json';
+
+export const FACTIONS = [
+  'Rebel Alliance',
+  'Galactic Empire',
+  'Galactic Republic',
+  'Separatist Alliance (CIS)',
+] as const;
+export type Faction = (typeof FACTIONS)[number];
+
+export const ERAS = ['Galactic Civil War Era', 'Clone Wars Era'] as const;
+export type Era = (typeof ERAS)[number];
+
+/** Where a number came from, listed once in ships.json and referred to by id. */
+export interface Source {
+  title: string;
+  url?: string;
+}
+
+/** What every ship records, measured or planned. */
+interface ShipBase {
   name: string;
   /** Canon length, m. */
   canonM: number;
+  faction: Faction;
+  era: Era;
+  canonSource: Source;
+  /** When the numbers were collected, `YYYY-MM-DD`. */
+  dateSourced: string;
+}
+
+/** A ship with its model's measured length in Star Wars: Armada. */
+export interface Ship extends ShipBase {
   /** Armada model length, mm. */
   modelMm: number;
+  measurementSource: Source;
 }
 
 /** A ship I'd like to model: canon length only; its model size comes from the fit. */
-export interface PlannedShip {
+export type PlannedShip = ShipBase;
+
+/** A ship as written in ships.json: sources by id, faction and era as plain strings. */
+interface RawShip {
   name: string;
   canonM: number;
+  faction: string;
+  era: string;
+  canonSource: string;
+  dateSourced: string;
 }
 
+interface RawMeasuredShip extends RawShip {
+  modelMm: number;
+  measurementSource: string;
+}
+
+/** ships.json as written, before checking. */
+export interface RawShipData {
+  sources: Record<string, Source>;
+  /** Name of the planned ship the page is about. */
+  station: string;
+  ships: RawMeasuredShip[];
+  planned: RawShip[];
+}
+
+export interface ShipData {
+  ships: Ship[];
+  planned: PlannedShip[];
+  station: PlannedShip;
+}
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
- * Armada's ships and squadrons, measured by Rune Taq on the Fantasy Flight Games forum (2018).
- * The data behind every fit on the page.
+ * Checks the hand-edited data and resolves source ids. Anything wrong (an unknown faction, era or
+ * source, a malformed date, a missing station) stops the build with a message naming the ship.
  */
-export const SHIPS: readonly Ship[] = [
-  { name: 'GR75', canonM: 90, modelMm: 41.64 },
-  { name: 'Gozanti', canonM: 63.8, modelMm: 36.71 },
-  { name: 'CR90', canonM: 150, modelMm: 57.62 },
-  { name: 'Raider', canonM: 150, modelMm: 57.81 },
-  { name: 'Arquitens', canonM: 250, modelMm: 73.03 },
-  { name: 'Pelta', canonM: 282, modelMm: 79.38 },
-  { name: 'Nebulon-B', canonM: 300, modelMm: 91.15 },
-  { name: 'Gladiator', canonM: 500, modelMm: 90.88 },
-  { name: 'MC30c', canonM: 580, modelMm: 110.64 },
-  { name: 'Assault Frigate Mk II', canonM: 700, modelMm: 120 },
-  { name: 'Victory Star Destroyer', canonM: 900, modelMm: 137.39 },
-  { name: 'Interdictor', canonM: 1100, modelMm: 160 },
-  { name: 'MC80 Liberty', canonM: 1200, modelMm: 176 },
-  { name: 'MC80', canonM: 1200, modelMm: 185 },
-  { name: 'Imperial Star Destroyer', canonM: 1600, modelMm: 207 },
-  { name: 'X-wing', canonM: 12.5, modelMm: 14 },
-  { name: 'TIE Fighter', canonM: 6.3, modelMm: 7 },
-  { name: 'TIE Interceptor', canonM: 6.6, modelMm: 12 },
-];
+export function parseShipData(raw: RawShipData): ShipData {
+  const { sources } = raw;
+  const fail = (name: string, problem: string): never => {
+    throw new Error(`ships.json: ${name}: ${problem}`);
+  };
+  const source = (name: string, id: string) => sources[id] ?? fail(name, `unknown source "${id}"`);
+  const base = (s: RawShip): ShipBase => ({
+    name: s.name,
+    canonM: s.canonM,
+    faction: oneOf(FACTIONS, s.faction) ?? fail(s.name, `unknown faction "${s.faction}"`),
+    era: oneOf(ERAS, s.era) ?? fail(s.name, `unknown era "${s.era}"`),
+    canonSource: source(s.name, s.canonSource),
+    dateSourced: ISO_DATE.test(s.dateSourced)
+      ? s.dateSourced
+      : fail(s.name, `date "${s.dateSourced}" isn't YYYY-MM-DD`),
+  });
 
-/** The XQ2 Platform that started it all (canon length from Wookieepedia). */
-export const XQ2: PlannedShip = { name: 'XQ2 Platform', canonM: 884 };
+  const ships = raw.ships.map((s) => ({
+    ...base(s),
+    modelMm: s.modelMm,
+    measurementSource: source(s.name, s.measurementSource),
+  }));
+  const planned = raw.planned.map(base);
+  const station =
+    planned.find((s) => s.name === raw.station) ??
+    fail(raw.station, 'the station isn’t among the planned ships');
+  return { ships, planned, station };
+}
 
+function oneOf<T extends string>(allowed: readonly T[], value: string): T | undefined {
+  return allowed.find((a) => a === value);
+}
+
+const parsed = parseShipData(data);
+
+/** Armada's ships and squadrons: the data behind every fit on the page. */
+export const SHIPS: readonly Ship[] = parsed.ships;
 /** Ships I'd like to design, sized by the power fit. */
-export const PLANNED_SHIPS: readonly PlannedShip[] = [
-  XQ2,
-  { name: 'Consular Cruiser', canonM: 115 },
-  { name: 'Naboo Royal Cruiser', canonM: 76 },
-  { name: 'Providence', canonM: 1088 },
-  { name: 'MC40a', canonM: 550 },
-];
+export const PLANNED_SHIPS: readonly PlannedShip[] = parsed.planned;
+/** The station that started it all. */
+export const XQ2: PlannedShip = parsed.station;
