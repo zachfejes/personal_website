@@ -20,14 +20,6 @@
       "title": "J-Type Diplomatic Barge, Wookieepedia",
       "url": "https://starwars.fandom.com/wiki/J-type_diplomatic_barge"
     },
-    "wookieepedia-providence": {
-      "title": "Providence Dreadnought, Wookieepedia",
-      "url": "https://starwars.fandom.com/wiki/Providence-class_Dreadnought"
-    },
-    "wookieepedia-consular": {
-      "title": "Consular Light Cruiser, Wookieepedia",
-      "url": "https://starwars.fandom.com/wiki/Consular-class_light_cruiser"
-    },
     "wookieepedia-arc-170": {
       "title": "Aggressive ReConnaissance-170 Starfighter, Wookieepedia",
       "url": "https://starwars.fandom.com/wiki/Aggressive_ReConnaissance-170_starfighter"
@@ -51,9 +43,6 @@
     "wookieepedia-hyena-droid": {
       "title": "Hyena-class Droid Fighter/Bomber, Wookieepedia",
       "url": "https://starwars.fandom.com/wiki/Hyena-class_Droid_Fighter/Bomber"
-    },
-    "unrecorded": {
-      "title": "Not recorded in the 2018 write-up"
     }
   },
   "station": "XQ2 Platform",
@@ -319,7 +308,7 @@
       "dateSourced": "2026-10-21"
     },
     {
-      "name": "HWKK-290",
+      "name": "HWK-290",
       "canonM": 16,
       "modelMm": 17.81,
       "faction": "Rebel Alliance",
@@ -524,7 +513,7 @@
       "faction": "Galactic Republic",
       "era": "Clone Wars Era",
       "canonSource": "wookieepedia-j-type",
-      "dateSourced": "2018-09-10"
+      "dateSourced": "2026-10-21"
     },
     {
       "name": "MC40a",
@@ -532,7 +521,7 @@
       "faction": "Rebel Alliance",
       "era": "Galactic Civil War Era",
       "canonSource": "wookieepedia-mc40a",
-      "dateSourced": "2018-09-10"
+      "dateSourced": "2026-10-21"
     },
     {
       "name": "ARC-170",
