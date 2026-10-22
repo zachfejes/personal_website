@@ -4,9 +4,53 @@
       "title": "Armada sliding scale graph, by Rune Taq (Fantasy Flight Games community forum)",
       "url": "https://community.fantasyflightgames.com/topic/250961-armada-sliding-scale-graph/"
     },
+    "rebel-scale-2016": {
+      "title": "Star Wars Fantasy Flight/Atomic Mass scale list",
+      "url": "https://www.rebelscale.com/scale-lists/fantasy-flight/"
+    },
     "wookieepedia-xq2": {
       "title": "XQ2 Platform, Wookieepedia",
       "url": "https://starwars.fandom.com/wiki/XQ2_Platform"
+    },
+    "wookieepedia-mc40a": {
+      "title": "MC40a Light Cruiser, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/MC40a_light_cruiser"
+    },
+    "wookieepedia-j-type": {
+      "title": "J-Type Diplomatic Barge, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/J-type_diplomatic_barge"
+    },
+    "wookieepedia-providence": {
+      "title": "Providence Dreadnought, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/Providence-class_Dreadnought"
+    },
+    "wookieepedia-consular": {
+      "title": "Consular Light Cruiser, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/Consular-class_light_cruiser"
+    },
+    "wookieepedia-arc-170": {
+      "title": "Aggressive ReConnaissance-170 Starfighter, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/Aggressive_ReConnaissance-170_starfighter"
+    },
+    "wookieepedia-btl-b-y-wing": {
+      "title": "BTL-B Y-wing Starfighter/Bomber, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/BTL-B_Y-wing_starfighter/bomber"
+    },
+    "wookieepedia-delta-7": {
+      "title": "Delta-7 Aethersprite Light Interceptor, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/Delta-7_Aethersprite-class_light_interceptor"
+    },
+    "wookieepedia-belbullab-22": {
+      "title": "Soulless One, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/Soulless_One"
+    },
+    "wookieepedia-tri-fighter-droid": {
+      "title": "Droid Tri-Fighter, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/Droid_tri-fighter"
+    },
+    "wookieepedia-hyena-droid": {
+      "title": "Hyena-class Droid Fighter/Bomber, Wookieepedia",
+      "url": "https://starwars.fandom.com/wiki/Hyena-class_Droid_Fighter/Bomber"
     },
     "unrecorded": {
       "title": "Not recorded in the 2018 write-up"
@@ -15,7 +59,7 @@
   "station": "XQ2 Platform",
   "ships": [
     {
-      "name": "GR75",
+      "name": "GR75 Transport",
       "canonM": 90,
       "modelMm": 41.64,
       "faction": "Rebel Alliance",
@@ -25,7 +69,7 @@
       "dateSourced": "2018-09-08"
     },
     {
-      "name": "Gozanti",
+      "name": "Gozanti Cruiser",
       "canonM": 63.8,
       "modelMm": 36.71,
       "faction": "Galactic Empire",
@@ -35,7 +79,7 @@
       "dateSourced": "2018-09-08"
     },
     {
-      "name": "CR90",
+      "name": "CR90 Corvette",
       "canonM": 150,
       "modelMm": 57.62,
       "faction": "Rebel Alliance",
@@ -55,7 +99,7 @@
       "dateSourced": "2018-09-08"
     },
     {
-      "name": "Arquitens",
+      "name": "Arquitens Command Cruiser",
       "canonM": 250,
       "modelMm": 73.03,
       "faction": "Galactic Empire",
@@ -65,7 +109,7 @@
       "dateSourced": "2018-09-08"
     },
     {
-      "name": "Pelta",
+      "name": "Pelta Frigate",
       "canonM": 282,
       "modelMm": 79.38,
       "faction": "Rebel Alliance",
@@ -75,7 +119,7 @@
       "dateSourced": "2018-09-08"
     },
     {
-      "name": "Nebulon-B",
+      "name": "Nebulon-B Frigate",
       "canonM": 300,
       "modelMm": 91.15,
       "faction": "Rebel Alliance",
@@ -85,7 +129,7 @@
       "dateSourced": "2018-09-08"
     },
     {
-      "name": "Gladiator",
+      "name": "Gladiator Star Destroyer",
       "canonM": 500,
       "modelMm": 90.88,
       "faction": "Galactic Empire",
@@ -95,7 +139,7 @@
       "dateSourced": "2018-09-08"
     },
     {
-      "name": "MC30c",
+      "name": "MC30c Frigate",
       "canonM": 580,
       "modelMm": 110.64,
       "faction": "Rebel Alliance",
@@ -125,7 +169,7 @@
       "dateSourced": "2018-09-08"
     },
     {
-      "name": "Interdictor",
+      "name": "Interdictor Star Destroyer",
       "canonM": 1100,
       "modelMm": 160,
       "faction": "Galactic Empire",
@@ -193,6 +237,276 @@
       "measurementSource": "rune-taq-2018",
       "canonSource": "rune-taq-2018",
       "dateSourced": "2018-09-08"
+    },
+    {
+      "name": "Vulture Droid",
+      "canonM": 6.96,
+      "modelMm": 12.5,
+      "faction": "Separatist Alliance (CIS)",
+      "era": "Clone Wars Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "V-19 Torrent",
+      "canonM": 6,
+      "modelMm": 9.09,
+      "faction": "Galactic Republic",
+      "era": "Clone Wars Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "VT-49 Decimator",
+      "canonM": 38,
+      "modelMm": 23.48,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "A-wing",
+      "canonM": 6.9,
+      "modelMm": 12,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "TIE Advanced",
+      "canonM": 5.8,
+      "modelMm": 9.48,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "TIE Bomber",
+      "canonM": 7.8,
+      "modelMm": 11.03,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "TIE Defender",
+      "canonM": 9.2,
+      "modelMm": 12,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "B-wing",
+      "canonM": 16.9,
+      "modelMm": 19,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "HWKK-290",
+      "canonM": 16,
+      "modelMm": 17.81,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Y-wing",
+      "canonM": 16.24,
+      "modelMm": 17.5,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "TIE Phantom",
+      "canonM": 14.3,
+      "modelMm": 11.8,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Lambda-class Shuttle",
+      "canonM": 20,
+      "modelMm": 13.5,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Ghost",
+      "canonM": 43.9,
+      "modelMm": 24.03,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Shadow Caster",
+      "canonM": 34,
+      "modelMm": 18.24,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Hammerhead Corvette",
+      "canonM": 116.7,
+      "modelMm": 54.47,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Charger C70 Frigate",
+      "canonM": 138.55,
+      "modelMm": 53.47,
+      "faction": "Galactic Republic",
+      "era": "Clone Wars Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Hardcell Transport",
+      "canonM": 220,
+      "modelMm": 69.71,
+      "faction": "Separatist Alliance (CIS)",
+      "era": "Clone Wars Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Quasar Light Carrier",
+      "canonM": 340,
+      "modelMm": 91.24,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Invisible Hand",
+      "canonM": 1088,
+      "modelMm": 182,
+      "faction": "Separatist Alliance (CIS)",
+      "era": "Clone Wars Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Acclamator",
+      "canonM": 752,
+      "modelMm": 122.22,
+      "faction": "Galactic Republic",
+      "era": "Clone Wars Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "MC75",
+      "canonM": 1204.44,
+      "modelMm": 183,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Munificent Frigate",
+      "canonM": 825,
+      "modelMm": 125.07,
+      "faction": "Separatist Alliance (CIS)",
+      "era": "Clone Wars Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Venator Star Destroyer",
+      "canonM": 1137,
+      "modelMm": 165,
+      "faction": "Galactic Republic",
+      "era": "Clone Wars Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Onager Star Destroyer",
+      "canonM": 1288,
+      "modelMm": 170,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Recusant Destroyer",
+      "canonM": 1187,
+      "modelMm": 172,
+      "faction": "Separatist Alliance (CIS)",
+      "era": "Clone Wars Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Starhawk Battleship",
+      "canonM": 2400,
+      "modelMm": 251,
+      "faction": "Rebel Alliance",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Executor Star Destroyer",
+      "canonM": 19000,
+      "modelMm": 622,
+      "faction": "Galactic Empire",
+      "era": "Galactic Civil War Era",
+      "measurementSource": "rebel-scale-2016",
+      "canonSource": "rebel-scale-2016",
+      "dateSourced": "2026-10-21"
     }
   ],
   "planned": [
@@ -205,27 +519,11 @@
       "dateSourced": "2018-09-10"
     },
     {
-      "name": "Consular Cruiser",
-      "canonM": 115,
-      "faction": "Galactic Republic",
-      "era": "Clone Wars Era",
-      "canonSource": "unrecorded",
-      "dateSourced": "2018-09-10"
-    },
-    {
       "name": "Naboo Royal Cruiser",
       "canonM": 76,
       "faction": "Galactic Republic",
       "era": "Clone Wars Era",
-      "canonSource": "unrecorded",
-      "dateSourced": "2018-09-10"
-    },
-    {
-      "name": "Providence",
-      "canonM": 1088,
-      "faction": "Separatist Alliance (CIS)",
-      "era": "Clone Wars Era",
-      "canonSource": "unrecorded",
+      "canonSource": "wookieepedia-j-type",
       "dateSourced": "2018-09-10"
     },
     {
@@ -233,8 +531,56 @@
       "canonM": 550,
       "faction": "Rebel Alliance",
       "era": "Galactic Civil War Era",
-      "canonSource": "unrecorded",
+      "canonSource": "wookieepedia-mc40a",
       "dateSourced": "2018-09-10"
+    },
+    {
+      "name": "ARC-170",
+      "canonM": 12.71,
+      "faction": "Galactic Republic",
+      "era": "Clone Wars Era",
+      "canonSource": "wookieepedia-arc-170",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "BTL-B Y-wing",
+      "canonM": 23.4,
+      "faction": "Galactic Republic",
+      "era": "Clone Wars Era",
+      "canonSource": "wookieepedia-btl-b-y-wing",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Delta-7 Aethersprite",
+      "canonM": 8,
+      "faction": "Galactic Republic",
+      "era": "Clone Wars Era",
+      "canonSource": "wookieepedia-delta-7",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Belbullab-22",
+      "canonM": 6.71,
+      "faction": "Separatist Alliance (CIS)",
+      "era": "Clone Wars Era",
+      "canonSource": "wookieepedia-belbullab-22",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Tri-fighter Droid",
+      "canonM": 5.4,
+      "faction": "Separatist Alliance (CIS)",
+      "era": "Clone Wars Era",
+      "canonSource": "wookieepedia-tri-fighter-droid",
+      "dateSourced": "2026-10-21"
+    },
+    {
+      "name": "Hyena Droid",
+      "canonM": 12.48,
+      "faction": "Separatist Alliance (CIS)",
+      "era": "Clone Wars Era",
+      "canonSource": "wookieepedia-hyena-droid",
+      "dateSourced": "2026-10-21"
     }
   ]
 }
