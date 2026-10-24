@@ -56,3 +56,14 @@ export function rmse(points: readonly Point[], predict: (x: number) => number): 
   const squared = points.reduce((sum, { x, y }) => sum + (predict(x) - y) ** 2, 0);
   return Math.sqrt(squared / points.length);
 }
+
+const PERCENT = 100;
+
+/**
+ * Mean absolute percentage error: on average, how far off the model is as a share of the real
+ * value. Unlike RMSE, big values don't dominate it. Real values (y) must be non-zero.
+ */
+export function meanPercentError(points: readonly Point[], predict: (x: number) => number): number {
+  const total = points.reduce((sum, { x, y }) => sum + Math.abs(predict(x) - y) / Math.abs(y), 0);
+  return (total / points.length) * PERCENT;
+}

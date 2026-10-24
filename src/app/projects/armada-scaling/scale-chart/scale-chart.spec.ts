@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { DESIGN } from '../design';
-import { FitLine, NamedPoint, ScaleChart } from './scale-chart';
+import { AxisLabel, FitLine, NamedPoint, ScaleChart } from './scale-chart';
 
 const SHIPS: NamedPoint[] = [
   { name: 'CR90', x: 150, y: 57.6 },
@@ -13,6 +13,8 @@ const FITS: FitLine[] = [
   { id: 'log', label: 'Logarithmic fit', color: '#8fb3a2', predict: (x) => Math.log(x) },
 ];
 const CAPTION = 'Test chart';
+/** The page's chart design, starting on log axes. */
+const CHART_DESIGN = { ...DESIGN.chart, defaultScale: 'log' as const };
 
 // jsdom doesn't lay anything out, so there's nothing to observe; the chart keeps its default width.
 beforeAll(() => {
@@ -26,9 +28,15 @@ beforeAll(() => {
 });
 afterAll(() => vi.unstubAllGlobals());
 
-const renderChart = (inputs: Partial<{ fits: FitLine[]; planned: NamedPoint[] }> = {}) =>
+const renderChart = (
+  inputs: Partial<{
+    fits: FitLine[];
+    planned: NamedPoint[];
+    axes: { x: AxisLabel; y: AxisLabel };
+  }> = {},
+) =>
   render(ScaleChart, {
-    inputs: { caption: CAPTION, ships: SHIPS, design: DESIGN.chart, ...inputs },
+    inputs: { caption: CAPTION, ships: SHIPS, design: CHART_DESIGN, ...inputs },
   });
 
 describe('ScaleChart', () => {
@@ -67,7 +75,24 @@ describe('ScaleChart', () => {
 
   it('has no fit toggles when there are no fits', async () => {
     await renderChart();
-    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Fits to show' })).toBeNull();
+  });
+
+  it('starts on the scale the design sets, and says so on the axes', async () => {
+    await renderChart();
+    const scale = within(screen.getByRole('group', { name: 'Axis scale' }));
+    expect(scale.getByRole('button', { name: 'Log' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText(/Canon length \(m, log scale\)/)).toBeTruthy();
+  });
+
+  it('switches between log and linear axes', async () => {
+    const user = userEvent.setup();
+    await renderChart();
+    const scale = within(screen.getByRole('group', { name: 'Axis scale' }));
+    await user.click(scale.getByRole('button', { name: 'Linear' }));
+    expect(scale.getByRole('button', { name: 'Linear' }).getAttribute('aria-pressed')).toBe('true');
+    expect(scale.getByRole('button', { name: 'Log' }).getAttribute('aria-pressed')).toBe('false');
+    expect(screen.queryByText(/log scale/)).toBeNull();
   });
 
   it('reads out points from the keyboard', async () => {
@@ -80,5 +105,21 @@ describe('ScaleChart', () => {
     expect(screen.getByText('900 m → 137.4 mm')).toBeTruthy();
     await user.keyboard('{Escape}');
     expect(screen.queryByText('900 m → 137.4 mm')).toBeNull();
+  });
+
+  it('labels the axes, table and read-out from the axes it is given', async () => {
+    const user = userEvent.setup();
+    const RATIO_DECIMALS = 2;
+    await renderChart({
+      axes: {
+        x: { title: 'Canon length', unit: 'm' },
+        y: { title: 'Measured ÷ predicted', decimals: RATIO_DECIMALS },
+      },
+    });
+    expect(screen.getByText('Measured ÷ predicted (log scale)')).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Measured ÷ predicted' })).toBeTruthy();
+    screen.getByRole('img').focus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByText('150 m → 57.6')).toBeTruthy();
   });
 });

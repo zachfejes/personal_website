@@ -1,4 +1,5 @@
 import { Schema } from '../../dev/tuner/tuning';
+import { SCALE_KINDS, ScaleKind } from './scale-chart/axis';
 
 const BANDS = ['dark', 'light', 'accent'] as const;
 export type Band = (typeof BANDS)[number];
@@ -23,11 +24,15 @@ export const DESIGN = {
     problem: 'light' as Band,
     method: 'accent' as Band,
     fitting: 'light' as Band,
+    algorithm: 'accent' as Band,
     comparison: 'dark' as Band,
+    alternatives: 'accent' as Band,
     findings: 'light' as Band,
     references: 'dark' as Band,
   },
   chart: {
+    /** Axes the charts start on; readers can switch. Log keeps every ship readable. */
+    defaultScale: 'log' as ScaleKind,
     aspectRatio: 0.62,
     pointRadius: 4.5,
     plannedRadius: 6,
@@ -121,7 +126,9 @@ export const DESIGN_SCHEMA: Schema<Design> = {
       problem: band('The problem'),
       method: band('Method'),
       fitting: band('Fitting'),
+      algorithm: band('How fitting works'),
       comparison: band('Comparison'),
+      alternatives: band('Why a power law'),
       findings: band('Findings'),
       references: band('References'),
     },
@@ -129,6 +136,7 @@ export const DESIGN_SCHEMA: Schema<Design> = {
   chart: {
     label: 'Charts',
     controls: {
+      defaultScale: { type: 'select', label: 'Starting scale', options: SCALE_KINDS },
       aspectRatio: { type: 'range', label: 'Height ÷ width', min: 0.4, max: 1, step: 0.01 },
       pointRadius: { type: 'range', label: 'Point size', min: 2, max: 9, step: 0.5, unit: 'px' },
       plannedRadius: {

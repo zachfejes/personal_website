@@ -1,4 +1,5 @@
-import { Measured, analyzeScale } from './analysis';
+import { Measured, analyzeScale, logFitZeroM } from './analysis';
+import { Fit } from './regression';
 
 /** Exact data has an exact fit, up to floating-point rounding. */
 const DIGITS = 9;
@@ -17,10 +18,12 @@ describe('analyzeScale', () => {
       expect(result.power.a).toBeCloseTo(A, DIGITS);
       expect(result.power.b).toBeCloseTo(B, DIGITS);
       expect(result.powerRmse).toBeCloseTo(0, DIGITS);
+      expect(result.powerPercentError).toBeCloseTo(0, DIGITS);
     });
 
     it('finds the logarithmic fit worse', () => {
       expect(result.logRmse).toBeGreaterThan(result.powerRmse);
+      expect(result.logPercentError).toBeGreaterThan(result.powerPercentError);
     });
 
     it('predicts model sizes from the power fit', () => {
@@ -39,10 +42,31 @@ describe('analyzeScale', () => {
       expect(result.log.a).toBeCloseTo(A, DIGITS);
       expect(result.log.b).toBeCloseTo(B, DIGITS);
       expect(result.logRmse).toBeCloseTo(0, DIGITS);
+      expect(result.logPercentError).toBeCloseTo(0, DIGITS);
     });
 
     it('finds the power fit worse', () => {
       expect(result.powerRmse).toBeGreaterThan(result.logRmse);
+      expect(result.powerPercentError).toBeGreaterThan(result.logPercentError);
     });
+  });
+});
+
+describe('logFitZeroM', () => {
+  const fit = (a: number, b: number): Fit => ({ a, b, predict: (x) => a * Math.log(x) + b });
+
+  it('finds where a rising log fit crosses zero', () => {
+    // a·ln(x) + b = 0 where ln(x) = -b/a.
+    const A = 10;
+    const B = -20;
+    const zero = logFitZeroM(fit(A, B));
+    expect(zero).toBeCloseTo(Math.exp(-B / A), DIGITS);
+    expect(fit(A, B).predict(zero ?? 0)).toBeCloseTo(0, DIGITS);
+  });
+
+  it('has no crossing for a fit that never rises', () => {
+    const FLAT = 0;
+    const B = 5;
+    expect(logFitZeroM(fit(FLAT, B))).toBeNull();
   });
 });

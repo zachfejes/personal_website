@@ -67,6 +67,8 @@ export interface ShipData {
   ships: Ship[];
   planned: PlannedShip[];
   station: PlannedShip;
+  /** Every source the measured ships' numbers came from, once each, in first-use order. */
+  measurementSources: Source[];
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -101,7 +103,8 @@ export function parseShipData(raw: RawShipData): ShipData {
   const station =
     planned.find((s) => s.name === raw.station) ??
     fail(raw.station, 'the station isn’t among the planned ships');
-  return { ships, planned, station };
+  const measurementSources = [...new Set(ships.map((s) => s.measurementSource))];
+  return { ships, planned, station, measurementSources };
 }
 
 function oneOf<T extends string>(allowed: readonly T[], value: string): T | undefined {
@@ -116,3 +119,5 @@ export const SHIPS: readonly Ship[] = parsed.ships;
 export const PLANNED_SHIPS: readonly PlannedShip[] = parsed.planned;
 /** The station that started it all. */
 export const XQ2: PlannedShip = parsed.station;
+/** Where the measured data came from, for the page's references. */
+export const MEASUREMENT_SOURCES: readonly Source[] = parsed.measurementSources;
