@@ -17,11 +17,22 @@ import { SCALE_KINDS, ScaleKind, axisTicks, makeScale, sampleRange } from './axi
 
 export interface NamedPoint {
   name: string;
-  /** Canon length, m. */
   x: number;
-  /** Model length, mm. */
   y: number;
 }
+
+/** What one axis shows: a title, a unit (if any) and how many decimals to print. */
+export interface AxisLabel {
+  title: string;
+  unit?: string;
+  decimals?: number;
+}
+
+/** The page's usual axes: canon length against model length. */
+export const LENGTH_AXES: { x: AxisLabel; y: AxisLabel } = {
+  x: { title: 'Canon length', unit: 'm' },
+  y: { title: 'Model length', unit: 'mm' },
+};
 
 export interface FitLine {
   id: string;
@@ -70,8 +81,9 @@ const TICK_GAP = 8;
 let nextId = 0;
 
 /**
- * Scatter plot of Armada ships, canon length against model length, with optional fit curves
- * (toggleable), planned ships and one highlighted point. Hover, tap or use the arrow keys to read
+ * Scatter plot of Armada ships (canon length against model length, unless `axes` says otherwise),
+ * with optional fit curves (toggleable), a horizontal reference line, planned ships and one
+ * highlighted point. Hover, tap or use the arrow keys to read
  * a point; the same data is available as a table below the chart.
  */
 @Component({
@@ -88,6 +100,9 @@ export class ScaleChart {
   readonly fits = input<readonly FitLine[]>([]);
   readonly planned = input<readonly NamedPoint[]>([]);
   readonly highlight = input<NamedPoint | null>(null);
+  readonly axes = input(LENGTH_AXES);
+  /** A y value to mark with a line across the chart, e.g. "no error". */
+  readonly reference = input<number | null>(null);
   readonly design = input.required<Design['chart']>();
 
   protected readonly clipId = `scale-chart-clip-${nextId++}`;
@@ -118,6 +133,24 @@ export class ScaleChart {
     return [...this.ships(), ...this.planned(), ...(highlight ? [highlight] : [])];
   });
 
+  /** Axis titles, saying when the scale is logarithmic. */
+  protected readonly titles = computed(() => {
+    const log = this.scale() === 'log';
+    const title = ({ title, unit }: AxisLabel) => {
+      const notes = [...(unit ? [unit] : []), ...(log ? ['log scale'] : [])];
+      return notes.length ? `${title} (${notes.join(', ')})` : title;
+    };
+    const { x, y } = this.axes();
+    return { x: title(x), y: title(y) };
+  });
+
+  /** Data table headers. */
+  protected readonly headers = computed(() => {
+    const header = ({ title, unit }: AxisLabel) => (unit ? `${title} (${unit})` : title);
+    const { x, y } = this.axes();
+    return { x: header(x), y: header(y) };
+  });
+
   protected readonly x = computed(() =>
     makeScale(
       this.scale(),
@@ -126,13 +159,14 @@ export class ScaleChart {
     ),
   );
 
-  protected readonly y = computed(() =>
-    makeScale(
+  protected readonly y = computed(() => {
+    const reference = this.reference();
+    return makeScale(
       this.scale(),
-      this.all().map((p) => p.y),
+      [...this.all().map((p) => p.y), ...(reference === null ? [] : [reference])],
       [this.height() - MARGIN.bottom, MARGIN.top],
-    ),
-  );
+    );
+  });
 
   protected readonly xTicks = computed(() =>
     axisTicks(
@@ -190,7 +224,8 @@ export class ScaleChart {
     const p = this.active();
     if (!p) return null;
     const size = this.design().labelSizePx;
-    const lines = [p.name, `${format(p.x)} m → ${format(p.y)} mm`];
+    const { x, y } = this.axes();
+    const lines = [p.name, `${this.value(p.x, x)} → ${this.value(p.y, y)}`];
     const width =
       Math.max(...lines.map((l) => l.length)) * size * TOOLTIP.charWidth + 2 * TOOLTIP.padX;
     const height = lines.length * size + (lines.length - 1) * TOOLTIP.lineGap + 2 * TOOLTIP.padY;
@@ -268,11 +303,17 @@ export class ScaleChart {
     return p.series === 'ship' ? pointRadius : plannedRadius;
   }
 
+  /** A value with its axis's unit, e.g. "57.6 mm". */
+  protected value(value: number, axis: AxisLabel): string {
+    const text = format(value, axis.decimals);
+    return axis.unit ? `${text} ${axis.unit}` : text;
+  }
+
   protected readonly format = format;
 }
 
-const MAX_DECIMALS = 1;
-/** "1,600" or "57.6": at most one decimal, thousands separated. */
-function format(value: number): string {
-  return value.toLocaleString('en', { maximumFractionDigits: MAX_DECIMALS });
+const DEFAULT_DECIMALS = 1;
+/** "1,600" or "57.6": at most `decimals` decimals, thousands separated. */
+function format(value: number, decimals = DEFAULT_DECIMALS): string {
+  return value.toLocaleString('en', { maximumFractionDigits: decimals });
 }

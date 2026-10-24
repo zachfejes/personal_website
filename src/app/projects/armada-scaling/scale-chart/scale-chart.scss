@@ -89,6 +89,11 @@
   stroke: color-mix(in srgb, var(--color-on-dark) 40%, transparent);
 }
 
+.chart__reference {
+  stroke: color-mix(in srgb, var(--color-on-dark) 55%, transparent);
+  stroke-dasharray: 4 4;
+}
+
 .chart__fit {
   fill: none;
   stroke-linecap: round;

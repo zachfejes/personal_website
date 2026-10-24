@@ -33,6 +33,14 @@ describe('axisTicks', () => {
     expect(axisTicks('log', scale, COUNT)).toEqual([10, 20, 50, 100]);
   });
 
+  it('spaces ticks evenly on a log axis shorter than a power of ten', () => {
+    // From just under 0.7 to just over 1.4, the tidy steps of about 5 ticks are 0.2 apart.
+    const scale = makeScale('log', [0.7, 1.4], RANGE);
+    const EXPECTED = [0.8, 1, 1.2, 1.4];
+    axisTicks('log', scale, COUNT).forEach((t, i) => expect(t).toBeCloseTo(EXPECTED[i], DIGITS));
+    expect(axisTicks('log', scale, COUNT)).toHaveLength(EXPECTED.length);
+  });
+
   it('spaces linear ticks evenly from zero', () => {
     const scale = makeScale('linear', [100], RANGE);
     const ticks = axisTicks('linear', scale, COUNT);

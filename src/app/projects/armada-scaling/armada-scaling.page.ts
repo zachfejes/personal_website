@@ -4,26 +4,42 @@ import { TunerPanel } from '../../dev/tuner/tuner-panel';
 import { Schema, Settings } from '../../dev/tuner/tuning';
 import { RevealDirective } from '../../shared/reveal.directive';
 import {
+  CANDIDATE_SCORES,
   LOG_FIT,
   LOG_PERCENT_ERROR,
   LOG_RMSE,
   PLANNED_POINTS,
   POWER_FIT,
   POWER_PERCENT_ERROR,
+  POWER_CURVATURE,
+  POWER_RESIDUALS,
   POWER_RMSE,
+  POWER_SIZE_BANDS,
+  SPLIT_POWER,
   logFitZeroM,
   predictModelMm,
 } from './analysis';
 import { ScaleCalculator } from './calculator';
 import { DESIGN, DESIGN_SCHEMA, Design } from './design';
-import { FitLine, NamedPoint, ScaleChart } from './scale-chart/scale-chart';
+import { AxisLabel, FitLine, NamedPoint, ScaleChart } from './scale-chart/scale-chart';
 import { MEASUREMENT_SOURCES, SHIPS, XQ2 } from './ships';
 import { Tex } from './tex';
 import { signedTerm } from './tex-format';
 
 /** Coefficients as published: a and b to 2–3 significant decimals. */
-const COEFFICIENT_DECIMALS = { a: 2, b: 3, rmse: 1, percent: 1 } as const;
+const COEFFICIENT_DECIMALS = { a: 2, b: 3, rmse: 1, percent: 1, curvature: 3 } as const;
 const fixed = (value: number, decimals: number) => value.toFixed(decimals);
+/** "1,248.5": fixed decimals, thousands separated, for numbers that can run large. */
+const grouped = (value: number, decimals: number) =>
+  value.toLocaleString('en', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+const PERCENT = 100;
+/** "a, b and c". */
+const listOf = (items: readonly string[]) =>
+  items.length > 1
+    ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
+    : items.join('');
+/** Ratios on the error chart: two decimals tell 0.98 from 1.02. */
+const RATIO_DECIMALS = 2;
 
 /** Ships the log fit gives a negative model length: those shorter than where it crosses zero. */
 function negativeBelow(zeroM: number | null) {
@@ -79,6 +95,23 @@ export class ArmadaScalingPage {
     ];
   });
 
+  /** Each ship against the power fit's prediction, with 1 marking a perfect prediction. */
+  protected readonly residuals: NamedPoint[] = POWER_RESIDUALS;
+  protected readonly residualAxes: { x: AxisLabel; y: AxisLabel } = {
+    x: { title: 'Canon length', unit: 'm' },
+    y: { title: 'Model ÷ predicted', decimals: RATIO_DECIMALS },
+  };
+
+  /** Every candidate form, best at predicting a left-out ship first. */
+  protected readonly candidates = [...CANDIDATE_SCORES]
+    .sort((a, b) => a.leaveOneOut - b.leaveOneOut)
+    .map((s) => ({
+      ...s.candidate,
+      inSample: grouped(s.inSample, COEFFICIENT_DECIMALS.percent),
+      leaveOneOut: grouped(s.leaveOneOut, COEFFICIENT_DECIMALS.percent),
+      impossible: s.impossible,
+    }));
+
   /** The calculator's input, marked on the findings chart. */
   protected readonly canonM = signal<number | null>(XQ2.canonM);
   protected readonly predict = predictModelMm;
@@ -105,6 +138,30 @@ export class ArmadaScalingPage {
     xq2ModelMm: Math.round(predictModelMm(XQ2.canonM)),
     shipCount: SHIPS.length,
     logNegative: negativeBelow(logFitZeroM(LOG_FIT)),
+    candidateCount: CANDIDATE_SCORES.length,
+    leaveOneOut: Object.fromEntries(
+      CANDIDATE_SCORES.map((s) => [
+        s.candidate.id,
+        grouped(s.leaveOneOut, COEFFICIENT_DECIMALS.percent),
+      ]),
+    ),
+    /** Whether no other form predicts a left-out ship better. */
+    powerBest: this.candidates[0].id === 'power',
+    curvature: fixed(POWER_CURVATURE, COEFFICIENT_DECIMALS.curvature),
+    sizeBands: {
+      lengths: listOf(
+        POWER_SIZE_BANDS.map(
+          (b) => `${b.fromX.toLocaleString('en')}–${b.toX.toLocaleString('en')} m`,
+        ),
+      ),
+      percents: listOf(POWER_SIZE_BANDS.map((b) => `${Math.round(b.ratio * PERCENT)}%`)),
+    },
+    split: SPLIT_POWER && {
+      atM: SPLIT_POWER.breakX,
+      below: fixed(SPLIT_POWER.below, COEFFICIENT_DECIMALS.b),
+      above: fixed(SPLIT_POWER.above, COEFFICIENT_DECIMALS.b),
+      leaveOneOut: fixed(SPLIT_POWER.leaveOneOut, COEFFICIENT_DECIMALS.percent),
+    },
   };
 
   /** Equations that quote the computed coefficients. */

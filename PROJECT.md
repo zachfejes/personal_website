@@ -187,6 +187,14 @@ comparison. The page's data reference lists every measurement source used in `sh
 the fitting works" section explains the method itself: ordinary least squares, how each curve is
 turned into a straight-line fit, and the formulas for both error measures.
 
+A "Why a power law?" section tests the choice of curve (`candidates.ts`). Eight forms (power,
+logarithmic, quarter sine wave, logarithm through zero, levelling off, quadratic, cubic, and a
+power law whose exponent drifts with size) are fitted to the same ships and scored on average
+error and on leave-one-out error: each ship predicted by a fit made without it, which exposes
+overfitting. The section also fits small and large ships separately, and charts each ship's
+model length divided by the power fit's prediction to show the errors don't lean one way at any
+size. All of it is computed from `ships.json` at build time.
+
 Status (milestone 6, first version): the page is built as a preview on staging, with the three
 charts, the calculator (canon length → model length), the XQ2 wireframes and the tuning panel.
 Every number in the text is computed from the data; tests check them against the 2018 results.

@@ -200,6 +200,69 @@
   color: var(--accent-text);
 }
 
+// Candidate forms
+.table-scroll {
+  overflow-x: auto;
+}
+
+.candidates {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+
+  caption {
+    margin-bottom: 0.75rem;
+    font-family: var(--font-label);
+    font-size: 0.72rem;
+    letter-spacing: var(--label-tracking);
+    text-align: left;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+
+  th,
+  td {
+    padding: 0.6rem clamp(0.35rem, 1.5vw, 0.75rem);
+    border-bottom: 1px solid color-mix(in srgb, currentcolor 18%, transparent);
+    text-align: right;
+    vertical-align: top;
+  }
+
+  thead th {
+    font-family: var(--font-label);
+    font-size: 0.72rem;
+    font-weight: normal;
+    letter-spacing: 0.04em;
+    vertical-align: bottom;
+    opacity: 0.8;
+  }
+
+  th:first-child {
+    text-align: left;
+  }
+
+  tbody th {
+    font-weight: 600;
+  }
+}
+
+.candidates__formula,
+.candidates__parameters {
+  display: block;
+  font-weight: normal;
+}
+
+.candidates__parameters {
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+.candidates__chosen {
+  color: var(--accent-text);
+}
+
 // References
 .references {
   font-size: 0.92em;

@@ -8,6 +8,8 @@ const PADDING = 0.06;
 /** On log axes, label 1-2-5 steps when the data spans at most this many powers of ten. */
 const MAX_DECADES_FOR_STEPS = 2.5;
 const LOG_STEPS = [1, 2, 5];
+/** Below this many powers of ten even 1-2-5 steps leave too few labels: space them evenly. */
+const MIN_DECADES_FOR_STEPS = 1;
 const DECADE = 10;
 
 /**
@@ -35,7 +37,8 @@ export function makeScale(
 
 /**
  * Tick values for an axis. Linear: evenly spaced, about `count` of them. Log: powers of ten, plus
- * 2s and 5s between them when the axis spans only a couple of powers of ten.
+ * 2s and 5s between them when the axis spans only a couple of powers of ten, and evenly spaced
+ * like a linear axis when it spans less than one.
  */
 export function axisTicks(
   kind: ScaleKind,
@@ -45,6 +48,7 @@ export function axisTicks(
   if (kind === 'linear') return scale.ticks(count);
   const [low, high] = scale.domain();
   const decades = Math.log10(high / low);
+  if (decades < MIN_DECADES_FOR_STEPS) return scaleLinear().domain([low, high]).ticks(count);
   const steps = decades <= MAX_DECADES_FOR_STEPS ? LOG_STEPS : [1];
   const ticks: number[] = [];
   for (let power = Math.floor(Math.log10(low)); power <= Math.ceil(Math.log10(high)); power++) {

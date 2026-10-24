@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { DESIGN } from '../design';
-import { FitLine, NamedPoint, ScaleChart } from './scale-chart';
+import { AxisLabel, FitLine, NamedPoint, ScaleChart } from './scale-chart';
 
 const SHIPS: NamedPoint[] = [
   { name: 'CR90', x: 150, y: 57.6 },
@@ -28,7 +28,13 @@ beforeAll(() => {
 });
 afterAll(() => vi.unstubAllGlobals());
 
-const renderChart = (inputs: Partial<{ fits: FitLine[]; planned: NamedPoint[] }> = {}) =>
+const renderChart = (
+  inputs: Partial<{
+    fits: FitLine[];
+    planned: NamedPoint[];
+    axes: { x: AxisLabel; y: AxisLabel };
+  }> = {},
+) =>
   render(ScaleChart, {
     inputs: { caption: CAPTION, ships: SHIPS, design: CHART_DESIGN, ...inputs },
   });
@@ -99,5 +105,21 @@ describe('ScaleChart', () => {
     expect(screen.getByText('900 m → 137.4 mm')).toBeTruthy();
     await user.keyboard('{Escape}');
     expect(screen.queryByText('900 m → 137.4 mm')).toBeNull();
+  });
+
+  it('labels the axes, table and read-out from the axes it is given', async () => {
+    const user = userEvent.setup();
+    const RATIO_DECIMALS = 2;
+    await renderChart({
+      axes: {
+        x: { title: 'Canon length', unit: 'm' },
+        y: { title: 'Measured ÷ predicted', decimals: RATIO_DECIMALS },
+      },
+    });
+    expect(screen.getByText('Measured ÷ predicted (log scale)')).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Measured ÷ predicted' })).toBeTruthy();
+    screen.getByRole('img').focus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByText('150 m → 57.6')).toBeTruthy();
   });
 });
