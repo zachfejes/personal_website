@@ -170,6 +170,56 @@
 
   <section
     class="band section"
+    [class]="'band--' + design().bands.algorithm"
+    aria-labelledby="algorithm"
+  >
+    <div class="container prose" appReveal>
+      <h2 id="algorithm">How the fitting works</h2>
+      <p>
+        Every fit on this page comes from one method: ordinary least squares. Given points
+        <app-tex tex="(x_1, y_1), \ldots, (x_n, y_n)" />, it finds the straight line
+        <app-tex tex="y = mx + c" /> that makes the sum of the squared vertical gaps between the
+        points and the line as small as possible:
+      </p>
+      <app-tex class="equation" [display]="true" [tex]="tex.leastSquares" />
+      <p>
+        Setting the derivatives to zero gives the answer directly, with no searching or iteration,
+        where <app-tex tex="\bar{x}" /> and <app-tex tex="\bar{y}" /> are the averages:
+      </p>
+      <app-tex class="equation" [display]="true" [tex]="tex.slope" />
+      <app-tex class="equation" [display]="true" [tex]="tex.intercept" />
+      <p>Neither candidate is a straight line, so each is first turned into one:</p>
+      <ul>
+        <li>
+          <strong>Logarithmic:</strong> fit a line to <app-tex tex="y" /> against
+          <app-tex tex="\ln(x)" />. Its slope is <app-tex tex="a" /> and its intercept is
+          <app-tex tex="b" />.
+        </li>
+        <li>
+          <strong>Power:</strong> fit a line to <app-tex tex="\log_{10}(y)" /> against
+          <app-tex tex="\log_{10}(x)" />. Its slope is <app-tex tex="b" />, and its intercept is
+          <app-tex tex="\log_{10}(a)" />, so <app-tex tex="a = 10^{\text{intercept}}" />. Because it
+          works on logarithms, this fit minimizes proportional errors rather than absolute ones: a
+          10% miss counts the same for a starfighter as for a Star Destroyer.
+        </li>
+      </ul>
+      <p>
+        To compare the fits, each is scored on how far its predictions
+        <app-tex tex="\hat{y}_i" /> land from the real model lengths <app-tex tex="y_i" />: by
+        root-mean-square error, in millimetres,
+      </p>
+      <app-tex class="equation" [display]="true" [tex]="tex.rmse" />
+      <p>and by average percentage error, which weighs every ship equally whatever its size:</p>
+      <app-tex class="equation" [display]="true" [tex]="tex.percentError" />
+      <p>
+        All of this runs when the site is built, straight from the ship data, so adding a ship
+        updates every fit, number and chart on this page.
+      </p>
+    </div>
+  </section>
+
+  <section
+    class="band section"
     [class]="'band--' + design().bands.comparison"
     aria-labelledby="comparison"
   >
@@ -193,6 +243,13 @@
           <dd class="stats__detail">RMSE {{ n.powerRmse }} mm</dd>
         </div>
       </dl>
+      @if (n.logNegative; as negative) {
+        <p>
+          The logarithmic fit does worst on the smallest craft: below about
+          {{ negative.belowM }} m it predicts a model of negative length, which it does for
+          {{ negative.count }} of the {{ n.shipCount }} ships here.
+        </p>
+      }
       <p>
         The power function's error is about {{ n.ratio }}× smaller, so it's the one to use for
         Armada's scale:

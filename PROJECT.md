@@ -183,7 +183,9 @@ the file to add or correct a ship; the fits, numbers, equations and charts all f
 Charts start on log axes, where the power law is a straight line and ships from 6 m fighters to
 the 19 km Executor all stay readable; readers can switch to linear. The fits are compared by
 average percentage error (with RMSE alongside), so the largest ships don't dominate the
-comparison. The page's data reference lists every measurement source used in `ships.json`.
+comparison. The page's data reference lists every measurement source used in `ships.json`. A "How
+the fitting works" section explains the method itself: ordinary least squares, how each curve is
+turned into a straight-line fit, and the formulas for both error measures.
 
 Status (milestone 6, first version): the page is built as a preview on staging, with the three
 charts, the calculator (canon length → model length), the XQ2 wireframes and the tuning panel.

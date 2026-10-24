@@ -11,6 +11,7 @@ import {
   POWER_FIT,
   POWER_PERCENT_ERROR,
   POWER_RMSE,
+  logFitZeroM,
   predictModelMm,
 } from './analysis';
 import { ScaleCalculator } from './calculator';
@@ -23,6 +24,12 @@ import { signedTerm } from './tex-format';
 /** Coefficients as published: a and b to 2–3 significant decimals. */
 const COEFFICIENT_DECIMALS = { a: 2, b: 3, rmse: 1, percent: 1 } as const;
 const fixed = (value: number, decimals: number) => value.toFixed(decimals);
+
+/** Ships the log fit gives a negative model length: those shorter than where it crosses zero. */
+function negativeBelow(zeroM: number | null) {
+  const count = zeroM === null ? 0 : SHIPS.filter((s) => s.canonM < zeroM).length;
+  return zeroM !== null && count > 0 ? { belowM: Math.round(zeroM), count } : null;
+}
 
 /**
  * Armada Scaling: working out the non-linear model scale in Star Wars: Armada. First written in
@@ -97,6 +104,7 @@ export class ArmadaScalingPage {
     xq2CanonM: XQ2.canonM,
     xq2ModelMm: Math.round(predictModelMm(XQ2.canonM)),
     shipCount: SHIPS.length,
+    logNegative: negativeBelow(logFitZeroM(LOG_FIT)),
   };
 
   /** Equations that quote the computed coefficients. */
@@ -110,6 +118,11 @@ export class ArmadaScalingPage {
       '\\end{aligned}',
     ].join(' '),
     powerFit: `y = ${this.n.powerA} x^{${this.n.powerB}}`,
+    leastSquares: String.raw`\min_{m,\,c} \sum_{i=1}^{n} \left(y_i - (m x_i + c)\right)^2`,
+    slope: String.raw`m = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sum_i (x_i - \bar{x})^2}`,
+    intercept: String.raw`c = \bar{y} - m\,\bar{x}`,
+    rmse: String.raw`\text{RMSE} = \sqrt{\frac{1}{n} \sum_i \left(\hat{y}_i - y_i\right)^2}`,
+    percentError: String.raw`\text{error} = \frac{100\%}{n} \sum_i \left| \frac{\hat{y}_i - y_i}{y_i} \right|`,
   };
 
   /** "XQ2 Platform" while the calculator still holds its length, then "Your ship". */

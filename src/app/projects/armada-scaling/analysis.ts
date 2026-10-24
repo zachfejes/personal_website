@@ -35,6 +35,14 @@ export function analyzeScale(ships: readonly Measured[]): ScaleAnalysis {
   };
 }
 
+/**
+ * Where a logarithmic fit y = a·ln(x) + b crosses zero: below this canon length it predicts a
+ * model of negative length. Null if it never does (a fit that doesn't rise with x).
+ */
+export function logFitZeroM(fit: Fit): number | null {
+  return fit.a > 0 ? Math.exp(-fit.b / fit.a) : null;
+}
+
 /** The analysis of the page's data (ships.json). */
 export const ARMADA = analyzeScale(SHIPS);
 
