@@ -4,22 +4,48 @@ import { TunerPanel } from '../../dev/tuner/tuner-panel';
 import { Schema, Settings } from '../../dev/tuner/tuning';
 import { RevealDirective } from '../../shared/reveal.directive';
 import {
+  CANDIDATE_SCORES,
   LOG_FIT,
+  LOG_PERCENT_ERROR,
   LOG_RMSE,
   PLANNED_POINTS,
   POWER_FIT,
+  POWER_PERCENT_ERROR,
+  POWER_CURVATURE,
+  POWER_RESIDUALS,
   POWER_RMSE,
+  POWER_SIZE_BANDS,
+  SPLIT_POWER,
+  logFitZeroM,
   predictModelMm,
 } from './analysis';
 import { ScaleCalculator } from './calculator';
 import { DESIGN, DESIGN_SCHEMA, Design } from './design';
-import { FitLine, NamedPoint, ScaleChart } from './scale-chart/scale-chart';
-import { SHIPS, XQ2 } from './ships';
+import { AxisLabel, FitLine, NamedPoint, ScaleChart } from './scale-chart/scale-chart';
+import { MEASUREMENT_SOURCES, SHIPS, XQ2 } from './ships';
 import { Tex } from './tex';
+import { signedTerm } from './tex-format';
 
 /** Coefficients as published: a and b to 2–3 significant decimals. */
-const COEFFICIENT_DECIMALS = { a: 2, b: 3, rmse: 2 } as const;
+const COEFFICIENT_DECIMALS = { a: 2, b: 3, rmse: 1, percent: 1, curvature: 3 } as const;
 const fixed = (value: number, decimals: number) => value.toFixed(decimals);
+/** "1,248.5": fixed decimals, thousands separated, for numbers that can run large. */
+const grouped = (value: number, decimals: number) =>
+  value.toLocaleString('en', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+const PERCENT = 100;
+/** "a, b and c". */
+const listOf = (items: readonly string[]) =>
+  items.length > 1
+    ? `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`
+    : items.join('');
+/** Ratios on the error chart: two decimals tell 0.98 from 1.02. */
+const RATIO_DECIMALS = 2;
+
+/** Ships the log fit gives a negative model length: those shorter than where it crosses zero. */
+function negativeBelow(zeroM: number | null) {
+  const count = zeroM === null ? 0 : SHIPS.filter((s) => s.canonM < zeroM).length;
+  return zeroM !== null && count > 0 ? { belowM: Math.round(zeroM), count } : null;
+}
 
 /**
  * Armada Scaling: working out the non-linear model scale in Star Wars: Armada. First written in
@@ -58,6 +84,8 @@ export class ArmadaScalingPage {
     y: s.modelMm,
   }));
   protected readonly planned: NamedPoint[] = PLANNED_POINTS;
+  /** Credited in the references, straight from ships.json. */
+  protected readonly dataSources = MEASUREMENT_SOURCES;
 
   protected readonly fits = computed((): FitLine[] => {
     const chart = this.design().chart;
@@ -66,6 +94,23 @@ export class ArmadaScalingPage {
       { id: 'log', label: 'Logarithmic fit', color: chart.logColor, predict: LOG_FIT.predict },
     ];
   });
+
+  /** Each ship against the power fit's prediction, with 1 marking a perfect prediction. */
+  protected readonly residuals: NamedPoint[] = POWER_RESIDUALS;
+  protected readonly residualAxes: { x: AxisLabel; y: AxisLabel } = {
+    x: { title: 'Canon length', unit: 'm' },
+    y: { title: 'Model ÷ predicted', decimals: RATIO_DECIMALS },
+  };
+
+  /** Every candidate form, best at predicting a left-out ship first. */
+  protected readonly candidates = [...CANDIDATE_SCORES]
+    .sort((a, b) => a.leaveOneOut - b.leaveOneOut)
+    .map((s) => ({
+      ...s.candidate,
+      inSample: grouped(s.inSample, COEFFICIENT_DECIMALS.percent),
+      leaveOneOut: grouped(s.leaveOneOut, COEFFICIENT_DECIMALS.percent),
+      impossible: s.impossible,
+    }));
 
   /** The calculator's input, marked on the findings chart. */
   protected readonly canonM = signal<number | null>(XQ2.canonM);
@@ -83,18 +128,45 @@ export class ArmadaScalingPage {
     powerB: fixed(POWER_FIT.b, COEFFICIENT_DECIMALS.b),
     powerLogA: fixed(Math.log10(POWER_FIT.a), COEFFICIENT_DECIMALS.b),
     logA: fixed(LOG_FIT.a, COEFFICIENT_DECIMALS.a),
-    logB: fixed(Math.abs(LOG_FIT.b), COEFFICIENT_DECIMALS.a),
+    logB: signedTerm(LOG_FIT.b, COEFFICIENT_DECIMALS.a),
     powerRmse: fixed(POWER_RMSE, COEFFICIENT_DECIMALS.rmse),
     logRmse: fixed(LOG_RMSE, COEFFICIENT_DECIMALS.rmse),
-    ratio: Math.round(LOG_RMSE / POWER_RMSE),
+    powerPercent: fixed(POWER_PERCENT_ERROR, COEFFICIENT_DECIMALS.percent),
+    logPercent: fixed(LOG_PERCENT_ERROR, COEFFICIENT_DECIMALS.percent),
+    ratio: Math.round(LOG_PERCENT_ERROR / POWER_PERCENT_ERROR),
     xq2CanonM: XQ2.canonM,
     xq2ModelMm: Math.round(predictModelMm(XQ2.canonM)),
     shipCount: SHIPS.length,
+    logNegative: negativeBelow(logFitZeroM(LOG_FIT)),
+    candidateCount: CANDIDATE_SCORES.length,
+    leaveOneOut: Object.fromEntries(
+      CANDIDATE_SCORES.map((s) => [
+        s.candidate.id,
+        grouped(s.leaveOneOut, COEFFICIENT_DECIMALS.percent),
+      ]),
+    ),
+    /** Whether no other form predicts a left-out ship better. */
+    powerBest: this.candidates[0].id === 'power',
+    curvature: fixed(POWER_CURVATURE, COEFFICIENT_DECIMALS.curvature),
+    sizeBands: {
+      lengths: listOf(
+        POWER_SIZE_BANDS.map(
+          (b) => `${b.fromX.toLocaleString('en')}–${b.toX.toLocaleString('en')} m`,
+        ),
+      ),
+      percents: listOf(POWER_SIZE_BANDS.map((b) => `${Math.round(b.ratio * PERCENT)}%`)),
+    },
+    split: SPLIT_POWER && {
+      atM: SPLIT_POWER.breakX,
+      below: fixed(SPLIT_POWER.below, COEFFICIENT_DECIMALS.b),
+      above: fixed(SPLIT_POWER.above, COEFFICIENT_DECIMALS.b),
+      leaveOneOut: fixed(SPLIT_POWER.leaveOneOut, COEFFICIENT_DECIMALS.percent),
+    },
   };
 
   /** Equations that quote the computed coefficients. */
   protected readonly tex = {
-    logFit: `y = ${this.n.logA} \\ln(x) - ${this.n.logB}`,
+    logFit: `y = ${this.n.logA} \\ln(x) ${this.n.logB}`,
     powerCoefficients: [
       '\\begin{aligned}',
       `b &= ${this.n.powerB} \\\\`,
@@ -103,6 +175,11 @@ export class ArmadaScalingPage {
       '\\end{aligned}',
     ].join(' '),
     powerFit: `y = ${this.n.powerA} x^{${this.n.powerB}}`,
+    leastSquares: String.raw`\min_{m,\,c} \sum_{i=1}^{n} \left(y_i - (m x_i + c)\right)^2`,
+    slope: String.raw`m = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sum_i (x_i - \bar{x})^2}`,
+    intercept: String.raw`c = \bar{y} - m\,\bar{x}`,
+    rmse: String.raw`\text{RMSE} = \sqrt{\frac{1}{n} \sum_i \left(\hat{y}_i - y_i\right)^2}`,
+    percentError: String.raw`\text{error} = \frac{100\%}{n} \sum_i \left| \frac{\hat{y}_i - y_i}{y_i} \right|`,
   };
 
   /** "XQ2 Platform" while the calculator still holds its length, then "Your ship". */

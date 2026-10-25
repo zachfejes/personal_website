@@ -1,4 +1,4 @@
-import { linearRegression, logFit, powerFit, rmse } from './regression';
+import { linearRegression, logFit, meanPercentError, powerFit, rmse } from './regression';
 
 /** Exact data has an exact fit, up to floating-point rounding. */
 const DIGITS = 9;
@@ -8,7 +8,8 @@ const XS = [1, 2, 4, 8, 16];
 /**
  * A worked example with scattered points. Means are (2, 2); covariance 1 and variance 2 give
  * slope 1/2 and intercept 2 - 2·(1/2) = 1. That line predicts 1.5, 2, 2.5 against 1, 3, 2:
- * errors 0.5, -1, 0.5, so the mean square error is 0.5.
+ * errors 0.5, -1, 0.5, so the mean square error is 0.5. As shares of the real values those
+ * errors are 1/2, 1/3 and 1/4, which average 13/36.
  */
 const WORKED = {
   points: [
@@ -19,6 +20,7 @@ const WORKED = {
   slope: 0.5,
   intercept: 1,
   meanSquareError: 0.5,
+  meanPercentError: (13 / 36) * 100,
 };
 
 describe('linearRegression', () => {
@@ -74,5 +76,27 @@ describe('rmse', () => {
     const OFFSET = 2.5;
     const points = XS.map((x) => ({ x, y: x }));
     expect(rmse(points, (x) => x + OFFSET)).toBeCloseTo(OFFSET, DIGITS);
+  });
+});
+
+describe('meanPercentError', () => {
+  it('matches the worked example', () => {
+    const line = (x: number) => WORKED.slope * x + WORKED.intercept;
+    expect(meanPercentError(WORKED.points, line)).toBeCloseTo(WORKED.meanPercentError, DIGITS);
+  });
+
+  it('is zero for a perfect model', () => {
+    const points = XS.map((x) => ({ x, y: x }));
+    expect(meanPercentError(points, (x) => x)).toBe(0);
+  });
+
+  it('weighs a miss by the size of the value, not in absolute terms', () => {
+    // The same 5-unit miss is 50% of a 10 and 0.5% of a 1000.
+    const MISS = 5;
+    const SMALL = { x: 1, y: 10, percent: 50 };
+    const LARGE = { x: 1, y: 1000, percent: 0.5 };
+    for (const { x, y, percent } of [SMALL, LARGE]) {
+      expect(meanPercentError([{ x, y }], () => y + MISS)).toBeCloseTo(percent, DIGITS);
+    }
   });
 });

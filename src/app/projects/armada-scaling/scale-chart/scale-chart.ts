@@ -7,20 +7,32 @@ import {
   computed,
   inject,
   input,
+  linkedSignal,
   signal,
   viewChild,
 } from '@angular/core';
-import { scaleLinear } from 'd3-scale';
 import { line } from 'd3-shape';
 import { Design } from '../design';
+import { SCALE_KINDS, ScaleKind, axisTicks, makeScale, sampleRange } from './axis';
 
 export interface NamedPoint {
   name: string;
-  /** Canon length, m. */
   x: number;
-  /** Model length, mm. */
   y: number;
 }
+
+/** What one axis shows: a title, a unit (if any) and how many decimals to print. */
+export interface AxisLabel {
+  title: string;
+  unit?: string;
+  decimals?: number;
+}
+
+/** The page's usual axes: canon length against model length. */
+export const LENGTH_AXES: { x: AxisLabel; y: AxisLabel } = {
+  x: { title: 'Canon length', unit: 'm' },
+  y: { title: 'Model length', unit: 'mm' },
+};
 
 export interface FitLine {
   id: string;
@@ -50,10 +62,8 @@ const TICK_SPACING = { x: 90, y: 50 } as const;
 const MIN_TICKS = 3;
 /** Fit curves are drawn through this many samples. */
 const FIT_SAMPLES = 160;
-/** The log fit is undefined at 0, so curves start just above it. */
+/** On linear axes, curves start just above 0: the log fit is undefined there. */
 const FIT_MIN_X = 1;
-/** Headroom above the largest value, as a fraction. */
-const DOMAIN_PADDING = 0.06;
 /** Pointer must be this close to a point (SVG units) to select it. */
 const HIT_RADIUS = 28;
 const TOOLTIP = {
@@ -71,8 +81,9 @@ const TICK_GAP = 8;
 let nextId = 0;
 
 /**
- * Scatter plot of Armada ships, canon length against model length, with optional fit curves
- * (toggleable), planned ships and one highlighted point. Hover, tap or use the arrow keys to read
+ * Scatter plot of Armada ships (canon length against model length, unless `axes` says otherwise),
+ * with optional fit curves (toggleable), a horizontal reference line, planned ships and one
+ * highlighted point. Hover, tap or use the arrow keys to read
  * a point; the same data is available as a table below the chart.
  */
 @Component({
@@ -89,6 +100,9 @@ export class ScaleChart {
   readonly fits = input<readonly FitLine[]>([]);
   readonly planned = input<readonly NamedPoint[]>([]);
   readonly highlight = input<NamedPoint | null>(null);
+  readonly axes = input(LENGTH_AXES);
+  /** A y value to mark with a line across the chart, e.g. "no error". */
+  readonly reference = input<number | null>(null);
   readonly design = input.required<Design['chart']>();
 
   protected readonly clipId = `scale-chart-clip-${nextId++}`;
@@ -100,6 +114,10 @@ export class ScaleChart {
     tickGap: TICK_GAP,
     tooltip: TOOLTIP,
   };
+
+  protected readonly scaleKinds = SCALE_KINDS;
+  /** Linear or log axes: starts from the design setting; the reader can switch. */
+  protected readonly scale = linkedSignal<ScaleKind>(() => this.design().defaultScale);
 
   /** Fits switched off by the reader. */
   private readonly hidden = signal<ReadonlySet<string>>(new Set());
@@ -115,25 +133,54 @@ export class ScaleChart {
     return [...this.ships(), ...this.planned(), ...(highlight ? [highlight] : [])];
   });
 
+  /** Axis titles, saying when the scale is logarithmic. */
+  protected readonly titles = computed(() => {
+    const log = this.scale() === 'log';
+    const title = ({ title, unit }: AxisLabel) => {
+      const notes = [...(unit ? [unit] : []), ...(log ? ['log scale'] : [])];
+      return notes.length ? `${title} (${notes.join(', ')})` : title;
+    };
+    const { x, y } = this.axes();
+    return { x: title(x), y: title(y) };
+  });
+
+  /** Data table headers. */
+  protected readonly headers = computed(() => {
+    const header = ({ title, unit }: AxisLabel) => (unit ? `${title} (${unit})` : title);
+    const { x, y } = this.axes();
+    return { x: header(x), y: header(y) };
+  });
+
   protected readonly x = computed(() =>
-    scaleLinear()
-      .domain([0, Math.max(...this.all().map((p) => p.x)) * (1 + DOMAIN_PADDING)])
-      .range([MARGIN.left, this.width() - MARGIN.right])
-      .nice(),
+    makeScale(
+      this.scale(),
+      this.all().map((p) => p.x),
+      [MARGIN.left, this.width() - MARGIN.right],
+    ),
   );
 
-  protected readonly y = computed(() =>
-    scaleLinear()
-      .domain([0, Math.max(...this.all().map((p) => p.y)) * (1 + DOMAIN_PADDING)])
-      .range([this.height() - MARGIN.bottom, MARGIN.top])
-      .nice(),
-  );
+  protected readonly y = computed(() => {
+    const reference = this.reference();
+    return makeScale(
+      this.scale(),
+      [...this.all().map((p) => p.y), ...(reference === null ? [] : [reference])],
+      [this.height() - MARGIN.bottom, MARGIN.top],
+    );
+  });
 
   protected readonly xTicks = computed(() =>
-    this.x().ticks(Math.max(MIN_TICKS, Math.round(this.width() / TICK_SPACING.x))),
+    axisTicks(
+      this.scale(),
+      this.x(),
+      Math.max(MIN_TICKS, Math.round(this.width() / TICK_SPACING.x)),
+    ),
   );
   protected readonly yTicks = computed(() =>
-    this.y().ticks(Math.max(MIN_TICKS, Math.round(this.height() / TICK_SPACING.y))),
+    axisTicks(
+      this.scale(),
+      this.y(),
+      Math.max(MIN_TICKS, Math.round(this.height() / TICK_SPACING.y)),
+    ),
   );
 
   protected readonly points = computed((): Plotted[] => {
@@ -152,17 +199,22 @@ export class ScaleChart {
   private readonly ordered = computed(() => [...this.points()].sort((a, b) => a.x - b.x));
 
   protected readonly curves = computed(() => {
+    const kind = this.scale();
     const x = this.x();
     const y = this.y();
-    const [, maxX] = x.domain();
-    const step = (maxX - FIT_MIN_X) / FIT_SAMPLES;
-    const xs = Array.from({ length: FIT_SAMPLES + 1 }, (_, i) => FIT_MIN_X + i * step);
+    const [minX, maxX] = x.domain();
+    const xs = sampleRange(kind, kind === 'linear' ? FIT_MIN_X : minX, maxX, FIT_SAMPLES);
     const hidden = this.hidden();
     return this.fits().map((fit) => ({
       ...fit,
       on: !hidden.has(fit.id),
       d:
         line<number>()
+          // Skip where a fit has no value to plot (a log axis can't show zero or less).
+          .defined((v) => {
+            const value = fit.predict(v);
+            return Number.isFinite(value) && (kind === 'linear' || value > 0);
+          })
           .x((v) => x(v))
           .y((v) => y(fit.predict(v)))(xs) ?? '',
     }));
@@ -172,7 +224,8 @@ export class ScaleChart {
     const p = this.active();
     if (!p) return null;
     const size = this.design().labelSizePx;
-    const lines = [p.name, `${format(p.x)} m → ${format(p.y)} mm`];
+    const { x, y } = this.axes();
+    const lines = [p.name, `${this.value(p.x, x)} → ${this.value(p.y, y)}`];
     const width =
       Math.max(...lines.map((l) => l.length)) * size * TOOLTIP.charWidth + 2 * TOOLTIP.padX;
     const height = lines.length * size + (lines.length - 1) * TOOLTIP.lineGap + 2 * TOOLTIP.padY;
@@ -250,11 +303,17 @@ export class ScaleChart {
     return p.series === 'ship' ? pointRadius : plannedRadius;
   }
 
+  /** A value with its axis's unit, e.g. "57.6 mm". */
+  protected value(value: number, axis: AxisLabel): string {
+    const text = format(value, axis.decimals);
+    return axis.unit ? `${text} ${axis.unit}` : text;
+  }
+
   protected readonly format = format;
 }
 
-const MAX_DECIMALS = 1;
-/** "1,600" or "57.6": at most one decimal, thousands separated. */
-function format(value: number): string {
-  return value.toLocaleString('en', { maximumFractionDigits: MAX_DECIMALS });
+const DEFAULT_DECIMALS = 1;
+/** "1,600" or "57.6": at most `decimals` decimals, thousands separated. */
+function format(value: number, decimals = DEFAULT_DECIMALS): string {
+  return value.toLocaleString('en', { maximumFractionDigits: decimals });
 }

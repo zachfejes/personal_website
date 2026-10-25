@@ -170,6 +170,56 @@
 
   <section
     class="band section"
+    [class]="'band--' + design().bands.algorithm"
+    aria-labelledby="algorithm"
+  >
+    <div class="container prose" appReveal>
+      <h2 id="algorithm">How the fitting works</h2>
+      <p>
+        Every fit on this page comes from one method: ordinary least squares. Given points
+        <app-tex tex="(x_1, y_1), \ldots, (x_n, y_n)" />, it finds the straight line
+        <app-tex tex="y = mx + c" /> that makes the sum of the squared vertical gaps between the
+        points and the line as small as possible:
+      </p>
+      <app-tex class="equation" [display]="true" [tex]="tex.leastSquares" />
+      <p>
+        Setting the derivatives to zero gives the answer directly, with no searching or iteration,
+        where <app-tex tex="\bar{x}" /> and <app-tex tex="\bar{y}" /> are the averages:
+      </p>
+      <app-tex class="equation" [display]="true" [tex]="tex.slope" />
+      <app-tex class="equation" [display]="true" [tex]="tex.intercept" />
+      <p>Neither candidate is a straight line, so each is first turned into one:</p>
+      <ul>
+        <li>
+          <strong>Logarithmic:</strong> fit a line to <app-tex tex="y" /> against
+          <app-tex tex="\ln(x)" />. Its slope is <app-tex tex="a" /> and its intercept is
+          <app-tex tex="b" />.
+        </li>
+        <li>
+          <strong>Power:</strong> fit a line to <app-tex tex="\log_{10}(y)" /> against
+          <app-tex tex="\log_{10}(x)" />. Its slope is <app-tex tex="b" />, and its intercept is
+          <app-tex tex="\log_{10}(a)" />, so <app-tex tex="a = 10^{\text{intercept}}" />. Because it
+          works on logarithms, this fit minimizes proportional errors rather than absolute ones: a
+          10% miss counts the same for a starfighter as for a Star Destroyer.
+        </li>
+      </ul>
+      <p>
+        To compare the fits, each is scored on how far its predictions
+        <app-tex tex="\hat{y}_i" /> land from the real model lengths <app-tex tex="y_i" />: by
+        root-mean-square error, in millimetres,
+      </p>
+      <app-tex class="equation" [display]="true" [tex]="tex.rmse" />
+      <p>and by average percentage error, which weighs every ship equally whatever its size:</p>
+      <app-tex class="equation" [display]="true" [tex]="tex.percentError" />
+      <p>
+        All of this runs when the site is built, straight from the ship data, so adding a ship
+        updates every fit, number and chart on this page.
+      </p>
+    </div>
+  </section>
+
+  <section
+    class="band section"
     [class]="'band--' + design().bands.comparison"
     aria-labelledby="comparison"
   >
@@ -177,24 +227,148 @@
       <h2 id="comparison">Which fit is better?</h2>
       <p>
         By eye, the power function follows the data much more closely. To confirm it, I measured
-        each fit's root-mean-square error (RMSE): the typical distance, in millimetres, between a
-        model's real length and the length the fit predicts.
+        each fit's average error as a percentage of each model's real length. Percentages keep the
+        biggest ships from dominating: 20 mm off matters a lot for a 60 mm corvette, and much less
+        for a 600 mm Super Star Destroyer.
       </p>
       <dl class="stats">
         <div>
           <dt>Logarithmic fit</dt>
-          <dd>{{ n.logRmse }}<span> mm RMSE</span></dd>
+          <dd>{{ n.logPercent }}<span>% average error</span></dd>
+          <dd class="stats__detail">RMSE {{ n.logRmse }} mm</dd>
         </div>
         <div>
           <dt>Power fit</dt>
-          <dd class="stats__winner">{{ n.powerRmse }}<span> mm RMSE</span></dd>
+          <dd class="stats__winner">{{ n.powerPercent }}<span>% average error</span></dd>
+          <dd class="stats__detail">RMSE {{ n.powerRmse }} mm</dd>
         </div>
       </dl>
+      @if (n.logNegative; as negative) {
+        <p>
+          The logarithmic fit does worst on the smallest craft: below about
+          {{ negative.belowM }} m it predicts a model of negative length, which it does for
+          {{ negative.count }} of the {{ n.shipCount }} ships here.
+        </p>
+      }
       <p>
-        The power function's error is nearly {{ n.ratio }}× smaller, so it's the one to use for
+        The power function's error is about {{ n.ratio }}× smaller, so it's the one to use for
         Armada's scale:
       </p>
       <app-tex class="equation" [display]="true" [tex]="tex.powerFit" />
+    </div>
+  </section>
+
+  <section
+    class="band section"
+    [class]="'band--' + design().bands.alternatives"
+    aria-labelledby="alternatives"
+  >
+    <div class="container prose" appReveal>
+      <h2 id="alternatives">Why a power law?</h2>
+      <p>
+        I picked the power and logarithmic forms because the plotted data looked that shape. Other
+        shapes could fit too, so I tried {{ n.candidateCount }} of them. Each one is fitted to the
+        same ships and scored two ways: its average error on those ships, and its average
+        <em>left-out error</em> predicting each ship from a fit made without it (leave-one-out
+        cross-validation). The second is the real test. A formula with enough parameters can bend
+        through any data, but then it predicts new ships badly. The last column counts ships given a
+        negative model length.
+      </p>
+    </div>
+    <div class="container figure" appReveal>
+      <div class="table-scroll">
+        <table class="candidates">
+          <caption>
+            Candidate forms, best at predicting a left-out ship first
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Form</th>
+              <th scope="col">Error</th>
+              <th scope="col">Left-out error</th>
+              <th scope="col">Negative</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of candidates; track c.id) {
+              <tr [class.candidates__chosen]="c.id === 'power'">
+                <th scope="row">
+                  {{ c.name }}
+                  <span class="candidates__formula"><app-tex [tex]="c.formula" /></span>
+                  <span class="candidates__parameters">{{ c.parameters }} parameters</span>
+                </th>
+                <td>{{ c.inSample }}%</td>
+                <td>{{ c.leaveOneOut }}%</td>
+                <td>{{ c.impossible }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="container prose" appReveal>
+      <p>What the alternatives show:</p>
+      <ul>
+        <li>
+          A logarithm has to cross zero somewhere, which is where the negative lengths come from.
+          Shifting it to pass through zero, <app-tex tex="a \ln(1 + x / c)" />, fixes that but still
+          misses by {{ n.leaveOneOut['shifted-log'] }}% on average.
+        </li>
+        <li>
+          A sine wave starts out straight (<app-tex tex="\sin(kx) \approx kx" /> near zero) and only
+          flattens near its peak. To flatten across the whole range, its peak has to sit at or
+          beyond the largest ship, and then it can't bend enough for the small ones:
+          {{ n.leaveOneOut['sine'] }}%.
+        </li>
+        <li>
+          Polynomials fit the ships they're given well enough, then predict left-out ships badly ({{
+            n.leaveOneOut['cubic']
+          }}% for the cubic). That's overfitting.
+        </li>
+        <li>
+          Letting the power law's exponent drift with size,
+          <app-tex tex="a x^{\,b + c \ln x}" />, gives <app-tex [tex]="'c = ' + n.curvature" />:
+          next to no drift, and {{ n.leaveOneOut['curved-power'] }}% predicting left-out ships
+          against the plain power law's {{ n.leaveOneOut['power'] }}%.
+        </li>
+        @if (n.split; as split) {
+          <li>
+            Fitting small and large ships separately, split at {{ split.atM }} m, gives exponents of
+            {{ split.below }} and {{ split.above }}, a slightly lower exponent among the small
+            craft. It predicts left-out ships with {{ split.leaveOneOut }}% error, so the extra
+            parameters don't buy much.
+          </li>
+        }
+      </ul>
+      <p>
+        If the power law were missing some shape, its errors would lean one way at some sizes. The
+        chart below divides each ship's real model length by the power fit's prediction; the dashed
+        line at 1 is a perfect prediction. Ships of {{ n.sizeBands.lengths }} average
+        {{ n.sizeBands.percents }} of their predicted size respectively.
+      </p>
+    </div>
+    <div class="container figure" appReveal>
+      <app-scale-chart
+        caption="Each ship's model length divided by the power fit's prediction"
+        [ships]="residuals"
+        [axes]="residualAxes"
+        [reference]="1"
+        [design]="design().chart"
+      />
+    </div>
+    <div class="container prose" appReveal>
+      @if (n.powerBest) {
+        <p>
+          So the power law isn't just a good first guess. None of the alternatives predicts a new
+          ship better, and what error is left looks like scatter in how each model was designed
+          rather than a missing curve.
+        </p>
+      } @else {
+        <p>
+          The power law stays close to the best of these at predicting a new ship, with only two
+          parameters, so it's still the one used below.
+        </p>
+      }
     </div>
   </section>
 
@@ -246,12 +420,13 @@
             >XQ Platform series</a
           >, Wookieepedia.
         </li>
+        <!-- Kept on one line so each ; and . sits right after its title. -->
+        <!-- prettier-ignore -->
         <li id="ref-2">
-          <a
-            href="https://community.fantasyflightgames.com/topic/250961-armada-sliding-scale-graph/"
-            rel="noopener"
-            >Armada sliding scale graph</a
-          >: ship data measured by Rune Taq, Fantasy Flight Games community forum.
+          Ship data:
+          @for (source of dataSources; track source.title; let last = $last) {
+            @if (source.url) {<a [href]="source.url" rel="noopener">{{ source.title }}</a>} @else {<span>{{ source.title }}</span>}{{ last ? '.' : ';' }}
+          }
         </li>
         <li id="ref-3">
           Jason Brownlee,

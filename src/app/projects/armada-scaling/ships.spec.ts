@@ -42,6 +42,20 @@ describe('parseShipData', () => {
     expect(data.station.name).toBe(VALID.station);
   });
 
+  it('lists each measurement source once, for crediting', () => {
+    const OTHER = { title: 'Other source' };
+    const data = parseShipData({
+      ...VALID,
+      sources: { ...VALID.sources, other: OTHER },
+      ships: [
+        VALID.ships[0],
+        { ...VALID.ships[0], name: 'Second', measurementSource: 'other' },
+        { ...VALID.ships[0], name: 'Third' },
+      ],
+    });
+    expect(data.measurementSources).toEqual([SOURCE, OTHER]);
+  });
+
   it('rejects a faction outside the list, naming the ship', () => {
     expect(() => parseShipData(withShip({ faction: 'Trade Guild' }))).toThrow(
       /Cruiser.*Trade Guild/,

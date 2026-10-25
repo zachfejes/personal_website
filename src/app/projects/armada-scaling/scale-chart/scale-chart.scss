@@ -14,6 +14,17 @@
   box-shadow: 0 14px 30px -18px rgb(0 0 0 / 60%);
 }
 
+.chart__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.chart__scale {
+  margin-left: auto;
+}
+
 .chart__toggles {
   display: flex;
   flex-wrap: wrap;
@@ -76,6 +87,11 @@
 
 .chart__baseline {
   stroke: color-mix(in srgb, var(--color-on-dark) 40%, transparent);
+}
+
+.chart__reference {
+  stroke: color-mix(in srgb, var(--color-on-dark) 55%, transparent);
+  stroke-dasharray: 4 4;
 }
 
 .chart__fit {
