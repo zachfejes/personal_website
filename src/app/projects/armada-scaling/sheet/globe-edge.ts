@@ -9,11 +9,10 @@ import {
   signal,
 } from '@angular/core';
 import { GlobeOptions, globe } from './globe';
+import { NARROW_MAX_PX } from './layout';
 
 /** Drawn at this width before the strip can be measured (prerendering). */
 const DEFAULT_WIDTH_PX = 1440;
-/** Phones get a smaller, more curved globe in a shorter strip. Matches $narrow in _sheet.scss. */
-const NARROW_MAX_PX = 760;
 
 type Preset = Omit<GlobeOptions, 'width'>;
 const SHARED = { tilt: 0.32, latitudeStep: 5, longitudeStep: 10, minLatitude: 15 } as const;
@@ -42,6 +41,7 @@ let nextId = 0;
 export class GlobeEdge {
   protected readonly id = `globe-${nextId++}`;
   private readonly width = signal(DEFAULT_WIDTH_PX);
+  /** Phones get a smaller, more curved globe in a shorter strip. */
   protected readonly preset = computed(() =>
     this.width() <= NARROW_MAX_PX ? PRESETS.narrow : PRESETS.wide,
   );

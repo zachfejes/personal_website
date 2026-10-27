@@ -29,6 +29,7 @@ import { DESIGN, DESIGN_SCHEMA, Design } from './design';
 import { AxisLabel, FitLine, NamedPoint, ScaleChart } from './scale-chart/scale-chart';
 import { MEASUREMENT_SOURCES, SHIPS, XQ2 } from './ships';
 import { GlobeEdge } from './sheet/globe-edge';
+import { SheetFold } from './sheet/sheet-fold';
 import { SheetFrame } from './sheet/sheet-frame';
 import { SheetHead } from './sheet/sheet-head';
 import { SheetPaper } from './sheet/sheet-paper';
@@ -94,6 +95,7 @@ function negativeBelow(zeroM: number | null) {
     RevealDirective,
     ScaleCalculator,
     ScaleChart,
+    SheetFold,
     SheetFrame,
     SheetHead,
     SheetPaper,
@@ -118,6 +120,12 @@ function negativeBelow(zeroM: number | null) {
     '[style.--grid-opacity]': 'design().sheet.gridOpacity',
     '[style.--grid-major-opacity]': 'design().sheet.gridMajorOpacity',
     '[style.--glow-opacity]': 'design().sheet.glowOpacity',
+    '[style.--draw-ms.ms]': 'design().motion.drawMs',
+    '[style.--callout-stagger-ms.ms]': 'design().motion.calloutStaggerMs',
+    '[style.--orbit-s.s]': 'design().motion.orbitSeconds',
+    '[style.--pulse-ms.ms]': 'design().motion.pulseMs',
+    '[style.--pulse-scale]': 'design().motion.pulseScale',
+    '[style.--fold-ms.ms]': 'design().motion.foldMs',
   },
 })
 export class ArmadaScalingPage {
@@ -240,6 +248,13 @@ export class ArmadaScalingPage {
       above: fixed(SPLIT_POWER.above, COEFFICIENT_DECIMALS.b),
       leaveOneOut: fixed(SPLIT_POWER.leaveOneOut, COEFFICIENT_DECIMALS.percent),
     },
+  };
+
+  /** What each folded field note says on phones, before it's opened. */
+  protected readonly foldSummaries = {
+    alternatives:
+      `${this.n.candidateCount} curve shapes, scored on how well each predicts a ship it wasn't fitted to.` +
+      (this.n.powerBest ? ' The power law wins.' : ''),
   };
 
   /** Equations that quote the computed coefficients. */
