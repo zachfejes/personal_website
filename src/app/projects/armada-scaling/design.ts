@@ -1,34 +1,26 @@
 import { Schema } from '../../dev/tuner/tuning';
 import { SCALE_KINDS, ScaleKind } from './scale-chart/axis';
 
-const BANDS = ['dark', 'light', 'accent'] as const;
-export type Band = (typeof BANDS)[number];
-
 /**
  * Every adjustable design value on the Armada page, in one place. The tuning panel (staging and
  * development) edits a copy of these; settings copied from the panel are pasted back here.
  */
 export const DESIGN = {
   layout: {
-    readingWidthCh: 66,
+    readingWidthCh: 62,
     figureWidthRem: 52,
     sectionPaddingRem: 5,
     bodySizeRem: 1.08,
     lineHeight: 1.7,
-    headingSizeRem: 2.2,
+    headingSizeRem: 2.5,
     titleSizeRem: 4.4,
     equationSizeEm: 1.15,
   },
-  bands: {
-    intro: 'dark' as Band,
-    problem: 'light' as Band,
-    method: 'accent' as Band,
-    fitting: 'light' as Band,
-    algorithm: 'accent' as Band,
-    comparison: 'dark' as Band,
-    alternatives: 'accent' as Band,
-    findings: 'light' as Band,
-    references: 'dark' as Band,
+  /** The drawing-sheet background: a fine grid with a coarser one over it, and soft glows. */
+  sheet: {
+    gridOpacity: 0.03,
+    gridMajorOpacity: 0.055,
+    glowOpacity: 0.5,
   },
   chart: {
     /** Axes the charts start on; readers can switch. Log keeps every ship readable. */
@@ -44,7 +36,7 @@ export const DESIGN = {
     powerColor: '#e3a857',
     logColor: '#8fb3a2',
     plannedColor: '#e3a857',
-    panelColor: '#141917',
+    panelColor: '#0e161f',
   },
   figures: {
     wireframeOpacity: 0.9,
@@ -53,8 +45,6 @@ export const DESIGN = {
 };
 
 export type Design = typeof DESIGN;
-
-const band = (label: string) => ({ type: 'select', label, options: BANDS }) as const;
 
 export const DESIGN_SCHEMA: Schema<Design> = {
   layout: {
@@ -119,18 +109,12 @@ export const DESIGN_SCHEMA: Schema<Design> = {
       },
     },
   },
-  bands: {
-    label: 'Section bands',
+  sheet: {
+    label: 'Sheet',
     controls: {
-      intro: band('Intro'),
-      problem: band('The problem'),
-      method: band('Method'),
-      fitting: band('Fitting'),
-      algorithm: band('How fitting works'),
-      comparison: band('Comparison'),
-      alternatives: band('Why a power law'),
-      findings: band('Findings'),
-      references: band('References'),
+      gridOpacity: { type: 'range', label: 'Fine grid', min: 0, max: 0.2, step: 0.005 },
+      gridMajorOpacity: { type: 'range', label: 'Major grid', min: 0, max: 0.2, step: 0.005 },
+      glowOpacity: { type: 'range', label: 'Glow', min: 0, max: 1, step: 0.05 },
     },
   },
   chart: {

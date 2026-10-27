@@ -51,6 +51,23 @@ export function logFitZeroM(fit: Fit): number | null {
   return fit.a > 0 ? Math.exp(-fit.b / fit.a) : null;
 }
 
+/**
+ * The measured ships whose models are nearest in size to `modelMm`: the largest one smaller and
+ * the smallest one larger. Either is null when nothing lies on that side.
+ */
+export function modelNeighbors<T extends Measured>(
+  ships: readonly T[],
+  modelMm: number,
+): { below: T | null; above: T | null } {
+  let below: T | null = null;
+  let above: T | null = null;
+  for (const ship of ships) {
+    if (ship.modelMm < modelMm && (!below || ship.modelMm > below.modelMm)) below = ship;
+    if (ship.modelMm > modelMm && (!above || ship.modelMm < above.modelMm)) above = ship;
+  }
+  return { below, above };
+}
+
 /** The analysis of the page's data (ships.json). */
 export const ARMADA = analyzeScale(SHIPS);
 

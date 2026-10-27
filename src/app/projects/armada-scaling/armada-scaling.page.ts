@@ -17,12 +17,18 @@ import {
   POWER_SIZE_BANDS,
   SPLIT_POWER,
   logFitZeroM,
+  modelNeighbors,
   predictModelMm,
 } from './analysis';
 import { ScaleCalculator } from './calculator';
+import { CandidateRow, CandidatesTable } from './candidates-table';
+import { ArmadaHero } from './hero/armada-hero';
 import { DESIGN, DESIGN_SCHEMA, Design } from './design';
 import { AxisLabel, FitLine, NamedPoint, ScaleChart } from './scale-chart/scale-chart';
 import { MEASUREMENT_SOURCES, SHIPS, XQ2 } from './ships';
+import { SheetFrame } from './sheet/sheet-frame';
+import { SheetHead } from './sheet/sheet-head';
+import { SheetPaper } from './sheet/sheet-paper';
 import { Tex } from './tex';
 import { signedTerm } from './tex-format';
 
@@ -41,6 +47,16 @@ const listOf = (items: readonly string[]) =>
 /** Ratios on the error chart: two decimals tell 0.98 from 1.02. */
 const RATIO_DECIMALS = 2;
 
+const DOUBLE = 2;
+
+/** "the Victory Star Destroyer (137 mm)": a measured ship by name and rounded model length. */
+const shipLabel = (ship: { name: string; modelMm: number } | null) =>
+  ship && `${ship.name} (${Math.round(ship.modelMm)} mm)`;
+function neighborNames(modelMm: number) {
+  const { below, above } = modelNeighbors(SHIPS, modelMm);
+  return { below: shipLabel(below), above: shipLabel(above) };
+}
+
 /** Ships the log fit gives a negative model length: those shorter than where it crosses zero. */
 function negativeBelow(zeroM: number | null) {
   const count = zeroM === null ? 0 : SHIPS.filter((s) => s.canonM < zeroM).length;
@@ -53,7 +69,18 @@ function negativeBelow(zeroM: number | null) {
  */
 @Component({
   selector: 'app-armada-scaling-page',
-  imports: [RevealDirective, ScaleCalculator, ScaleChart, Tex, TunerPanel],
+  imports: [
+    ArmadaHero,
+    CandidatesTable,
+    RevealDirective,
+    ScaleCalculator,
+    ScaleChart,
+    SheetFrame,
+    SheetHead,
+    SheetPaper,
+    Tex,
+    TunerPanel,
+  ],
   templateUrl: './armada-scaling.page.html',
   styleUrl: './armada-scaling.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -68,6 +95,9 @@ function negativeBelow(zeroM: number | null) {
     '[style.--equation-size.em]': 'design().layout.equationSizeEm',
     '[style.--wireframe-opacity]': 'design().figures.wireframeOpacity',
     '[style.--wireframe-width.%]': 'design().figures.wireframeWidthPct',
+    '[style.--grid-opacity]': 'design().sheet.gridOpacity',
+    '[style.--grid-major-opacity]': 'design().sheet.gridMajorOpacity',
+    '[style.--glow-opacity]': 'design().sheet.glowOpacity',
   },
 })
 export class ArmadaScalingPage {
@@ -103,7 +133,7 @@ export class ArmadaScalingPage {
   };
 
   /** Every candidate form, best at predicting a left-out ship first. */
-  protected readonly candidates = [...CANDIDATE_SCORES]
+  protected readonly candidates: CandidateRow[] = [...CANDIDATE_SCORES]
     .sort((a, b) => a.leaveOneOut - b.leaveOneOut)
     .map((s) => ({
       ...s.candidate,
@@ -136,6 +166,10 @@ export class ArmadaScalingPage {
     ratio: Math.round(LOG_PERCENT_ERROR / POWER_PERCENT_ERROR),
     xq2CanonM: XQ2.canonM,
     xq2ModelMm: Math.round(predictModelMm(XQ2.canonM)),
+    /** The measured models just smaller and just larger than the XQ2's. */
+    xq2Neighbors: neighborNames(predictModelMm(XQ2.canonM)),
+    /** How much a model grows when its canon length doubles: 2^b. */
+    doubling: fixed(DOUBLE ** POWER_FIT.b, COEFFICIENT_DECIMALS.a),
     shipCount: SHIPS.length,
     logNegative: negativeBelow(logFitZeroM(LOG_FIT)),
     candidateCount: CANDIDATE_SCORES.length,

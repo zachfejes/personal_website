@@ -1,0 +1,27 @@
+<table>
+  <caption>
+    Candidate forms, best at predicting a left-out ship first
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">Form</th>
+      <th scope="col">Error</th>
+      <th scope="col">Left-out error</th>
+      <th scope="col">Negative</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (c of rows(); track c.id) {
+      <tr [class.chosen]="c.id === 'power'">
+        <th scope="row">
+          {{ c.name }}
+          <span class="formula"><app-tex [tex]="c.formula" /></span>
+          <span class="parameters">{{ c.parameters }} parameters</span>
+        </th>
+        <td>{{ c.inSample }}%</td>
+        <td>{{ c.leaveOneOut }}%</td>
+        <td>{{ c.impossible }}</td>
+      </tr>
+    }
+  </tbody>
+</table>

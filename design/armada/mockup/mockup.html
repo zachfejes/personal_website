@@ -1,0 +1,431 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<link rel="stylesheet" href="base.css"><link rel="stylesheet" href="../../../node_modules/katex/dist/katex.min.css">
+<script src="data.js"></script><script src="../../../node_modules/katex/dist/katex.min.js"></script><script src="charts.js"></script>
+<style>
+  :root { --bg: #0b1016; --bg2: #0d151d; --bg3: #101a24; --line: 170, 200, 210; --text: #dfe6ea; --strong: #f1f4f5; --muted: #8aa3ae; --body: #b4c2c8; --accent: #e3a857; --logfit: #8fb3a2; --paper: #e6e0d2; --ink: #22201b; --ink-body: #4a463e; --ink-accent: #8a5a1c; --glow: 40, 70, 90; }
+  body { width: auto; background: var(--bg); color: var(--text); }
+  .page { position: relative; overflow: hidden; padding-bottom: 40px;
+    background:
+      radial-gradient(1100px 800px at 50% 560px, rgba(var(--glow), .5), transparent 70%),
+      radial-gradient(1000px 900px at 70% 3000px, rgba(var(--glow), .28), transparent 70%),
+      radial-gradient(1000px 900px at 20% 6500px, rgba(var(--glow), .22), transparent 70%),
+      linear-gradient(rgba(var(--line), .03) 1px, transparent 1px) 0 0 / 24px 24px,
+      linear-gradient(90deg, rgba(var(--line), .03) 1px, transparent 1px) 0 0 / 24px 24px,
+      linear-gradient(rgba(var(--line), .055) 1px, transparent 1px) 0 0 / 120px 120px,
+      linear-gradient(90deg, rgba(var(--line), .055) 1px, transparent 1px) 0 0 / 120px 120px,
+      linear-gradient(var(--bg), var(--bg2) 1400px, var(--bg3) 4000px, var(--bg2) 7000px, var(--bg)); }
+  #deco { position: absolute; left: 0; top: 0; z-index: 3; pointer-events: none; }
+  .lbl { font: 500 11px 'Mono'; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .amb { color: var(--accent); }
+  .wrap { position: relative; max-width: 1200px; margin: 0 auto; padding: 0 0 0 80px; }
+  h2 { font: 400 40px/1.15 'Bricolage'; color: var(--strong); letter-spacing: .01em; margin-bottom: 18px; }
+  h3 { font: 500 13px 'Mono'; letter-spacing: .14em; text-transform: uppercase; color: var(--strong); margin: 26px 0 10px; }
+  .prose { font: 400 16px/1.75 'Manrope'; color: var(--body); max-width: 62ch; }
+  .prose p, .prose ul, .prose ol { margin-bottom: 1em; }
+  .prose ul, .prose ol { padding-left: 1.3em; }
+  .prose li + li { margin-top: .4em; }
+  .prose strong, .prose em { color: var(--strong); }
+  .prose sup { font: 500 .7em 'Mono'; color: var(--accent); }
+  .tex.d { display: block; margin: .3em 0 1.1em; font-size: 1.12em; color: var(--strong); overflow-x: auto; overflow-y: hidden; }
+  .head { display: flex; gap: 10px; align-items: center; height: 26px; margin-bottom: 20px; }
+  .sec { position: relative; padding-top: 110px; }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+  .side { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 48px; align-items: start; }
+  .callout { border: 1px dashed rgba(var(--line), .45); padding: 12px 14px; font: 400 12px/1.6 'Mono'; color: var(--body); background: color-mix(in srgb, var(--bg) 75%, transparent); }
+  .callout b { display: block; color: var(--strong); font-weight: 600; letter-spacing: .12em; margin-bottom: 4px; }
+  .note { font: 400 12px/1.6 'Mono'; color: var(--accent); max-width: 62ch; }
+  .note::before { content: '+ '; }
+  /* hero */
+  .hero { position: relative; height: 1000px; }
+  .topbar { display: flex; justify-content: space-between; padding: 36px 120px 0; }
+  .rule-title { display: flex; align-items: center; gap: 28px; padding: 46px 120px 0; }
+  .rule-title i { flex: 1; height: 1px; background: var(--muted); opacity: .6; }
+  .rule-title h1 { font: 300 64px 'Bricolage'; letter-spacing: .14em; color: var(--strong); text-align: center; }
+  .hero .meta { display: flex; justify-content: center; gap: 36px; margin-top: 14px; }
+  .hero .meta b { color: var(--text); font-weight: 500; }
+  .hero-art { position: absolute; left: 50%; top: 360px; width: 520px; margin-left: -261px; z-index: 2; }
+  .hero .co { position: absolute; width: 250px; z-index: 4; }
+  .co1 { left: calc(50% - 600px); top: 330px; } .co2 { left: calc(50% + 350px); top: 300px; }
+  .co3 { left: calc(50% + 350px); top: 660px; } .co4 { left: calc(50% - 600px); top: 660px; }
+  .edge { position: relative; height: 330px; margin-top: -120px; }
+  /* drawing sheet */
+  .sheet { border: 1px solid rgba(var(--line), .35); padding: 46px 30px 22px; background: color-mix(in srgb, var(--bg2) 55%, transparent); position: relative; }
+  .sheet img { display: block; width: 100%; }
+  .sheet .lbl { margin: 8px 0 24px; }
+  .dim { position: absolute; left: 30px; right: 30px; top: 16px; height: 20px; }
+  /* photos supplied later */
+  .photo { position: relative; border: 1px solid rgba(var(--line), .5); background: repeating-linear-gradient(135deg, rgba(var(--line), .07) 0 2px, transparent 2px 12px), color-mix(in srgb, var(--bg) 85%, #000);
+    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font: 500 11px/1.8 'Mono'; letter-spacing: .14em; color: var(--muted); box-shadow: 0 24px 40px -22px #000; z-index: 4; }
+  .photo small { display: block; letter-spacing: .06em; text-transform: none; opacity: .8; }
+  .cap { font: 400 11px 'Mono'; letter-spacing: .06em; color: var(--muted); margin-top: 8px; }
+  .photo-a { position: absolute; right: 0; top: -250px; width: 340px; height: 240px; }
+  /* chart controls */
+  .controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 16px; margin-bottom: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid rgba(var(--line), .35); font: 500 11px 'Mono'; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: transparent; }
+  .chip[aria-pressed='true'] { color: var(--strong); border-color: rgba(var(--line), .7); background: rgba(var(--line), .08); }
+  .chip i { width: 16px; height: 2px; }
+  .seg { display: inline-flex; align-items: center; }
+  .seg .lbl { margin-right: 10px; }
+  .seg .chip + .chip { margin-left: -1px; }
+  .fig { position: relative; }
+  .figcap { display: flex; justify-content: space-between; gap: 16px; margin-top: 10px; }
+  details.data { margin-top: 10px; }
+  details.data summary { font: 500 11px 'Mono'; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); list-style: none; }
+  details.data summary::before { content: '+ '; color: var(--accent); }
+  /* paper field note */
+  .paper { position: relative; margin: 120px 80px 0 0; padding: 70px 0 80px; background: var(--paper); color: var(--ink); border-radius: 0 220px 0 220px; z-index: 2;
+    --strong: #22201b; --text: #22201b; --body: #4a463e; --muted: #6b6458; --accent: #8a5a1c; --line: 34, 32, 27; --bg: #e6e0d2; --bg2: #ddd6c6; }
+  .paper .lbl.n { color: #6b6458; }
+  .fold-summary, .fold-toggle { display: none; }
+  .cont { margin-top: 2.75em; }
+  @media (max-width: 760px) { .cont { margin-top: -1.5em; } }
+  @media (min-width: 761px) { .paper .wrap { margin-left: max(0px, calc((100vw - 1200px) / 2)); } }
+  /* stats */
+  .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid rgba(var(--line), .35); margin: 26px 0; max-width: 760px; }
+  .stats > div { padding: 18px 0; }
+  .stats .big { font: 300 54px 'Bricolage'; color: var(--strong); line-height: 1.1; }
+  .stats .big span { font-size: 18px; color: var(--muted); }
+  .stats .det { font: 400 12px 'Mono'; color: var(--muted); margin-top: 4px; }
+  /* candidates table */
+  table.cands { width: 100%; border-collapse: collapse; font: 400 14px 'Manrope'; color: var(--body); font-variant-numeric: tabular-nums; }
+  .cands th, .cands td { padding: 10px 12px; border-bottom: 1px solid rgba(var(--line), .2); text-align: right; vertical-align: top; }
+  .cands th:first-child, .cands td:first-child { text-align: left; }
+  .cands thead th { font: 500 10px 'Mono'; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); border-bottom-color: rgba(var(--line), .45); }
+  .cands tbody th { font-weight: 600; color: var(--strong); }
+  .cands .f { display: block; font-weight: 400; color: var(--body); margin-top: 2px; }
+  .cands .p { display: block; font: 400 10px 'Mono'; letter-spacing: .08em; color: var(--muted); margin-top: 2px; }
+  .cands tr.win th, .cands tr.win td { color: var(--accent); }
+  /* calculator */
+  .formrow { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid rgba(var(--line), .35); margin: 6px 0 24px; max-width: 520px; }
+  .formrow div { padding: 14px 16px; border-left: 1px solid rgba(var(--line), .25); }
+  .formrow div:first-child { border-left: 0; }
+  .formrow b { display: block; font: 300 38px 'Bricolage'; color: var(--strong); margin-top: 4px; }
+  .formrow .in { border-bottom: 1px solid var(--muted); display: inline-block; min-width: 120px; }
+  .refs { font: 400 14px/1.7 'Manrope'; color: var(--body); padding-left: 1.3em; max-width: 80ch; }
+  .refs li + li { margin-top: .5em; }
+  .refs a { color: var(--text); text-decoration-color: rgba(var(--line), .5); }
+
+  @media (max-width: 760px) {
+    .wrap { padding: 0 16px 0 44px; }
+    h2 { font-size: 28px; }
+    .prose { font-size: 15px; }
+    .sec { padding-top: 64px; }
+    .two, .side { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    .topbar { padding: 22px 16px 0; }
+    .rule-title { padding: 40px 16px 0; gap: 10px; }
+    .rule-title h1 { font-size: 30px; letter-spacing: .12em; line-height: 1.15; }
+    .hero { height: auto; }
+    .hero .meta { flex-direction: column; align-items: center; gap: 4px; }
+    .hero-art { position: relative; left: auto; top: auto; margin: 54px auto 0; width: 250px; display: block; }
+    .hero .co { position: static; width: auto; margin: 10px 16px 0; padding: 10px 12px; }
+    .hero .co b { display: inline; margin-right: 6px; }
+    .co-list { margin-top: 56px; }
+    .edge { height: 170px; margin-top: 10px; }
+    .photo-a { position: relative; top: auto; right: auto; width: auto; height: 200px; margin-top: 20px; }
+    .sheet { padding: 40px 12px 12px; }
+    .dim { left: 12px; right: 12px; }
+    .paper, .paper-m { margin: 70px 0 0; padding: 44px 0 50px; border-radius: 0 90px 0 90px; }
+    .paper-m { position: relative; background: var(--paper); color: var(--ink); z-index: 2;
+      --strong: #22201b; --text: #22201b; --body: #4a463e; --muted: #6b6458; --accent: #8a5a1c; --line: 34, 32, 27; --bg: #e6e0d2; --bg2: #ddd6c6; }
+    .paper-m + .sec { padding-top: 70px; }
+    .fold-summary { display: block; margin-top: -4px; }
+    .fold-toggle { display: inline-flex; margin-top: 18px; }
+    body:not(.open) .fold-body { display: none; }
+    body.open .fold-summary { display: none; }
+    body.open .fold-toggle { margin: 0 0 22px; }
+    body:not(.open) .paper, body:not(.open) .paper-m { padding-bottom: 40px; }
+    .stats .big { font-size: 36px; }
+    .controls { margin-bottom: 8px; }
+    .seg .lbl { display: none; }
+    .cands th, .cands td { padding: 8px 5px; font-size: 13px; }
+    .formrow b { font-size: 28px; }
+    .br { display: block; height: 0; }
+    .desk { display: none; }
+  }
+</style></head>
+<body><div class="page" id="page">
+<svg id="deco"></svg>
+
+<header class="hero" id="hero">
+  <div class="topbar lbl"><span>Zach Fejes · Projects</span><span class="desk">Data · Tabletop</span></div>
+  <div class="rule-title"><i></i><h1>ARMADA<span class="br"> </span>SCALING</h1><i></i></div>
+  <div class="meta lbl"><span>Project <b>Sep 2018</b></span><span>Method <b>Regression · Error analysis</b></span><span>Data <b>45 ships and squadrons</b></span></div>
+  <img class="hero-art" id="heroArt" src="../../../public/projects/armada-scaling/xq2-top.webp" alt="">
+  <div class="co-list">
+    <div class="co co1 callout"><b>01 · CANON LENGTH</b>884 m, end to end. Larger than a Victory Star Destroyer.</div>
+    <div class="co co2 callout"><b class="amb">02 · MODEL LENGTH</b><span class="amb">≈ 142 mm</span> on the table, from the fit worked out below.</div>
+    <div class="co co3 callout"><b>03 · SCALE</b>About 1 : 6,200. A TIE fighter is closer to 1 : 900.</div>
+    <div class="co co4 callout"><b>04 · THE QUESTION</b>Working out the non-linear model scale in Star Wars: Armada.</div>
+  </div>
+</header>
+<div class="edge" id="edge"></div>
+
+<section class="sec" id="s1"><div class="wrap">
+  <div class="head"><span class="lbl amb">01</span><span class="lbl">— Background</span></div>
+  <div class="photo photo-a">STAND-IN PHOTO<small>Armada fleet on the table</small></div>
+  <div class="two">
+    <div class="prose">
+      <h2>A real station for the table</h2>
+      <p>I love the cinematic nature of Armada, and felt it would be great to use a real station model in the game. The core game (before the Corellian Conflict expansion) featured only unarmed repair stations, so my imagination immediately filled with the XQ platforms from the TIE Fighter and X-Wing games of the 90s<sup>1</sup>.</p>
+      <h3>The problem</h3>
+      <p>After my first design iteration, I realized two important things:</p>
+      <ul><li>The station needed much more detail.</li><li>The scale felt wrong.</li></ul>
+      <p>I'll cover the station's design and fabrication in a separate write-up; here I'd like to focus on the second point. Ship and squadron models in Armada are built to a <em>relative</em> scale: a CR90 model isn't at the same scale to its canon counterpart as a Victory-class Star Destroyer is. For proof, try fitting the CR90 into the Victory's docking bay. I'll wait.</p>
+      <p>I understand why Fantasy Flight chose a relative scale, but because model and canon sizes don't have a linear relationship, it takes some thought to find the right size for my XQ2 Platform and have it <em>feel</em> correct during play. Fortunately, a little math can solve this problem, and help scale any future models I design.</p>
+    </div>
+    <div class="sheet" style="margin-top:130px">
+      <svg class="dim" id="dim"></svg>
+      <img src="../../../public/projects/armada-scaling/xq2-side.webp" alt=""><div class="lbl">Side elevation</div>
+      <img src="../../../public/projects/armada-scaling/xq2-front.webp" alt=""><div class="lbl" style="margin-bottom:0">Front elevation</div>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec" id="s2"><div class="wrap">
+  <div class="head"><span class="lbl amb">02</span><span class="lbl">— Method</span></div>
+  <div class="side">
+    <div class="prose">
+      <h2>Plot the ships</h2>
+      <p>We should be able to find a function that describes Armada's non-linear scale. To start, let's plot the data<sup>2</sup>: the canon length of each ship and squadron in the game against the measured length of its model.</p>
+      <p>Two things stand out:</p>
+      <ol><li>There does seem to be a relationship.</li><li>As expected, it isn't linear: big ships are scaled down much more than small ones.</li></ol>
+      <p class="note">Note: lengths are nose to tail. The Vulture droid is wingtip to wingtip, as it flies.</p>
+    </div>
+    <figure class="fig" id="f1">
+      <div class="controls"><span></span><div class="seg"><span class="lbl">Axes</span><button class="chip">Linear</button><button class="chip" aria-pressed="true">Log</button></div></div>
+      <div class="plot"></div>
+      <div class="figcap"><span class="lbl">Fig. 02 — canon length against model length, 45 ships and squadrons</span></div>
+      <details class="data"><summary>Show the data</summary></details>
+    </figure>
+  </div>
+</div></section>
+
+<section class="sec" id="s3"><div class="wrap">
+  <div class="head"><span class="lbl amb">03</span><span class="lbl">— Finding a fit</span></div>
+  <h2>Two candidate curves</h2>
+  <div class="two">
+    <div class="prose">
+      <p>To define a <em>best fit</em>, we need a family of functions to try. By eye, I guessed the relationship was either logarithmic or a power function. Fitting both shows which describes the data better.</p>
+      <p>A logarithmic function has the general form</p>
+      <div class="tex d" data-tex="y = a \ln(x) + b"></div>
+      <p>Linear regression<sup>3</sup> on <span class="tex" data-tex="\ln(x)"></span> finds the <span class="tex" data-tex="a"></span> and <span class="tex" data-tex="b"></span> that give the closest fit:</p>
+      <div class="tex d" data-tex="y = 41.41 \ln(x) - 110.89"></div>
+    </div>
+    <div class="prose">
+      <p>A power function has the form</p>
+      <div class="tex d" data-tex="y = a x^{b}"></div>
+      <p>Finding <span class="tex" data-tex="a"></span> and <span class="tex" data-tex="b"></span> directly is tough this time, but taking the log of both sides gets us close:</p>
+      <div class="tex d" data-tex="\log_{10}(y) = \log_{10}(a) + b \log_{10}(x)"></div>
+      <p>That looks messy, but it's linear in <span class="tex" data-tex="\log_{10}(x)"></span>, so linear regression is back on the table. It finds</p>
+      <div class="tex d" data-tex="\begin{aligned} b &= 0.544 \\ \log_{10}(a) &= 0.552 \\ a &= 10^{0.552} = 3.56 \end{aligned}"></div>
+    </div>
+  </div>
+  <p class="prose" style="margin:6px 0 18px">Now let's plot both against the data. Switch either fit on or off to compare.</p>
+  <figure class="fig" id="f2">
+    <div class="controls"><div class="chips"><button class="chip" aria-pressed="true"><i style="background:var(--accent)"></i>Power fit</button><button class="chip" aria-pressed="true"><i style="background:var(--logfit)"></i>Log fit</button></div><div class="seg"><span class="lbl">Axes</span><button class="chip">Linear</button><button class="chip" aria-pressed="true">Log</button></div></div>
+    <div class="plot"></div>
+    <div class="figcap"><span class="lbl">Fig. 03 — both fits against the data</span></div>
+  </figure>
+</div></section>
+
+<section class="paper" id="s4"><div class="wrap">
+  <div class="head"><span class="lbl">Field note</span><span class="lbl n">— How the fitting works</span></div>
+  <h2>One method underneath</h2>
+  <p class="prose fold-summary">Every fit here comes from ordinary least squares, after each curve is turned into a straight line.</p>
+  <button class="chip fold-toggle" data-open="− Close the field note">+ Read the field note</button>
+  <div class="fold-body"><div class="two">
+    <div class="prose">
+      <p>Every fit on this page comes from one method: ordinary least squares. Given points <span class="tex" data-tex="(x_1, y_1), \ldots, (x_n, y_n)"></span>, it finds the straight line <span class="tex" data-tex="y = mx + c"></span> that makes the sum of the squared vertical gaps between the points and the line as small as possible:</p>
+      <div class="tex d" data-tex="\min_{m,\,c} \sum_{i=1}^{n} \left(y_i - (m x_i + c)\right)^2"></div>
+      <p>Setting the derivatives to zero gives the answer directly, with no searching or iteration, where <span class="tex" data-tex="\bar{x}"></span> and <span class="tex" data-tex="\bar{y}"></span> are the averages:</p>
+      <div class="tex d" data-tex="m = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sum_i (x_i - \bar{x})^2}"></div>
+      <div class="tex d" data-tex="c = \bar{y} - m\,\bar{x}"></div>
+    </div>
+    <div class="prose">
+      <p>Neither candidate is a straight line, so each is first turned into one:</p>
+      <ul>
+        <li><strong>Logarithmic:</strong> fit a line to <span class="tex" data-tex="y"></span> against <span class="tex" data-tex="\ln(x)"></span>. Its slope is <span class="tex" data-tex="a"></span> and its intercept is <span class="tex" data-tex="b"></span>.</li>
+        <li><strong>Power:</strong> fit a line to <span class="tex" data-tex="\log_{10}(y)"></span> against <span class="tex" data-tex="\log_{10}(x)"></span>. Its slope is <span class="tex" data-tex="b"></span>, and its intercept is <span class="tex" data-tex="\log_{10}(a)"></span>. Because it works on logarithms, this fit minimizes proportional errors rather than absolute ones: a 10% miss counts the same for a starfighter as for a Star Destroyer.</li>
+      </ul>
+      <p>To compare the fits, each is scored by root-mean-square error, in millimetres,</p>
+      <div class="tex d" data-tex="\text{RMSE} = \sqrt{\frac{1}{n} \sum_i \left(\hat{y}_i - y_i\right)^2}"></div>
+      <p>and by average percentage error, which weighs every ship equally whatever its size:</p>
+      <div class="tex d" data-tex="\text{error} = \frac{100\%}{n} \sum_i \left| \frac{\hat{y}_i - y_i}{y_i} \right|"></div>
+    </div>
+  </div>
+</div>
+</div></section>
+
+<section class="sec" id="s5"><div class="wrap">
+  <div class="head"><span class="lbl amb">04</span><span class="lbl">— Which fit is better?</span></div>
+  <div class="prose">
+    <h2>The power function, by far</h2>
+    <p>By eye, the power function follows the data much more closely. To confirm it, I measured each fit's average error as a percentage of each model's real length. Percentages keep the biggest ships from dominating: 20 mm off matters a lot for a 60 mm corvette, and much less for a 600 mm Super Star Destroyer.</p>
+  </div>
+  <div class="stats">
+    <div><div class="lbl">Logarithmic fit</div><div class="big" style="color:var(--muted)">111.3<span>% average error</span></div><div class="det">RMSE 58.0 mm</div></div>
+    <div><div class="lbl">Power fit</div><div class="big" style="color:var(--accent)">9.5<span>% average error</span></div><div class="det">RMSE 21.0 mm</div></div>
+  </div>
+  <div class="prose">
+    <p>The logarithmic fit does worst on the smallest craft: below about 15 m it predicts a model of negative length, which it does for 10 of the 45 ships here.</p>
+    <p>The power function's error is about 12× smaller, so it's the one to use for Armada's scale:</p>
+  </div>
+  <div class="eqbox" id="eqbox" style="position:relative;margin-top:20px">
+    <div class="tex d" style="font-size:2.6em;text-align:center;margin:0" data-tex="y = 3.56\,x^{0.544}"></div>
+    <div class="two" style="margin-top:40px"><div class="callout" id="ca"><b>A · SCALE FACTOR</b>A 1 m ship would be 3.56 mm on the table.</div><div class="callout" id="cb"><b>B · EXPONENT</b>Under 1: double the length, and the model grows only 1.46×.</div></div>
+  </div>
+</div></section>
+
+<section class="sec paper-m" id="s6"><div class="wrap">
+  <div class="head"><span class="lbl amb">05</span><span class="lbl">— Why a power law?</span></div>
+  <h2>Eight shapes, tested</h2>
+  <p class="prose fold-summary">Eight curve shapes, scored on how well each predicts a ship it wasn't fitted to. The power law wins.</p>
+  <button class="chip fold-toggle" data-open="− Close the field note">+ Read the field note</button>
+  <div class="fold-body">
+  <div class="prose">
+    <p>I picked the power and logarithmic forms because the plotted data looked that shape. Other shapes could fit too, so I tried 8 of them. Each one is fitted to the same ships and scored two ways: its average error on those ships, and its average <em>left-out error</em> predicting each ship from a fit made without it (leave-one-out cross-validation). The second is the real test. A formula with enough parameters can bend through any data, but then it predicts new ships badly. The last column counts ships given a negative model length.</p>
+  </div>
+  <div style="overflow-x:auto;margin:10px 0 30px"><table class="cands"><thead><tr><th>Form</th><th>Error</th><th>Left-out error</th><th>Negative</th></tr></thead><tbody id="cands"></tbody></table></div>
+  <div class="two">
+    <div class="prose"><p>What the alternatives show:</p><ul>
+      <li>A logarithm has to cross zero somewhere, which is where the negative lengths come from. Shifting it to pass through zero, <span class="tex" data-tex="a \ln(1 + x / c)"></span>, fixes that but still misses by 22.8% on average.</li>
+      <li>A sine wave starts out straight (<span class="tex" data-tex="\sin(kx) \approx kx"></span> near zero) and only flattens near its peak. To flatten across the whole range, its peak has to sit at or beyond the largest ship, and then it can't bend enough for the small ones: 89.6%.</li>
+      <li>Polynomials fit the ships they're given well enough, then predict left-out ships badly (1,248.5% for the cubic). That's overfitting.</li></ul></div>
+    <div class="prose"><ul class="cont">
+      <li>Letting the power law's exponent drift with size, <span class="tex" data-tex="a x^{\,b + c \ln x}"></span>, gives <span class="tex" data-tex="c = -0.004"></span>: next to no drift, and 10.3% predicting left-out ships against the plain power law's 10.0%.</li>
+      <li>Fitting small and large ships separately, split at 63.8 m, gives exponents of 0.438 and 0.513, a slightly lower exponent among the small craft. It predicts left-out ships with 10.5% error, so the extra parameters don't buy much.</li></ul></div>
+  </div>
+  <p class="prose" style="margin:10px 0 20px">If the power law were missing some shape, its errors would lean one way at some sizes. The chart below divides each ship's real model length by the power fit's prediction; the dashed line at 1 is a perfect prediction. Ships of 5.8–34 m, 38–580 m and 700–19,000 m average 98%, 102% and 100% of their predicted size respectively.</p>
+  <figure class="fig" id="f3">
+    <div class="controls"><span></span><div class="seg"><span class="lbl">Axes</span><button class="chip">Linear</button><button class="chip" aria-pressed="true">Log</button></div></div>
+    <div class="plot"></div>
+    <div class="figcap"><span class="lbl">Fig. 05 — each ship's model length divided by the power fit's prediction</span></div>
+  </figure>
+  <p class="prose" style="margin-top:24px">So the power law isn't just a good first guess. None of the alternatives predicts a new ship better, and what error is left looks like scatter in how each model was designed rather than a missing curve.</p>
+</div>
+</div></section>
+
+<section class="sec" id="s7"><div class="wrap">
+  <div class="head"><span class="lbl amb">06</span><span class="lbl">— Findings</span></div>
+  <div class="two">
+    <div class="prose">
+      <h2>Size any ship</h2>
+      <p>With this function, we can find a reasonable model size for <em>any</em> Star Wars ship from its canon length. The XQ2 Platform is 884 m long<sup>4</sup>, which puts its model at 142 mm.</p>
+      <p>Try it with a ship of your own:</p>
+      <div class="formrow"><div><span class="lbl">Canon length</span><b><span class="in">884</span> m</b></div><div><span class="lbl amb">Model length</span><b style="color:var(--accent)">142 mm</b></div></div>
+      <p>I've added a few ships I'd like to design to the chart, along with yours. Let me know if you think of others.</p>
+    </div>
+    <div><div class="photo" style="height:320px">STAND-IN PHOTO<small>The finished XQ2 Platform</small></div><div class="cap">Fig. 06a — the finished station</div></div>
+  </div>
+  <figure class="fig" id="f4" style="margin-top:36px">
+    <div class="controls"><div class="chips"><button class="chip" aria-pressed="true"><i style="background:var(--accent)"></i>Power fit</button></div><div class="seg"><span class="lbl">Axes</span><button class="chip">Linear</button><button class="chip" aria-pressed="true">Log</button></div></div>
+    <div class="plot"></div>
+    <div class="figcap"><span class="lbl">Fig. 06b — planned ships, sized by the power fit</span><span class="lbl"><span style="color:var(--accent)">◍</span> planned ships</span></div>
+  </figure>
+</div></section>
+
+<footer class="sec" id="s8"><div class="wrap">
+  <div class="head"><span class="lbl amb">07</span><span class="lbl">— References</span></div>
+  <ol class="refs">
+    <li><a href="#">XQ Platform series</a>, Wookieepedia.</li>
+    <li>Ship data: <a href="#">Armada sliding scale graph, by Rune Taq (Fantasy Flight Games community forum)</a>; <a href="#">Star Wars Fantasy Flight/Atomic Mass scale list</a>.</li>
+    <li>Jason Brownlee, <a href="#">How to implement simple linear regression from scratch with Python</a>, for a refresher on linear regression.</li>
+    <li><a href="#">XQ2 Platform</a>, Wookieepedia.</li>
+  </ol>
+  <svg width="100%" height="40" id="orn" style="display:block;margin-top:60px"></svg>
+</div></footer>
+</div>
+<script>
+  const page = document.getElementById('page');
+  const cs = getComputedStyle(document.documentElement);
+  const v = (n) => cs.getPropertyValue(n).trim();
+  const LV = v('--line');
+  const C = { line: `rgba(${LV},.32)`, text: v('--text'), muted: v('--muted'), acc: v('--accent'), bg: v('--bg'), bg2: v('--bg2') };
+  const phone = innerWidth <= 760;
+  if (new URLSearchParams(location.search).get('open')) document.body.classList.add('open');
+  if (document.body.classList.contains('open')) for (const b of document.querySelectorAll('.fold-toggle')) b.textContent = b.dataset.open;
+  const isPaper = (el) => !!(el.closest('.paper') || (phone && el.closest('.paper-m')));
+
+  for (const el of document.querySelectorAll('.tex')) katex.render(el.dataset.tex, el, { displayMode: el.classList.contains('d'), throwOnError: false });
+
+  const cands = [['Power law', 'a x^{b}', 2, '9.5', '10.0', 0], ['Power law with a bend', 'a x^{\\,b + c \\ln x}', 3, '9.2', '10.3', 0], ['Logarithm through zero', 'a \\ln(1 + x / c)', 2, '21.5', '22.8', 0], ['Levelling off', 'a x / (c + x)', 2, '29.2', '30.7', 0], ['Quarter sine wave', 'a \\sin(kx)', 2, '99.1', '89.6', 0], ['Quadratic', 'a + bx + cx^2', 3, '20.0', '100.2', 0], ['Logarithmic', 'a \\ln(x) + b', 2, '111.3', '118.0', 10], ['Cubic', 'a + bx + cx^2 + dx^3', 4, '15.6', '1,248.5', 0]];
+  document.getElementById('cands').innerHTML = cands.map(([n, f, p, a, b, neg], i) => `<tr class="${i ? '' : 'win'}"><th>${n}<span class="f">${katex.renderToString(f)}</span><span class="p">${p} parameters</span></th><td>${a}%</td><td>${b}%</td><td>${neg}</td></tr>`).join('');
+
+  document.fonts.ready.then(() => {
+    const W = page.clientWidth;
+    const lengthAxes = { x: { min: 4.5, max: 24000, ticks: [10, 100, 1000, 10000], title: 'CANON LENGTH', unit: 'M' }, y: { min: 5, max: 760, ticks: phone ? [10, 100] : [10, 20, 50, 100, 200, 500], title: 'MODEL LENGTH', unit: 'MM' } };
+    const close = (a) => a;
+    const ax = (a) => ({ x: a.x, y: a.y });
+    const mk = (id, opts) => { const box = document.querySelector(`#${id} .plot`); if (!box.offsetParent) return; const w = box.clientWidth; const h = Math.round(Math.max(phone ? 280 : 380, w * (opts.ratio || 0.6)));
+      const fc = getComputedStyle(box); const onPaper = isPaper(box);
+      const c = onPaper ? { line: `rgba(${fc.getPropertyValue('--line').trim()},.3)`, text: fc.getPropertyValue('--text').trim(), muted: fc.getPropertyValue('--muted').trim(), acc: fc.getPropertyValue('--accent').trim(), bg: fc.getPropertyValue('--bg').trim() } : C;
+      box.innerHTML = plot({ id, w, h, c, m: phone ? { l: 44, r: 10, t: 12, b: 50 } : { l: 70, r: 20, t: 20, b: 60 }, kind: 'log', fontSize: phone ? 10 : 12, short: phone, yTitleGap: phone ? 34 : 50, ...opts }); };
+    const pts = SHIPS;
+    mk('f1', { ...ax(lengthAxes), points: pts, ratio: phone ? 0.85 : 0.7,
+      labels: phone ? [] : [['Executor Star Destroyer', -60, 50], ['TIE Fighter', 80, 26], ['Victory Star Destroyer', 50, 80]],
+      hl: phone ? { ...pts.find((p) => p.n === 'Victory Star Destroyer'), left: true, below: true, w: 196 } : null });
+    mk('f2', { ...ax(lengthAxes), points: pts, ratio: phone ? 0.85 : 0.5, fits: [{ f: POWER, color: C.acc, width: 2 }, { f: LOGFIT, color: v('--logfit'), width: 2, dash: '7 4' }],
+      labels: phone ? [] : [['TIE Fighter', 90, 20]] });
+    const res = pts.map((p) => ({ n: p.n, x: p.x, y: p.y / POWER(p.x) }));
+    mk('f3', { x: close(lengthAxes.x), y: { min: 0.68, max: 1.3, ticks: [0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3], title: 'MODEL ÷ PREDICTED' }, points: res, ref: 1, ratio: phone ? 0.85 : 0.42, yUnit: '',
+      labels: phone ? [] : [['TIE Phantom', 60, -30], ['Gladiator Star Destroyer', 40, 40]] });
+    const planned = PLANNED.map((p) => ({ n: p.n, x: p.x, y: POWER(p.x) }));
+    mk('f4', { ...ax(lengthAxes), points: pts, planned, ratio: phone ? 0.85 : 0.5, fits: [{ f: POWER, color: C.acc, width: 1.6 }],
+      labels: phone ? [] : [['Tri-fighter Droid', 120, 50], ['Naboo Royal Cruiser', -70, -50], ['MC40a', 60, 70]],
+      hl: { ...planned.find((p) => p.n === 'XQ2 Platform'), left: true, below: phone, w: 180 } });
+
+    // dimension line over the drawing sheet
+    const dim = document.getElementById('dim'), dw = dim.clientWidth;
+    dim.innerHTML = `<path d="M1 16 V4 M${dw - 1} 16 V4 M1 10 H${dw - 1}" stroke="${C.acc}" fill="none"/><rect x="${dw / 2 - 30}" y="2" width="60" height="16" fill="${C.bg2}"/><text x="${dw / 2}" y="14" fill="${C.acc}" font-family="Mono" font-size="11" text-anchor="middle">884 M</text>`;
+
+    // globe edge between hero and section 01
+    const edge = document.getElementById('edge');
+    edge.innerHTML = `<svg width="${W}" height="${edge.clientHeight}">${globe({ w: W, h: edge.clientHeight, top: phone ? 34 : 150, R: phone ? 900 : 2100, c: { ...C, line: `rgba(${LV},.28)` }, tickStep: 1 })}</svg>`;
+
+    // decoration layer: hero rings, leaders, thread, nodes
+    const H = page.scrollHeight, deco = document.getElementById('deco');
+    deco.setAttribute('width', W); deco.setAttribute('height', H);
+    const pr = page.getBoundingClientRect();
+    const box = (el) => { const r = el.getBoundingClientRect(); return { x: r.left - pr.left, y: r.top - pr.top, w: r.width, h: r.height }; };
+    let s = '';
+    const art = box(document.getElementById('heroArt'));
+    const hx = art.x + art.w * 298 / 593, hy = art.y + art.h * 229 / 540;
+    const k = art.w / 520;
+    for (const r of [180, 250, 330, 420]) s += `<circle cx="${hx}" cy="${hy}" r="${r * k}" fill="none" stroke="${C.line}" ${r === 330 ? 'stroke-dasharray="3 6"' : ''}/>`;
+    s += `<circle cx="${hx + 330 * k}" cy="${hy}" r="4" fill="${C.acc}"/><circle cx="${hx + 330 * k}" cy="${hy}" r="9" fill="none" stroke="${C.acc}"/>`;
+    s += `<line x1="${hx}" y1="${hy - 450 * k}" x2="${hx}" y2="${hy + 440 * k}" stroke="${C.line}" stroke-dasharray="2 6"/>`;
+    if (!phone) {
+      s += `<line x1="${hx - 480}" y1="${hy}" x2="${hx + 480}" y2="${hy}" stroke="${C.line}" stroke-dasharray="2 6"/>`;
+      const co = (n) => box(document.querySelector('.co' + n));
+      const a1 = co(1), a2 = co(2), a3 = co(3), a4 = co(4);
+      s += `<path d="M${a1.x + a1.w} ${a1.y + 30} H${a1.x + a1.w + 90} L${hx - 160} ${hy - 140}" stroke="${C.muted}" fill="none"/><circle cx="${hx - 160}" cy="${hy - 140}" r="3" fill="${C.muted}"/>`;
+      s += `<path d="M${a2.x} ${a2.y + 30} H${a2.x - 80} L${hx + 180} ${hy - 160}" stroke="${C.acc}" fill="none"/><circle cx="${hx + 180}" cy="${hy - 160}" r="3" fill="${C.acc}"/>`;
+      s += `<path d="M${a4.x + a4.w} ${a4.y + 30} H${hx - 200}" stroke="${C.muted}" fill="none"/><path d="M${a3.x} ${a3.y + 30} H${hx + 210}" stroke="${C.muted}" fill="none"/>`;
+      // equation leaders
+      const eq = box(document.querySelector('#eqbox .katex')), ca = box(document.getElementById('ca')), cb = box(document.getElementById('cb'));
+      const lead = (c, tx, ty) => `<path d="M${c.x + c.w / 2} ${c.y} V${ty + 24} L${tx} ${ty}" stroke="${C.muted}" fill="none"/><circle cx="${tx}" cy="${ty}" r="3" fill="${C.muted}"/>`;
+      s += lead(ca, eq.x + eq.w * 0.42, eq.y + eq.h * 0.95) + lead(cb, eq.x + eq.w * 0.86, eq.y + eq.h * 0.35);
+    } else {
+      // numbered markers on the drawing, keyed to the list
+      for (const [n, dx, dy, c] of [['01', -112, -88, C.muted], ['02', 98, -92, C.acc], ['03', 0, 140, C.muted]]) s += `<circle cx="${hx + dx}" cy="${hy + dy}" r="11" fill="${C.bg}" stroke="${c}"/><text x="${hx + dx}" y="${hy + dy + 3.5}" fill="${c}" font-family="Mono" font-size="9" text-anchor="middle">${n}</text>`;
+    }
+    // the thread
+    const heads = [...document.querySelectorAll('.head')].map((h) => ({ b: box(h), paper: isPaper(h) }));
+    const tx = heads[0].b.x - (phone ? 24 : 60);
+    const start = box(edge).y + (phone ? 40 : 140);
+    s += `<line x1="${tx}" y1="${start}" x2="${tx}" y2="${heads[heads.length - 1].b.y + 13}" stroke="${C.line}"/>`;
+    for (const el of document.querySelectorAll('.paper, .paper-m')) { if (!isPaper(el.querySelector('.head'))) continue; const p = box(el);
+      s += `<line x1="${tx}" y1="${p.y}" x2="${tx}" y2="${p.y + p.h - (phone ? 10 : 30)}" stroke="${v('--ink')}" stroke-opacity=".5"/>`; }
+    for (const { b, paper: onP } of heads) {
+      const y = b.y + b.h / 2, r = phone ? 9 : 13;
+      s += `<circle cx="${tx}" cy="${y}" r="${r}" fill="${onP ? v('--paper') : C.bg}" stroke="${onP ? v('--ink') : C.text}"/><circle cx="${tx}" cy="${y}" r="${phone ? 3 : 4}" fill="${C.acc}"/><circle cx="${tx}" cy="${y}" r="${r + 8}" fill="none" stroke="${onP ? 'rgba(34,32,27,.35)' : C.line}" stroke-dasharray="2 4"/>`;
+    }
+    deco.innerHTML = s;
+    const orn = document.getElementById('orn'), ow = orn.clientWidth;
+    orn.innerHTML = `<line x1="0" y1="20" x2="${ow}" y2="20" stroke="${C.line}"/><circle cx="${ow / 2}" cy="20" r="10" fill="${C.bg}" stroke="${C.text}"/><circle cx="${ow / 2}" cy="20" r="3" fill="${C.acc}"/><circle cx="3" cy="20" r="3" fill="${C.text}"/><circle cx="${ow - 7}" cy="20" r="6" fill="none" stroke="${C.text}"/>`;
+    document.body.dataset.ready = '1';
+  });
+</script>
+</body></html>

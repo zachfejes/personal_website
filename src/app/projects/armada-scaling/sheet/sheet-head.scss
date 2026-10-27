@@ -1,0 +1,59 @@
+// Sizes and positions (--head-height, --thread-inset, --sheet-indent, --marker-*) come from the
+// page, so the marker lands exactly on the thread.
+:host {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  min-height: var(--head-height);
+  margin: 0 0 1.25rem;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sheet-muted);
+}
+
+.number {
+  color: var(--sheet-accent);
+}
+
+.title::before {
+  content: '— ';
+}
+
+.marker {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--thread-inset) - var(--sheet-indent));
+  width: var(--marker-size);
+  height: var(--marker-size);
+  border: 1px solid var(--sheet-text);
+  border-radius: 50%;
+  background: var(--sheet-surface);
+  translate: -50% -50%;
+
+  // Amber centre
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: var(--marker-dot);
+    height: var(--marker-dot);
+    border-radius: 50%;
+    background: var(--sheet-accent);
+    translate: -50% -50%;
+  }
+
+  // Orbit ring
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: var(--marker-ring);
+    height: var(--marker-ring);
+    border: 1px dashed rgb(var(--sheet-line-rgb) / 40%);
+    border-radius: 50%;
+    translate: -50% -50%;
+  }
+}

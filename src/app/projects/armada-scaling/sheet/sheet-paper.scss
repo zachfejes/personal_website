@@ -1,0 +1,57 @@
+@use 'sheet' as *;
+
+// The panel is drawn by ::before so its curved corners (clip-path) also clip its stretch of the
+// thread: a 1 px ink stripe in its background, at the same position as the dark line behind it.
+@mixin paper {
+  // Ink in place of the sheet's colors
+  --sheet-strong: var(--color-ink);
+  --sheet-text: var(--color-ink);
+  --sheet-body: #4a463e;
+  --sheet-muted: #6b6458;
+  --sheet-accent: var(--color-highlight-on-paper);
+  --sheet-line-rgb: 34 32 27;
+  --sheet-surface: var(--color-paper);
+  --accent-text: var(--sheet-accent);
+
+  // Content stops short of the panel's cut-away right side.
+  --sheet-inset-right: var(--paper-inset-right);
+
+  z-index: 1;
+  margin-top: var(--section-padding);
+  padding-bottom: calc(var(--section-padding) * 1.1);
+  color: var(--sheet-body);
+  color-scheme: light;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    clip-path: inset(
+      0 var(--paper-inset-right) 0 0 round 0 var(--paper-corner) 0 var(--paper-corner)
+    );
+    background:
+      linear-gradient(
+        90deg,
+        transparent var(--thread-x),
+        rgb(var(--sheet-line-rgb) / 45%) var(--thread-x),
+        rgb(var(--sheet-line-rgb) / 45%) calc(var(--thread-x) + 1px),
+        transparent calc(var(--thread-x) + 1px)
+      ),
+      var(--color-paper);
+  }
+}
+
+:host {
+  display: block;
+}
+
+:host(:not(.narrow-only)) {
+  @include paper;
+}
+
+@media (width <= $narrow) {
+  :host(.narrow-only) {
+    @include paper;
+  }
+}

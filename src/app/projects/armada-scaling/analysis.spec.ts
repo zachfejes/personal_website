@@ -1,4 +1,4 @@
-import { Measured, analyzeScale, logFitZeroM } from './analysis';
+import { Measured, analyzeScale, logFitZeroM, modelNeighbors } from './analysis';
 import { Fit } from './regression';
 
 /** Exact data has an exact fit, up to floating-point rounding. */
@@ -68,5 +68,28 @@ describe('logFitZeroM', () => {
     const FLAT = 0;
     const B = 5;
     expect(logFitZeroM(fit(FLAT, B))).toBeNull();
+  });
+});
+
+describe('modelNeighbors', () => {
+  const SMALL = { name: 'Small', canonM: 10, modelMm: 10 };
+  const MEDIUM = { name: 'Medium', canonM: 100, modelMm: 40 };
+  const LARGE = { name: 'Large', canonM: 1000, modelMm: 150 };
+  // Listed out of order, so the search can't rely on sorting.
+  const SHIPS = [LARGE, SMALL, MEDIUM];
+
+  it('finds the nearest model on each side', () => {
+    const BETWEEN_MEDIUM_AND_LARGE_MM = 100;
+    expect(modelNeighbors(SHIPS, BETWEEN_MEDIUM_AND_LARGE_MM)).toEqual({
+      below: MEDIUM,
+      above: LARGE,
+    });
+  });
+
+  it('has nothing below the smallest or above the largest', () => {
+    const TINY_MM = 1;
+    const HUGE_MM = 1000;
+    expect(modelNeighbors(SHIPS, TINY_MM)).toEqual({ below: null, above: SMALL });
+    expect(modelNeighbors(SHIPS, HUGE_MM)).toEqual({ below: LARGE, above: null });
   });
 });

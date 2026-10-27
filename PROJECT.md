@@ -195,12 +195,43 @@ overfitting. The section also fits small and large ships separately, and charts 
 model length divided by the power fit's prediction to show the errors don't lean one way at any
 size. All of it is computed from `ships.json` at build time.
 
+### Design: the drawing sheet
+
+The page is being redesigned as one continuous "drawing sheet", like an architectural presentation
+board or a set of field notes, chosen over two other directions in a round of mock-ups
+(`design/armada/`, with screenshots of each round). What was agreed:
+
+- **One scene, no bands.** A dark blue page on a faint blueprint grid with soft glows, all the
+  way down. The blue is this page's own; accents are the site's amber (`--color-highlight`, and
+  `--color-highlight-on-paper` on paper). Fonts are the site's.
+- **The thread.** A line down the left margin with an orbit marker at each numbered section
+  head ("01 — Background"). Each marker pulses once when it first scrolls into view.
+- **Hero.** The XQ2 top-view wireframe centred on construction rings and crosshairs, with four
+  numbered callouts on leader lines (numbered markers and a list on phones). On load the lines draw
+  themselves and the callouts fade in, then an amber marker slowly orbits the dashed ring.
+- **Hero to the first section:** a wireframe globe edge, continuing the rings.
+- **Paper field notes.** Light panels with large curved corners for asides; the thread turns to
+  ink over them. "How the fitting works" is a field note; "Why a power law?" is one on phones
+  only. On phones both start collapsed to a one-line summary and open smoothly.
+- **Drawing language.** Hairline frames with dimension lines for the orthographic views, dashed
+  callout boxes, mono labels, and charts drawn the same way (dashed grid, ships as rings, annotated
+  ships on wide screens, a crosshair read-out on tap or hover).
+- **Photos.** Two slots, overlapping section edges: the station or fleet on the table (section 01) and the finished station (a new "Building the XQ2" section after Findings, which closes
+  the story). Supplied by Zach.
+- **Motion** is off with reduced motion, and the prerendered page shows the finished static
+  design.
+
+Delivered in four PRs: (1) theme, thread, field notes and the new section order; (2) hero, globe
+edge, photo slots; (3) charts, calculator and table restyle; (4) phone folding, motion and tuner
+settings. The sheet pieces live in `projects/armada-scaling/` (`sheet/`, `hero/`) until a second
+project uses them.
+
 Status (milestone 6, first version): the page is built as a preview on staging, with the three
 charts, the calculator (canon length → model length), the XQ2 wireframes and the tuning panel.
 Every number in the text is computed from the data; tests check them against the 2018 results.
 That check found a typo in the original: the logarithmic fit is y = 31.84 ln(x) − 78.25, not
-3.84 (the original's chart and error already used 31.84). Next: iterate on the design with the
-tuner, then publish (posted date, card link, header link to `/projects`).
+3.84 (the original's chart and error already used 31.84). Next: the drawing-sheet redesign
+above, then publish (posted date, card link, header link to `/projects`).
 
 ## Project backlog
 

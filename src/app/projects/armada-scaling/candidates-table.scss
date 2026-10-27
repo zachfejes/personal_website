@@ -1,0 +1,69 @@
+// Candidate forms: a hairline table.
+:host {
+  display: block;
+  overflow-x: auto;
+  margin-block: 0.5rem 2rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+
+  caption {
+    margin-bottom: 0.75rem;
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-align: left;
+    text-transform: uppercase;
+    color: var(--sheet-muted);
+  }
+
+  th,
+  td {
+    padding: 0.6rem clamp(0.3rem, 1.5vw, 0.75rem);
+    border-bottom: 1px solid rgb(var(--sheet-line-rgb) / 20%);
+    text-align: right;
+    vertical-align: top;
+  }
+
+  thead th {
+    font-family: var(--font-label);
+    font-size: 0.65rem;
+    font-weight: normal;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    vertical-align: bottom;
+    color: var(--sheet-muted);
+    border-bottom-color: rgb(var(--sheet-line-rgb) / 45%);
+  }
+
+  th:first-child {
+    text-align: left;
+  }
+
+  tbody th {
+    font-weight: 600;
+    color: var(--sheet-strong);
+  }
+}
+
+.formula,
+.parameters {
+  display: block;
+  font-weight: normal;
+  color: var(--sheet-body);
+}
+
+.parameters {
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--sheet-muted);
+}
+
+.chosen :is(th, td) {
+  color: var(--sheet-accent);
+}
