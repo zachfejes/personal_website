@@ -13,6 +13,13 @@ const FITS: FitLine[] = [
   { id: 'log', label: 'Logarithmic fit', color: '#8fb3a2', predict: (x) => Math.log(x) },
 ];
 const CAPTION = 'Test chart';
+
+/**
+ * The read-out line as a reader sees it ("150 m → 57.6 mm"), though the value is styled
+ * separately from the rest of the line.
+ */
+const readOut = (line: string) => (_: string, el: Element | null) =>
+  el?.tagName.toLowerCase() === 'text' && el.textContent.replace(/\s+/g, ' ').trim() === line;
 /** The page's chart design, starting on log axes. */
 const CHART_DESIGN = { ...DESIGN.chart, defaultScale: 'log' as const };
 
@@ -33,6 +40,8 @@ const renderChart = (
     fits: FitLine[];
     planned: NamedPoint[];
     axes: { x: AxisLabel; y: AxisLabel };
+    annotate: string[];
+    design: typeof CHART_DESIGN;
   }> = {},
 ) =>
   render(ScaleChart, {
@@ -100,11 +109,11 @@ describe('ScaleChart', () => {
     await renderChart();
     screen.getByRole('img').focus();
     await user.keyboard('{ArrowRight}');
-    expect(screen.getByText('150 m → 57.6 mm')).toBeTruthy();
+    expect(screen.getByText(readOut('150 m → 57.6 mm'))).toBeTruthy();
     await user.keyboard('{ArrowRight}');
-    expect(screen.getByText('900 m → 137.4 mm')).toBeTruthy();
+    expect(screen.getByText(readOut('900 m → 137.4 mm'))).toBeTruthy();
     await user.keyboard('{Escape}');
-    expect(screen.queryByText('900 m → 137.4 mm')).toBeNull();
+    expect(screen.queryByText(readOut('900 m → 137.4 mm'))).toBeNull();
   });
 
   it('labels the axes, table and read-out from the axes it is given', async () => {
@@ -120,6 +129,21 @@ describe('ScaleChart', () => {
     expect(screen.getByRole('columnheader', { name: 'Measured ÷ predicted' })).toBeTruthy();
     screen.getByRole('img').focus();
     await user.keyboard('{ArrowRight}');
-    expect(screen.getByText('150 m → 57.6')).toBeTruthy();
+    expect(screen.getByText(readOut('150 m → 57.6'))).toBeTruthy();
+  });
+
+  // jsdom can't measure, so the chart keeps its default width (720 px) in these tests.
+  it('labels the named ships when the chart is wide enough', async () => {
+    await renderChart({ annotate: ['Victory'] });
+    expect(screen.getByText('Victory · 900 m → 137.4 mm')).toBeTruthy();
+  });
+
+  it('leaves the labels off a chart narrower than the setting', async () => {
+    const WIDER_THAN_DEFAULT_PX = 2000;
+    await renderChart({
+      annotate: ['Victory'],
+      design: { ...CHART_DESIGN, annotateMinWidthPx: WIDER_THAN_DEFAULT_PX },
+    });
+    expect(screen.queryByText('Victory · 900 m → 137.4 mm')).toBeNull();
   });
 });

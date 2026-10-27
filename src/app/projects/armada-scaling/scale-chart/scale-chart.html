@@ -16,6 +16,7 @@
       </div>
     }
     <div class="chart__toggles chart__scale" role="group" aria-label="Axis scale">
+      <span class="chart__group-label" aria-hidden="true">Axes</span>
       @for (kind of scaleKinds; track kind) {
         <button
           type="button"
@@ -63,7 +64,6 @@
             [attr.x2]="width() - view.margin.right"
             [attr.y1]="y()(t)"
             [attr.y2]="y()(t)"
-            [attr.stroke-opacity]="design().gridOpacity"
           />
         }
         <text
@@ -83,7 +83,6 @@
             [attr.x2]="x()(t)"
             [attr.y1]="view.margin.top"
             [attr.y2]="height() - view.margin.bottom"
-            [attr.stroke-opacity]="design().gridOpacity"
           />
         }
         <text
@@ -142,7 +141,7 @@
           <path
             class="chart__fit"
             [attr.d]="fit.d"
-            [attr.stroke]="fit.color"
+            [style.stroke]="fit.color"
             [attr.stroke-width]="design().fitWidth"
           />
         }
@@ -159,8 +158,6 @@
         [attr.cx]="p.cx"
         [attr.cy]="p.cy"
         [attr.r]="radius(p)"
-        [attr.fill]="p.series === 'ship' ? design().pointColor : 'none'"
-        [attr.stroke]="p.series === 'ship' ? 'none' : design().plannedColor"
       />
       @if (p.series === 'highlight') {
         <text
@@ -168,7 +165,6 @@
           [attr.x]="p.cx"
           [attr.y]="p.cy - radius(p) - view.tickGap"
           text-anchor="middle"
-          [attr.fill]="design().plannedColor"
           [style.font-size.px]="design().labelSizePx"
         >
           {{ p.name }}
@@ -176,21 +172,49 @@
       }
     }
 
-    <!-- Tooltip -->
+    <!-- Named ships, on leader lines -->
+    @for (a of annotations(); track a.text) {
+      <g class="chart__annotation" [style.font-size.px]="design().labelSizePx">
+        <circle [attr.cx]="a.cx" [attr.cy]="a.cy" r="8" />
+        <line [attr.x1]="a.cx" [attr.y1]="a.cy" [attr.x2]="a.x" [attr.y2]="a.y" />
+        <text
+          [attr.x]="a.x + (a.anchor === 'start' ? view.tickGap : -view.tickGap)"
+          [attr.y]="a.y"
+          [attr.text-anchor]="a.anchor"
+          dominant-baseline="middle"
+        >
+          {{ a.text }}
+        </text>
+      </g>
+    }
+
+    <!-- Read-out: crosshairs to both axes, and the values -->
     @if (tooltip(); as tip) {
+      <g class="chart__crosshair">
+        <line [attr.x1]="tip.cx" [attr.x2]="tip.cx" [attr.y1]="tip.cy" [attr.y2]="tip.axisBottom" />
+        <line [attr.x1]="tip.axisLeft" [attr.x2]="tip.cx" [attr.y1]="tip.cy" [attr.y2]="tip.cy" />
+        <circle [attr.cx]="tip.cx" [attr.cy]="tip.cy" r="10" />
+      </g>
       <g class="chart__tooltip" [attr.transform]="'translate(' + tip.x + ' ' + tip.y + ')'">
-        <rect [attr.width]="tip.width" [attr.height]="tip.height" [attr.rx]="view.tooltip.radius" />
-        @for (text of tip.lines; track $index) {
-          <text
-            [attr.x]="view.tooltip.padX"
-            [attr.y]="view.tooltip.padY + $index * (tip.size + view.tooltip.lineGap)"
-            dominant-baseline="hanging"
-            [style.font-size.px]="tip.size"
-            [class.chart__tooltip-name]="$first"
-          >
-            {{ text }}
-          </text>
-        }
+        <rect [attr.width]="tip.width" [attr.height]="tip.height" />
+        <text
+          class="chart__tooltip-name"
+          [attr.x]="view.tooltip.padX"
+          [attr.y]="view.tooltip.padY"
+          dominant-baseline="hanging"
+          [style.font-size.px]="tip.size"
+        >
+          {{ tip.name }}
+        </text>
+        <text
+          [attr.x]="view.tooltip.padX"
+          [attr.y]="view.tooltip.padY + tip.size + view.tooltip.lineGap"
+          dominant-baseline="hanging"
+          [style.font-size.px]="tip.size"
+        >
+          {{ tip.from }}
+          <tspan class="chart__tooltip-value">{{ tip.to }}</tspan>
+        </text>
       </g>
     }
   </svg>
@@ -198,18 +222,9 @@
   <figcaption class="chart__caption">
     <span>{{ caption() }}</span>
     <span class="chart__legend">
-      <span
-        ><span class="chart__swatch" [style.background]="design().pointColor"></span>Armada
-        ships</span
-      >
+      <span><span class="chart__swatch"></span>Armada ships</span>
       @if (planned().length) {
-        <span
-          ><span
-            class="chart__swatch chart__swatch--ring"
-            [style.border-color]="design().plannedColor"
-          ></span
-          >Planned ships</span
-        >
+        <span><span class="chart__swatch chart__swatch--planned"></span>Planned ships</span>
       }
     </span>
   </figcaption>
