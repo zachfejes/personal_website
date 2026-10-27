@@ -18,17 +18,21 @@ import {
   SPLIT_POWER,
   logFitZeroM,
   modelNeighbors,
+  nearestByCanon,
   predictModelMm,
+  scaleRatio,
 } from './analysis';
 import { ScaleCalculator } from './calculator';
 import { CandidateRow, CandidatesTable } from './candidates-table';
-import { ArmadaHero } from './hero/armada-hero';
+import { ArmadaHero, HeroFacts } from './hero/armada-hero';
 import { DESIGN, DESIGN_SCHEMA, Design } from './design';
 import { AxisLabel, FitLine, NamedPoint, ScaleChart } from './scale-chart/scale-chart';
 import { MEASUREMENT_SOURCES, SHIPS, XQ2 } from './ships';
+import { GlobeEdge } from './sheet/globe-edge';
 import { SheetFrame } from './sheet/sheet-frame';
 import { SheetHead } from './sheet/sheet-head';
 import { SheetPaper } from './sheet/sheet-paper';
+import { SheetPhoto } from './sheet/sheet-photo';
 import { Tex } from './tex';
 import { signedTerm } from './tex-format';
 
@@ -48,6 +52,10 @@ const listOf = (items: readonly string[]) =>
 const RATIO_DECIMALS = 2;
 
 const DOUBLE = 2;
+/** Scales are quoted to two significant digits: "1 : 6,200". */
+const SCALE_DIGITS = 2;
+/** The familiar small ship the hero compares the XQ2's scale with. */
+const REFERENCE_FIGHTER = 'TIE Fighter';
 
 /** "the Victory Star Destroyer (137 mm)": a measured ship by name and rounded model length. */
 const shipLabel = (ship: { name: string; modelMm: number } | null) =>
@@ -72,12 +80,14 @@ function negativeBelow(zeroM: number | null) {
   imports: [
     ArmadaHero,
     CandidatesTable,
+    GlobeEdge,
     RevealDirective,
     ScaleCalculator,
     ScaleChart,
     SheetFrame,
     SheetHead,
     SheetPaper,
+    SheetPhoto,
     Tex,
     TunerPanel,
   ],
@@ -141,6 +151,23 @@ export class ArmadaScalingPage {
       leaveOneOut: grouped(s.leaveOneOut, COEFFICIENT_DECIMALS.percent),
       impossible: s.impossible,
     }));
+
+  /** What the hero's callouts say about the XQ2. */
+  protected readonly heroFacts: HeroFacts = (() => {
+    const modelMm = predictModelMm(XQ2.canonM);
+    const nearest = nearestByCanon(SHIPS, XQ2.canonM);
+    const fighter = SHIPS.find((s) => s.name === REFERENCE_FIGHTER);
+    return {
+      shipCount: SHIPS.length,
+      canonM: XQ2.canonM,
+      modelMm: Math.round(modelMm),
+      scale: scaleRatio(XQ2.canonM, modelMm, SCALE_DIGITS),
+      nearest: nearest && { name: nearest.name, canonM: nearest.canonM },
+      fighter: fighter
+        ? { name: fighter.name, scale: scaleRatio(fighter.canonM, fighter.modelMm, SCALE_DIGITS) }
+        : null,
+    };
+  })();
 
   /** The calculator's input, marked on the findings chart. */
   protected readonly canonM = signal<number | null>(XQ2.canonM);

@@ -1,10 +1,12 @@
-// Interim hero: the full drawing with construction rings and callouts replaces this next.
+// Below this width the callouts leave the drawing and become a numbered list.
+$stacked: 960px;
+
 :host {
   display: block;
 }
 
 header {
-  padding: clamp(3rem, 8vw, 5.5rem) var(--gutter) 2rem;
+  padding: clamp(3rem, 8vw, 5rem) var(--gutter) 0;
   text-align: center;
 }
 
@@ -67,14 +69,179 @@ header {
   }
 }
 
-.art {
-  width: min(520px, 70vw);
+// The drawing: one fixed layout (hero-layout.ts) scaled to the width available, so the leader
+// lines always meet their callouts.
+.composition {
+  position: relative;
+  max-width: 1200px;
+  aspect-ratio: 1200 / 760;
   margin: clamp(2rem, 5vw, 3.5rem) auto 0;
+  text-align: left;
+}
 
-  img {
+.stage {
+  position: absolute;
+  inset: 0;
+}
+
+.lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: rgb(var(--sheet-line-rgb) / 32%);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+
+  * {
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.ring--dashed {
+  stroke-dasharray: 3 6;
+}
+
+.crosshair {
+  stroke-dasharray: 2 6;
+}
+
+.orbit-marker__ring {
+  stroke: var(--sheet-accent);
+}
+
+.orbit-marker__dot {
+  fill: var(--sheet-accent);
+  stroke: none;
+}
+
+.leader {
+  stroke: var(--sheet-muted);
+
+  circle {
+    fill: var(--sheet-muted);
+    stroke: none;
+  }
+}
+
+.leader--accent {
+  stroke: var(--sheet-accent);
+
+  circle {
+    fill: var(--sheet-accent);
+  }
+}
+
+.marker {
+  display: none;
+  stroke: var(--sheet-muted);
+
+  circle {
+    fill: var(--sheet-bg);
+  }
+
+  text {
+    fill: var(--sheet-muted);
+    stroke: none;
+    font-family: var(--font-label);
+    font-size: 18px;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+}
+
+.marker--accent {
+  stroke: var(--sheet-accent);
+
+  text {
+    fill: var(--sheet-accent);
+  }
+}
+
+.art {
+  position: absolute;
+  height: auto;
+  opacity: var(--wireframe-opacity);
+}
+
+.callouts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.callout {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  width: var(--w);
+  padding: 0.75rem 0.9rem;
+  border: 1px dashed rgb(var(--sheet-line-rgb) / 45%);
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--sheet-body);
+  background: color-mix(in srgb, var(--sheet-bg) 75%, transparent);
+
+  b {
     display: block;
-    width: 100%;
-    height: auto;
-    opacity: var(--wireframe-opacity);
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sheet-strong);
+  }
+}
+
+.callout--accent b,
+.callout__lead {
+  color: var(--sheet-accent);
+}
+
+// Phones and narrow windows: the drawing keeps its scale around the hub, cropped at the sides,
+// with numbered markers in place of the leaders; the callouts follow as a list.
+@media (width <= $stacked) {
+  .composition {
+    aspect-ratio: auto;
+    max-width: none;
+    margin-inline: calc(-1 * var(--gutter));
+    overflow: hidden;
+  }
+
+  .stage {
+    --stage-width: 600px;
+
+    position: relative;
+    left: 50%;
+    width: var(--stage-width);
+    aspect-ratio: 1200 / 760;
+    translate: -50%;
+  }
+
+  .leader,
+  .crosshair--across {
+    display: none;
+  }
+
+  .marker {
+    display: inline;
+  }
+
+  .callouts {
+    display: grid;
+    gap: 0.6rem;
+    margin: 1rem var(--gutter) 0;
+  }
+
+  .callout {
+    position: static;
+    width: auto;
+
+    b {
+      display: inline;
+      margin-right: 0.5em;
+    }
   }
 }

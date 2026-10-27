@@ -1,4 +1,11 @@
-import { Measured, analyzeScale, logFitZeroM, modelNeighbors } from './analysis';
+import {
+  Measured,
+  analyzeScale,
+  logFitZeroM,
+  modelNeighbors,
+  nearestByCanon,
+  scaleRatio,
+} from './analysis';
 import { Fit } from './regression';
 
 /** Exact data has an exact fit, up to floating-point rounding. */
@@ -91,5 +98,35 @@ describe('modelNeighbors', () => {
     const HUGE_MM = 1000;
     expect(modelNeighbors(SHIPS, TINY_MM)).toEqual({ below: null, above: SMALL });
     expect(modelNeighbors(SHIPS, HUGE_MM)).toEqual({ below: LARGE, above: null });
+  });
+});
+
+describe('scaleRatio', () => {
+  it('divides canon length by model length in the same unit, rounded', () => {
+    // 884 m = 884,000 mm; ÷ 142 mm = 6,225.35…, which is 6,200 to two significant digits.
+    const CANON_M = 884;
+    const MODEL_MM = 142;
+    const DIGITS = 2;
+    const EXPECTED = 6200;
+    expect(scaleRatio(CANON_M, MODEL_MM, DIGITS)).toBe(EXPECTED);
+  });
+});
+
+describe('nearestByCanon', () => {
+  const FIGHTER = { name: 'Fighter', canonM: 10, modelMm: 10 };
+  const CRUISER = { name: 'Cruiser', canonM: 500, modelMm: 100 };
+  const DESTROYER = { name: 'Destroyer', canonM: 1000, modelMm: 150 };
+  const SHIPS = [DESTROYER, FIGHTER, CRUISER];
+
+  it('finds the closest length by ratio', () => {
+    // 720 m is 1.44× the cruiser but only 1.39× short of the destroyer: closer to the destroyer
+    // by ratio, though closer to the cruiser by difference (220 m against 280 m).
+    const BETWEEN_M = 720;
+    expect(nearestByCanon(SHIPS, BETWEEN_M)).toBe(DESTROYER);
+  });
+
+  it('has nothing to compare with no ships', () => {
+    const ANY_M = 100;
+    expect(nearestByCanon([], ANY_M)).toBeNull();
   });
 });

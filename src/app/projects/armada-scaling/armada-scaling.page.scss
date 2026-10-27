@@ -33,6 +33,10 @@
   --marker-ring: 44px;
   --paper-corner: 220px;
   --paper-inset-right: 80px;
+  --globe-overlap: 150px;
+
+  // How far the first section's photo reaches up into the globe.
+  --photo-rise: 230px;
 
   @media (width <= $narrow) {
     --sheet-indent: 44px;
@@ -41,6 +45,8 @@
     --marker-ring: 30px;
     --paper-corner: 90px;
     --paper-inset-right: 0px;
+    --globe-overlap: 60px;
+    --photo-rise: 0px;
   }
 
   display: block;
@@ -93,6 +99,12 @@
       var(--sheet-bg-2) 85%,
       var(--sheet-bg)
     );
+}
+
+// The globe rises out of the hero; the sections start partway down it, so the thread begins near
+// its edge.
+.sheet-globe {
+  margin-bottom: calc(-1 * var(--globe-overlap));
 }
 
 // The thread: one line behind every section after the hero. Paper panels paint their own
@@ -153,6 +165,24 @@
   .sheet-two,
   .sheet-side {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sheet-stack {
+  display: grid;
+  gap: 2rem;
+}
+
+// Overlaps the globe edge above it, so the image crosses from the hero into the section.
+.sheet-photo--rising {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 22rem);
+  margin-top: calc(-1 * var(--photo-rise));
+  justify-self: end;
+
+  @media (width <= $narrow) {
+    width: 100%;
   }
 }
 

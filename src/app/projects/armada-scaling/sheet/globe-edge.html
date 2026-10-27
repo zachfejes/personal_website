@@ -1,0 +1,54 @@
+<svg [attr.width]="view().width" [attr.height]="view().height">
+  <defs>
+    <linearGradient
+      [attr.id]="id + '-fill'"
+      gradientUnits="userSpaceOnUse"
+      x1="0"
+      x2="0"
+      [attr.y1]="view().top"
+      [attr.y2]="view().height"
+    >
+      <stop offset="0.2" class="fill-stop" />
+      <stop offset="1" class="fill-stop fill-stop--end" />
+    </linearGradient>
+    <linearGradient
+      [attr.id]="id + '-fade'"
+      gradientUnits="userSpaceOnUse"
+      x1="0"
+      x2="0"
+      [attr.y1]="view().fadeFrom"
+      [attr.y2]="view().height"
+    >
+      <stop offset="0" stop-color="#fff" />
+      <stop offset="1" stop-color="#000" />
+    </linearGradient>
+    <mask [attr.id]="id + '-mask'">
+      <rect
+        [attr.width]="view().width"
+        [attr.height]="view().height"
+        [attr.fill]="'url(#' + id + '-fade)'"
+      />
+    </mask>
+  </defs>
+  <g [attr.mask]="'url(#' + id + '-mask)'">
+    <circle
+      [attr.cx]="shape().cx"
+      [attr.cy]="shape().cy"
+      [attr.r]="shape().radius"
+      [attr.fill]="'url(#' + id + '-fill)'"
+    />
+    @for (d of shape().grid; track $index) {
+      <path class="grid" [attr.d]="d" />
+    }
+  </g>
+  <circle class="limb" [attr.cx]="shape().cx" [attr.cy]="shape().cy" [attr.r]="shape().radius" />
+  <circle
+    class="orbit"
+    [attr.cx]="shape().cx"
+    [attr.cy]="shape().cy"
+    [attr.r]="view().ringRadius"
+  />
+  @for (t of shape().ticks; track $index) {
+    <line class="tick" [attr.x1]="t.x1" [attr.y1]="t.y1" [attr.x2]="t.x2" [attr.y2]="t.y2" />
+  }
+</svg>
