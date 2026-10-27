@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+figure {
+  --frame-pad: clamp(0.75rem, 2.5vw, 1.75rem);
+
+  position: relative;
+  margin: 0;
+  padding: 3rem var(--frame-pad) 1.25rem;
+  border: 1px solid rgb(var(--sheet-line-rgb) / 35%);
+  background: color-mix(in srgb, var(--sheet-bg-2) 55%, transparent);
+}
+
+.dimension {
+  position: absolute;
+  top: 1rem;
+  left: var(--frame-pad);
+  right: var(--frame-pad);
+  height: 14px;
+  margin: 0;
+  border-inline: 1px solid var(--sheet-accent);
+  text-align: center;
+
+  // The line itself, through the middle of the end ticks
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto;
+    height: 1px;
+    background: var(--sheet-accent);
+  }
+
+  span {
+    position: relative;
+    top: -0.35em;
+    padding: 0 0.75em;
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sheet-accent);
+    background: var(--sheet-bg-2);
+  }
+}

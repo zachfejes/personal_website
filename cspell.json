@@ -9,7 +9,8 @@
     "design/snapshots/**",
     "design/hero-baseline.json",
     "src/environments/**",
-    "public/**"
+    "public/**",
+    "design/armada/mockup/**"
   ],
   "dictionaries": ["typescript", "node", "css", "html", "softwareTerms", "companies", "misc"],
   "words": [
@@ -26,6 +27,7 @@
     "Catmull",
     "cislunar",
     "Corellian",
+    "crosshairs",
     "Dicebox",
     "Dropship",
     "electromagnetics",

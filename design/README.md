@@ -10,6 +10,9 @@ of the Angular app.
 | `snapshots/hero-tuner-2026-10-13-baseline.html` | The Hero Tuner exactly as it was when the baseline was chosen (published artifact version 11, `1791849135-62f8`).                            |
 | `snapshots/design-directions-round-2.html`      | Round 2 of the design-direction mock-ups (Hearth / Survey / Site Model).                                                                     |
 
+| `armada/mockup/mockup.html` | The agreed Armada Scaling layout ("drawing sheet"), round 4–5, with the full copy. Static HTML; open it from this folder (it loads fonts and KaTeX from `node_modules`). Add `?open=1` to see the phone field notes opened. |
+| `armada/screenshots/` | Screenshots of each round of Armada mock-ups: the three directions, hero edges, rounds 3–5 on desktop and phone. |
+
 To restore the baseline: open the snapshot tuner in a browser, pick "E2 Baseline · fluid", and paste
 the values from `hero-baseline.json`, or republish the snapshot file as the artifact.
 

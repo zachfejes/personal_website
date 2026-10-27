@@ -1,0 +1,10 @@
+@font-face { font-family: 'Bricolage'; src: url(../../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2) format('woff2'); font-weight: 200 800; }
+@font-face { font-family: 'Manrope'; src: url(../../../node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2) format('woff2'); font-weight: 200 800; }
+@font-face { font-family: 'Mono'; src: url(../../../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2) format('woff2'); font-weight: 100 800; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { width: 1440px; font-family: 'Manrope', sans-serif; -webkit-font-smoothing: antialiased; }
+.abs { position: absolute; }
+.rel { position: relative; }
+.mono { font-family: 'Mono', monospace; }
+.disp { font-family: 'Bricolage', sans-serif; }
+.tag { position: absolute; z-index: 50; top: 10px; right: 10px; font: 600 11px 'Mono', monospace; letter-spacing: .1em; background: #ffd400; color: #000; padding: 4px 8px; }

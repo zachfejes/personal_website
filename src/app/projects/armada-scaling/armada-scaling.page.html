@@ -1,446 +1,460 @@
-<article class="article">
-  <header class="band section intro" [class]="'band--' + design().bands.intro">
-    <div class="container intro__inner">
-      <div class="intro__text">
-        <p class="eyebrow">Data · Tabletop</p>
-        <h1 class="intro__title">Armada Scaling</h1>
-        <p class="intro__dek">Working out the non-linear model scale in Star Wars: Armada.</p>
-        <dl class="intro__meta">
-          <div>
-            <dt>Project</dt>
-            <dd>Sep 2018</dd>
+<article class="sheet">
+  <app-armada-hero [shipCount]="n.shipCount" />
+
+  <!-- Everything on the thread: a line down the left margin, with a marker at each section. -->
+  <div class="sheet-body">
+    <section class="sheet-section" aria-labelledby="background">
+      <div class="sheet-wrap">
+        <app-sheet-head number="01" title="Background" />
+        <div class="sheet-two">
+          <div class="prose" appReveal>
+            <h2 id="background">A real station for the table</h2>
+            <p>
+              I love the cinematic nature of Armada, and felt it would be great to use a real
+              station model in the game. The core game (before the Corellian Conflict expansion)
+              featured only unarmed repair stations, so my imagination immediately filled with the
+              XQ platforms from the TIE Fighter and X-Wing games of the 90s<a
+                class="ref"
+                href="#ref-1"
+                aria-label="Reference 1"
+                ><sup>1</sup></a
+              >.
+            </p>
+            <h3>The problem</h3>
+            <p>After my first design iteration, I realized two important things:</p>
+            <ul>
+              <li>The station needed much more detail.</li>
+              <li>The scale felt wrong.</li>
+            </ul>
+            <p>
+              I'll cover the station's design and fabrication in a separate write-up; here I'd like
+              to focus on the second point. Ship and squadron models in Armada are built to a
+              <em>relative</em> scale: a CR90 model isn't at the same scale to its canon counterpart
+              as a Victory-class Star Destroyer is. For proof, try fitting the CR90 into the
+              Victory's docking bay. I'll wait.
+            </p>
+            <p>
+              I understand why Fantasy Flight chose a relative scale, but because model and canon
+              sizes don't have a linear relationship, it takes some thought to find the right size
+              for my XQ2 Platform and have it <em>feel</em> correct during play. Fortunately, a
+              little math can solve this problem, and help scale any future models I design.
+            </p>
           </div>
-          <div>
-            <dt>Method</dt>
-            <dd>Regression · Error analysis</dd>
+          <app-sheet-frame [dimension]="n.xq2CanonM + ' m'" appReveal>
+            <img
+              class="sheet-view"
+              src="projects/armada-scaling/xq2-side.webp"
+              width="552"
+              height="216"
+              loading="lazy"
+              alt="Wireframe of the XQ2 Platform from the side, showing the tower and the angled arms."
+            />
+            <p class="sheet-label">Side elevation</p>
+            <img
+              class="sheet-view"
+              src="projects/armada-scaling/xq2-front.webp"
+              width="593"
+              height="216"
+              loading="lazy"
+              alt="Wireframe of the XQ2 Platform from the front: a domed tower on a wide, flat deck."
+            />
+            <figcaption class="sheet-label">Front elevation</figcaption>
+          </app-sheet-frame>
+        </div>
+      </div>
+    </section>
+
+    <section class="sheet-section" aria-labelledby="method">
+      <div class="sheet-wrap">
+        <app-sheet-head number="02" title="Method" />
+        <div class="sheet-side">
+          <div class="prose" appReveal>
+            <h2 id="method">Plot the ships</h2>
+            <p>
+              We should be able to find a function that describes Armada's non-linear scale. To
+              start, let's plot the data<a class="ref" href="#ref-2" aria-label="Reference 2"
+                ><sup>2</sup></a
+              >: the canon length of each ship and squadron in the game against the measured length
+              of its model.
+            </p>
+            <p>Two things stand out:</p>
+            <ol>
+              <li>There does seem to be a relationship.</li>
+              <li>
+                As expected, it isn't linear: big ships are scaled down much more than small ones.
+              </li>
+            </ol>
           </div>
+          <div class="sheet-figure" appReveal>
+            <app-scale-chart
+              caption="Canon length against Armada model length for {{
+                n.shipCount
+              }} ships and squadrons"
+              [ships]="ships"
+              [design]="design().chart"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sheet-section" aria-labelledby="fitting">
+      <div class="sheet-wrap">
+        <app-sheet-head number="03" title="Finding a fit" />
+        <h2 id="fitting" class="sheet-title">Two candidate curves</h2>
+        <div class="sheet-two">
+          <div class="prose" appReveal>
+            <p>
+              To define a <em>best fit</em>, we need a family of functions to try. By eye, I guessed
+              the relationship was either logarithmic or a power function. Fitting both shows which
+              describes the data better.
+            </p>
+            <p>A logarithmic function has the general form</p>
+            <app-tex class="equation" [display]="true" tex="y = a \ln(x) + b" />
+            <p>
+              Linear regression<a class="ref" href="#ref-3" aria-label="Reference 3"
+                ><sup>3</sup></a
+              >
+              on <app-tex tex="\ln(x)" /> finds the <app-tex tex="a" /> and <app-tex tex="b" /> that
+              give the closest fit:
+            </p>
+            <app-tex class="equation" [display]="true" [tex]="tex.logFit" />
+          </div>
+          <div class="prose" appReveal>
+            <p>A power function has the form</p>
+            <app-tex class="equation" [display]="true" tex="y = a x^{b}" />
+            <p>
+              Finding <app-tex tex="a" /> and <app-tex tex="b" /> directly is tough this time, but
+              taking the log of both sides gets us close:
+            </p>
+            <app-tex
+              class="equation"
+              [display]="true"
+              tex="\log_{10}(y) = \log_{10}(a) + b \log_{10}(x)"
+            />
+            <p>
+              That looks messy, but it's linear in <app-tex tex="\log_{10}(x)" />, so linear
+              regression is back on the table. It finds
+            </p>
+            <app-tex class="equation" [display]="true" [tex]="tex.powerCoefficients" />
+            <p>so the power function is</p>
+            <app-tex class="equation" [display]="true" [tex]="tex.powerFit" />
+          </div>
+        </div>
+        <p class="prose" appReveal>
+          Now let's plot both against the data. Switch either fit on or off to compare.
+        </p>
+        <div class="sheet-figure" appReveal>
+          <app-scale-chart
+            caption="Both fits against the data"
+            [ships]="ships"
+            [fits]="fits()"
+            [design]="design().chart"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- A field note: the method's maths, on paper. -->
+    <app-sheet-paper class="sheet-section" labelledBy="algorithm">
+      <div class="sheet-wrap">
+        <app-sheet-head number="Field note" title="How the fitting works" />
+        <h2 id="algorithm" class="sheet-title">One method underneath</h2>
+        <div class="sheet-two">
+          <div class="prose">
+            <p>
+              Every fit on this page comes from one method: ordinary least squares. Given points
+              <app-tex tex="(x_1, y_1), \ldots, (x_n, y_n)" />, it finds the straight line
+              <app-tex tex="y = mx + c" /> that makes the sum of the squared vertical gaps between
+              the points and the line as small as possible:
+            </p>
+            <app-tex class="equation" [display]="true" [tex]="tex.leastSquares" />
+            <p>
+              Setting the derivatives to zero gives the answer directly, with no searching or
+              iteration, where <app-tex tex="\bar{x}" /> and <app-tex tex="\bar{y}" /> are the
+              averages:
+            </p>
+            <app-tex class="equation" [display]="true" [tex]="tex.slope" />
+            <app-tex class="equation" [display]="true" [tex]="tex.intercept" />
+          </div>
+          <div class="prose">
+            <p>Neither candidate is a straight line, so each is first turned into one:</p>
+            <ul>
+              <li>
+                <strong>Logarithmic:</strong> fit a line to <app-tex tex="y" /> against
+                <app-tex tex="\ln(x)" />. Its slope is <app-tex tex="a" /> and its intercept is
+                <app-tex tex="b" />.
+              </li>
+              <li>
+                <strong>Power:</strong> fit a line to <app-tex tex="\log_{10}(y)" /> against
+                <app-tex tex="\log_{10}(x)" />. Its slope is <app-tex tex="b" />, and its intercept
+                is <app-tex tex="\log_{10}(a)" />, so <app-tex tex="a = 10^{\text{intercept}}" />.
+                Because it works on logarithms, this fit minimizes proportional errors rather than
+                absolute ones: a 10% miss counts the same for a starfighter as for a Star Destroyer.
+              </li>
+            </ul>
+            <p>
+              To compare the fits, each is scored on how far its predictions
+              <app-tex tex="\hat{y}_i" /> land from the real model lengths <app-tex tex="y_i" />: by
+              root-mean-square error, in millimetres,
+            </p>
+            <app-tex class="equation" [display]="true" [tex]="tex.rmse" />
+            <p>
+              and by average percentage error, which weighs every ship equally whatever its size:
+            </p>
+            <app-tex class="equation" [display]="true" [tex]="tex.percentError" />
+            <p>
+              All of this runs when the site is built, straight from the ship data, so adding a ship
+              updates every fit, number and chart on this page.
+            </p>
+          </div>
+        </div>
+      </div>
+    </app-sheet-paper>
+
+    <section class="sheet-section" aria-labelledby="comparison">
+      <div class="sheet-wrap">
+        <app-sheet-head number="04" title="Which fit is better?" />
+        <div class="prose" appReveal>
+          <h2 id="comparison">The power function, by far</h2>
+          <p>
+            By eye, the power function follows the data much more closely. To confirm it, I measured
+            each fit's average error as a percentage of each model's real length. Percentages keep
+            the biggest ships from dominating: 20 mm off matters a lot for a 60 mm corvette, and
+            much less for a 600 mm Super Star Destroyer.
+          </p>
+        </div>
+        <dl class="stats" appReveal>
           <div>
-            <dt>Data</dt>
-            <dd>{{ n.shipCount }} ships and squadrons</dd>
+            <dt>Logarithmic fit</dt>
+            <dd class="stats__value">{{ n.logPercent }}<span>% average error</span></dd>
+            <dd class="stats__detail">RMSE {{ n.logRmse }} mm</dd>
+          </div>
+          <div class="stats__winner">
+            <dt>Power fit</dt>
+            <dd class="stats__value">{{ n.powerPercent }}<span>% average error</span></dd>
+            <dd class="stats__detail">RMSE {{ n.powerRmse }} mm</dd>
           </div>
         </dl>
-      </div>
-      <figure class="wireframe intro__art">
-        <img
-          src="projects/armada-scaling/xq2-top.webp"
-          width="593"
-          height="540"
-          alt="Wireframe of the XQ2 Platform seen from above: a hexagonal core with three arms."
-        />
-        <figcaption>The XQ2 Platform, top view</figcaption>
-      </figure>
-    </div>
-  </header>
-
-  <section
-    class="band section"
-    [class]="'band--' + design().bands.problem"
-    aria-labelledby="background"
-  >
-    <div class="container prose" appReveal>
-      <h2 id="background">Background</h2>
-      <p>
-        I love the cinematic nature of Armada, and felt it would be great to use a real station
-        model in the game. The core game (before the Corellian Conflict expansion) featured only
-        unarmed repair stations, so my imagination immediately filled with the XQ platforms from the
-        TIE Fighter and X-Wing games of the 90s<a class="ref" href="#ref-1" aria-label="Reference 1"
-          ><sup>1</sup></a
-        >.
-      </p>
-
-      <h2>The problem</h2>
-      <p>After my first design iteration, I realized two important things:</p>
-      <ul>
-        <li>The station needed much more detail.</li>
-        <li>The scale felt wrong.</li>
-      </ul>
-      <p>
-        I'll cover the station's design and fabrication in a separate write-up; here I'd like to
-        focus on the second point. Ship and squadron models in Armada are built to a
-        <em>relative</em> scale: a CR90 model isn't at the same scale to its canon counterpart as a
-        Victory-class Star Destroyer is. For proof, try fitting the CR90 into the Victory's docking
-        bay. I'll wait.
-      </p>
-      <p>
-        I understand why Fantasy Flight chose a relative scale, but because model and canon sizes
-        don't have a linear relationship, it takes some thought to find the right size for my XQ2
-        Platform and have it <em>feel</em> correct during play. Fortunately, a little math can solve
-        this problem, and help scale any future models I design.
-      </p>
-    </div>
-    <div class="container figure-row" appReveal>
-      <figure class="wireframe">
-        <img
-          src="projects/armada-scaling/xq2-front.webp"
-          width="593"
-          height="216"
-          loading="lazy"
-          alt="Wireframe of the XQ2 Platform from the front: a domed tower on a wide, flat deck."
-        />
-        <figcaption>Front</figcaption>
-      </figure>
-      <figure class="wireframe">
-        <img
-          src="projects/armada-scaling/xq2-side.webp"
-          width="552"
-          height="216"
-          loading="lazy"
-          alt="Wireframe of the XQ2 Platform from the side, showing the tower and the angled arms."
-        />
-        <figcaption>Side</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section class="band section" [class]="'band--' + design().bands.method" aria-labelledby="method">
-    <div class="container prose" appReveal>
-      <h2 id="method">Method</h2>
-      <p>
-        We should be able to find a function that describes Armada's non-linear scale. To start,
-        let's plot the data<a class="ref" href="#ref-2" aria-label="Reference 2"><sup>2</sup></a
-        >: the canon length of each ship and squadron in the game against the measured length of its
-        model.
-      </p>
-    </div>
-    <div class="container figure" appReveal>
-      <app-scale-chart
-        caption="Canon length against Armada model length for {{ n.shipCount }} ships and squadrons"
-        [ships]="ships"
-        [design]="design().chart"
-      />
-    </div>
-    <div class="container prose" appReveal>
-      <p>Two things stand out:</p>
-      <ol>
-        <li>There does seem to be a relationship.</li>
-        <li>As expected, it isn't linear: big ships are scaled down much more than small ones.</li>
-      </ol>
-    </div>
-  </section>
-
-  <section
-    class="band section"
-    [class]="'band--' + design().bands.fitting"
-    aria-labelledby="fitting"
-  >
-    <div class="container prose" appReveal>
-      <h2 id="fitting">Finding a fit</h2>
-      <p>
-        To define a <em>best fit</em>, we need a family of functions to try. By eye, I guessed the
-        relationship was either logarithmic or a power function. Fitting both shows which describes
-        the data better.
-      </p>
-      <p>A logarithmic function has the general form</p>
-      <app-tex class="equation" [display]="true" tex="y = a \ln(x) + b" />
-      <p>
-        Linear regression<a class="ref" href="#ref-3" aria-label="Reference 3"><sup>3</sup></a> on
-        <app-tex tex="\ln(x)" /> finds the <app-tex tex="a" /> and <app-tex tex="b" /> that give the
-        closest fit:
-      </p>
-      <app-tex class="equation" [display]="true" [tex]="tex.logFit" />
-      <p>A power function has the form</p>
-      <app-tex class="equation" [display]="true" tex="y = a x^{b}" />
-      <p>
-        Finding <app-tex tex="a" /> and <app-tex tex="b" /> directly is tough this time, but taking
-        the log of both sides gets us close:
-      </p>
-      <app-tex
-        class="equation"
-        [display]="true"
-        tex="\log_{10}(y) = \log_{10}(a) + b \log_{10}(x)"
-      />
-      <p>
-        That looks messy, but it's linear in <app-tex tex="\log_{10}(x)" />, so linear regression is
-        back on the table. It finds
-      </p>
-      <app-tex class="equation" [display]="true" [tex]="tex.powerCoefficients" />
-      <p>so the power function is</p>
-      <app-tex class="equation" [display]="true" [tex]="tex.powerFit" />
-      <p>Now let's plot both against the data. Switch either fit on or off to compare.</p>
-    </div>
-    <div class="container figure" appReveal>
-      <app-scale-chart
-        caption="Both fits against the data"
-        [ships]="ships"
-        [fits]="fits()"
-        [design]="design().chart"
-      />
-    </div>
-  </section>
-
-  <section
-    class="band section"
-    [class]="'band--' + design().bands.algorithm"
-    aria-labelledby="algorithm"
-  >
-    <div class="container prose" appReveal>
-      <h2 id="algorithm">How the fitting works</h2>
-      <p>
-        Every fit on this page comes from one method: ordinary least squares. Given points
-        <app-tex tex="(x_1, y_1), \ldots, (x_n, y_n)" />, it finds the straight line
-        <app-tex tex="y = mx + c" /> that makes the sum of the squared vertical gaps between the
-        points and the line as small as possible:
-      </p>
-      <app-tex class="equation" [display]="true" [tex]="tex.leastSquares" />
-      <p>
-        Setting the derivatives to zero gives the answer directly, with no searching or iteration,
-        where <app-tex tex="\bar{x}" /> and <app-tex tex="\bar{y}" /> are the averages:
-      </p>
-      <app-tex class="equation" [display]="true" [tex]="tex.slope" />
-      <app-tex class="equation" [display]="true" [tex]="tex.intercept" />
-      <p>Neither candidate is a straight line, so each is first turned into one:</p>
-      <ul>
-        <li>
-          <strong>Logarithmic:</strong> fit a line to <app-tex tex="y" /> against
-          <app-tex tex="\ln(x)" />. Its slope is <app-tex tex="a" /> and its intercept is
-          <app-tex tex="b" />.
-        </li>
-        <li>
-          <strong>Power:</strong> fit a line to <app-tex tex="\log_{10}(y)" /> against
-          <app-tex tex="\log_{10}(x)" />. Its slope is <app-tex tex="b" />, and its intercept is
-          <app-tex tex="\log_{10}(a)" />, so <app-tex tex="a = 10^{\text{intercept}}" />. Because it
-          works on logarithms, this fit minimizes proportional errors rather than absolute ones: a
-          10% miss counts the same for a starfighter as for a Star Destroyer.
-        </li>
-      </ul>
-      <p>
-        To compare the fits, each is scored on how far its predictions
-        <app-tex tex="\hat{y}_i" /> land from the real model lengths <app-tex tex="y_i" />: by
-        root-mean-square error, in millimetres,
-      </p>
-      <app-tex class="equation" [display]="true" [tex]="tex.rmse" />
-      <p>and by average percentage error, which weighs every ship equally whatever its size:</p>
-      <app-tex class="equation" [display]="true" [tex]="tex.percentError" />
-      <p>
-        All of this runs when the site is built, straight from the ship data, so adding a ship
-        updates every fit, number and chart on this page.
-      </p>
-    </div>
-  </section>
-
-  <section
-    class="band section"
-    [class]="'band--' + design().bands.comparison"
-    aria-labelledby="comparison"
-  >
-    <div class="container prose" appReveal>
-      <h2 id="comparison">Which fit is better?</h2>
-      <p>
-        By eye, the power function follows the data much more closely. To confirm it, I measured
-        each fit's average error as a percentage of each model's real length. Percentages keep the
-        biggest ships from dominating: 20 mm off matters a lot for a 60 mm corvette, and much less
-        for a 600 mm Super Star Destroyer.
-      </p>
-      <dl class="stats">
-        <div>
-          <dt>Logarithmic fit</dt>
-          <dd>{{ n.logPercent }}<span>% average error</span></dd>
-          <dd class="stats__detail">RMSE {{ n.logRmse }} mm</dd>
-        </div>
-        <div>
-          <dt>Power fit</dt>
-          <dd class="stats__winner">{{ n.powerPercent }}<span>% average error</span></dd>
-          <dd class="stats__detail">RMSE {{ n.powerRmse }} mm</dd>
-        </div>
-      </dl>
-      @if (n.logNegative; as negative) {
-        <p>
-          The logarithmic fit does worst on the smallest craft: below about
-          {{ negative.belowM }} m it predicts a model of negative length, which it does for
-          {{ negative.count }} of the {{ n.shipCount }} ships here.
-        </p>
-      }
-      <p>
-        The power function's error is about {{ n.ratio }}× smaller, so it's the one to use for
-        Armada's scale:
-      </p>
-      <app-tex class="equation" [display]="true" [tex]="tex.powerFit" />
-    </div>
-  </section>
-
-  <section
-    class="band section"
-    [class]="'band--' + design().bands.alternatives"
-    aria-labelledby="alternatives"
-  >
-    <div class="container prose" appReveal>
-      <h2 id="alternatives">Why a power law?</h2>
-      <p>
-        I picked the power and logarithmic forms because the plotted data looked that shape. Other
-        shapes could fit too, so I tried {{ n.candidateCount }} of them. Each one is fitted to the
-        same ships and scored two ways: its average error on those ships, and its average
-        <em>left-out error</em> predicting each ship from a fit made without it (leave-one-out
-        cross-validation). The second is the real test. A formula with enough parameters can bend
-        through any data, but then it predicts new ships badly. The last column counts ships given a
-        negative model length.
-      </p>
-    </div>
-    <div class="container figure" appReveal>
-      <div class="table-scroll">
-        <table class="candidates">
-          <caption>
-            Candidate forms, best at predicting a left-out ship first
-          </caption>
-          <thead>
-            <tr>
-              <th scope="col">Form</th>
-              <th scope="col">Error</th>
-              <th scope="col">Left-out error</th>
-              <th scope="col">Negative</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (c of candidates; track c.id) {
-              <tr [class.candidates__chosen]="c.id === 'power'">
-                <th scope="row">
-                  {{ c.name }}
-                  <span class="candidates__formula"><app-tex [tex]="c.formula" /></span>
-                  <span class="candidates__parameters">{{ c.parameters }} parameters</span>
-                </th>
-                <td>{{ c.inSample }}%</td>
-                <td>{{ c.leaveOneOut }}%</td>
-                <td>{{ c.impossible }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="container prose" appReveal>
-      <p>What the alternatives show:</p>
-      <ul>
-        <li>
-          A logarithm has to cross zero somewhere, which is where the negative lengths come from.
-          Shifting it to pass through zero, <app-tex tex="a \ln(1 + x / c)" />, fixes that but still
-          misses by {{ n.leaveOneOut['shifted-log'] }}% on average.
-        </li>
-        <li>
-          A sine wave starts out straight (<app-tex tex="\sin(kx) \approx kx" /> near zero) and only
-          flattens near its peak. To flatten across the whole range, its peak has to sit at or
-          beyond the largest ship, and then it can't bend enough for the small ones:
-          {{ n.leaveOneOut['sine'] }}%.
-        </li>
-        <li>
-          Polynomials fit the ships they're given well enough, then predict left-out ships badly ({{
-            n.leaveOneOut['cubic']
-          }}% for the cubic). That's overfitting.
-        </li>
-        <li>
-          Letting the power law's exponent drift with size,
-          <app-tex tex="a x^{\,b + c \ln x}" />, gives <app-tex [tex]="'c = ' + n.curvature" />:
-          next to no drift, and {{ n.leaveOneOut['curved-power'] }}% predicting left-out ships
-          against the plain power law's {{ n.leaveOneOut['power'] }}%.
-        </li>
-        @if (n.split; as split) {
-          <li>
-            Fitting small and large ships separately, split at {{ split.atM }} m, gives exponents of
-            {{ split.below }} and {{ split.above }}, a slightly lower exponent among the small
-            craft. It predicts left-out ships with {{ split.leaveOneOut }}% error, so the extra
-            parameters don't buy much.
-          </li>
-        }
-      </ul>
-      <p>
-        If the power law were missing some shape, its errors would lean one way at some sizes. The
-        chart below divides each ship's real model length by the power fit's prediction; the dashed
-        line at 1 is a perfect prediction. Ships of {{ n.sizeBands.lengths }} average
-        {{ n.sizeBands.percents }} of their predicted size respectively.
-      </p>
-    </div>
-    <div class="container figure" appReveal>
-      <app-scale-chart
-        caption="Each ship's model length divided by the power fit's prediction"
-        [ships]="residuals"
-        [axes]="residualAxes"
-        [reference]="1"
-        [design]="design().chart"
-      />
-    </div>
-    <div class="container prose" appReveal>
-      @if (n.powerBest) {
-        <p>
-          So the power law isn't just a good first guess. None of the alternatives predicts a new
-          ship better, and what error is left looks like scatter in how each model was designed
-          rather than a missing curve.
-        </p>
-      } @else {
-        <p>
-          The power law stays close to the best of these at predicting a new ship, with only two
-          parameters, so it's still the one used below.
-        </p>
-      }
-    </div>
-  </section>
-
-  <section
-    class="band section"
-    [class]="'band--' + design().bands.findings"
-    aria-labelledby="findings"
-  >
-    <div class="container prose" appReveal>
-      <h2 id="findings">Findings</h2>
-      <p>
-        With this function, we can find a reasonable model size for <em>any</em> Star Wars ship from
-        its canon length. The XQ2 Platform is {{ n.xq2CanonM }} m long<a
-          class="ref"
-          href="#ref-4"
-          aria-label="Reference 4"
-          ><sup>4</sup></a
-        >, which puts its model at {{ n.xq2ModelMm }} mm.
-      </p>
-      <p>Try it with a ship of your own:</p>
-      <app-scale-calculator [(canonM)]="canonM" [predict]="predict" />
-      <p>
-        I've added a few ships I'd like to design to the chart, along with yours. Let me know if you
-        think of others.
-      </p>
-    </div>
-    <div class="container figure" appReveal>
-      <app-scale-chart
-        caption="Planned ships, sized by the power fit"
-        [ships]="ships"
-        [fits]="fits().slice(0, 1)"
-        [planned]="planned"
-        [highlight]="calculated()"
-        [design]="design().chart"
-      />
-    </div>
-  </section>
-
-  <footer
-    class="band section"
-    [class]="'band--' + design().bands.references"
-    aria-labelledby="references"
-  >
-    <div class="container prose">
-      <h2 id="references">References</h2>
-      <ol class="references">
-        <li id="ref-1">
-          <a href="https://starwars.fandom.com/wiki/XQ_Platform_series" rel="noopener"
-            >XQ Platform series</a
-          >, Wookieepedia.
-        </li>
-        <!-- Kept on one line so each ; and . sits right after its title. -->
-        <!-- prettier-ignore -->
-        <li id="ref-2">
-          Ship data:
-          @for (source of dataSources; track source.title; let last = $last) {
-            @if (source.url) {<a [href]="source.url" rel="noopener">{{ source.title }}</a>} @else {<span>{{ source.title }}</span>}{{ last ? '.' : ';' }}
+        <div class="prose" appReveal>
+          @if (n.logNegative; as negative) {
+            <p>
+              The logarithmic fit does worst on the smallest craft: below about
+              {{ negative.belowM }} m it predicts a model of negative length, which it does for
+              {{ negative.count }} of the {{ n.shipCount }} ships here.
+            </p>
           }
-        </li>
-        <li id="ref-3">
-          Jason Brownlee,
-          <a
-            href="https://machinelearningmastery.com/implement-simple-linear-regression-scratch-python/"
-            rel="noopener"
-            >How to implement simple linear regression from scratch with Python</a
-          >, for a refresher on linear regression.
-        </li>
-        <li id="ref-4">
-          <a href="https://starwars.fandom.com/wiki/XQ2_Platform" rel="noopener">XQ2 Platform</a>,
-          Wookieepedia.
-        </li>
-      </ol>
+          <p>
+            The power function's error is about {{ n.ratio }}× smaller, so it's the one to use for
+            Armada's scale:
+          </p>
+        </div>
+        <div class="sheet-result" appReveal>
+          <app-tex class="sheet-result__equation" [display]="true" [tex]="tex.powerFit" />
+          <div class="sheet-two">
+            <p class="sheet-callout">
+              <b>A · Scale factor</b>
+              A 1 m ship would be {{ n.powerA }} mm on the table.
+            </p>
+            <p class="sheet-callout">
+              <b>B · Exponent</b>
+              Under 1: double the length, and the model grows only {{ n.doubling }}×.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- On paper on narrow screens only: there it reads as a second field note. -->
+    <app-sheet-paper class="sheet-section" labelledBy="alternatives" [narrowOnly]="true">
+      <div class="sheet-wrap">
+        <app-sheet-head number="05" title="Why a power law?" />
+        <div class="prose" appReveal>
+          <h2 id="alternatives">Eight shapes, tested</h2>
+          <p>
+            I picked the power and logarithmic forms because the plotted data looked that shape.
+            Other shapes could fit too, so I tried {{ n.candidateCount }} of them. Each one is
+            fitted to the same ships and scored two ways: its average error on those ships, and its
+            average <em>left-out error</em> predicting each ship from a fit made without it
+            (leave-one-out cross-validation). The second is the real test. A formula with enough
+            parameters can bend through any data, but then it predicts new ships badly. The last
+            column counts ships given a negative model length.
+          </p>
+        </div>
+        <app-candidates-table [rows]="candidates" appReveal />
+        <div class="sheet-two" appReveal>
+          <div class="prose">
+            <p>What the alternatives show:</p>
+            <ul>
+              <li>
+                A logarithm has to cross zero somewhere, which is where the negative lengths come
+                from. Shifting it to pass through zero, <app-tex tex="a \ln(1 + x / c)" />, fixes
+                that but still misses by {{ n.leaveOneOut['shifted-log'] }}% on average.
+              </li>
+              <li>
+                A sine wave starts out straight (<app-tex tex="\sin(kx) \approx kx" /> near zero)
+                and only flattens near its peak. To flatten across the whole range, its peak has to
+                sit at or beyond the largest ship, and then it can't bend enough for the small ones:
+                {{ n.leaveOneOut['sine'] }}%.
+              </li>
+              <li>
+                Polynomials fit the ships they're given well enough, then predict left-out ships
+                badly ({{ n.leaveOneOut['cubic'] }}% for the cubic). That's overfitting.
+              </li>
+            </ul>
+          </div>
+          <div class="prose">
+            <ul class="sheet-continued">
+              <li>
+                Letting the power law's exponent drift with size,
+                <app-tex tex="a x^{\,b + c \ln x}" />, gives
+                <app-tex [tex]="'c = ' + n.curvature" />: next to no drift, and
+                {{ n.leaveOneOut['curved-power'] }}% predicting left-out ships against the plain
+                power law's {{ n.leaveOneOut['power'] }}%.
+              </li>
+              @if (n.split; as split) {
+                <li>
+                  Fitting small and large ships separately, split at {{ split.atM }} m, gives
+                  exponents of {{ split.below }} and {{ split.above }}, a slightly lower exponent
+                  among the small craft. It predicts left-out ships with {{ split.leaveOneOut }}%
+                  error, so the extra parameters don't buy much.
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+        <p class="prose" appReveal>
+          If the power law were missing some shape, its errors would lean one way at some sizes. The
+          chart below divides each ship's real model length by the power fit's prediction; the
+          dashed line at 1 is a perfect prediction. Ships of {{ n.sizeBands.lengths }} average
+          {{ n.sizeBands.percents }} of their predicted size respectively.
+        </p>
+        <div class="sheet-figure" appReveal>
+          <app-scale-chart
+            caption="Each ship's model length divided by the power fit's prediction"
+            [ships]="residuals"
+            [axes]="residualAxes"
+            [reference]="1"
+            [design]="design().chart"
+          />
+        </div>
+        <div class="prose" appReveal>
+          @if (n.powerBest) {
+            <p>
+              So the power law isn't just a good first guess. None of the alternatives predicts a
+              new ship better, and what error is left looks like scatter in how each model was
+              designed rather than a missing curve.
+            </p>
+          } @else {
+            <p>
+              The power law stays close to the best of these at predicting a new ship, with only two
+              parameters, so it's still the one used below.
+            </p>
+          }
+        </div>
+      </div>
+    </app-sheet-paper>
+
+    <section class="sheet-section" aria-labelledby="findings">
+      <div class="sheet-wrap">
+        <app-sheet-head number="06" title="Findings" />
+        <div class="prose" appReveal>
+          <h2 id="findings">Size any ship</h2>
+          <p>
+            With this function, we can find a reasonable model size for <em>any</em> Star Wars ship
+            from its canon length. The XQ2 Platform is {{ n.xq2CanonM }} m long<a
+              class="ref"
+              href="#ref-4"
+              aria-label="Reference 4"
+              ><sup>4</sup></a
+            >, which puts its model at {{ n.xq2ModelMm }} mm.
+          </p>
+          <p>Try it with a ship of your own:</p>
+          <app-scale-calculator [(canonM)]="canonM" [predict]="predict" />
+          <p>
+            I've added a few ships I'd like to design to the chart, along with yours. Let me know if
+            you think of others.
+          </p>
+        </div>
+        <div class="sheet-figure" appReveal>
+          <app-scale-chart
+            caption="Planned ships, sized by the power fit"
+            [ships]="ships"
+            [fits]="fits().slice(0, 1)"
+            [planned]="planned"
+            [highlight]="calculated()"
+            [design]="design().chart"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Draft copy, to be rewritten: the station this project was started for. -->
+    <section class="sheet-section" aria-labelledby="building">
+      <div class="sheet-wrap">
+        <app-sheet-head number="07" title="Building the XQ2" />
+        <div class="prose" appReveal>
+          <h2 id="building">Back to the station</h2>
+          <p>
+            With a size worked out, I could get back to the station this all started with. At
+            {{ n.xq2ModelMm }} mm, the XQ2
+            @if (n.xq2Neighbors.below && n.xq2Neighbors.above) {
+              sits between the {{ n.xq2Neighbors.below }} and the {{ n.xq2Neighbors.above }}:
+            } @else {
+              sits
+            }
+            about where an {{ n.xq2CanonM }} m station belongs among Armada's ships, and big enough
+            to carry the detail the first version was missing.
+          </p>
+          <p>
+            Rescaling it changed more than the size. Details that worked at the first scale read
+            differently at the new one, so I reworked the hangar arms, the central tower and the
+            panelling for a {{ n.xq2ModelMm }} mm model, and test-printed parts next to my existing
+            ships to check the proportions by eye before committing to the final print.
+          </p>
+          <p>
+            The design and fabrication deserve their own write-up, so I'll stop there. The short
+            version: the station on the table now looks like it belongs in the same fleet, and the
+            same curve will size whatever I build next.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="sheet-section sheet-end" aria-labelledby="references">
+    <div class="sheet-wrap">
+      <app-sheet-head number="08" title="References" />
+      <div class="prose">
+        <h2 id="references" class="sr-only">References</h2>
+        <ol class="references">
+          <li id="ref-1">
+            <a href="https://starwars.fandom.com/wiki/XQ_Platform_series" rel="noopener"
+              >XQ Platform series</a
+            >, Wookieepedia.
+          </li>
+          <!-- Kept on one line so each ; and . sits right after its title. -->
+          <!-- prettier-ignore -->
+          <li id="ref-2">
+            Ship data:
+            @for (source of dataSources; track source.title; let last = $last) {
+              @if (source.url) {<a [href]="source.url" rel="noopener">{{ source.title }}</a>} @else {<span>{{ source.title }}</span>}{{ last ? '.' : ';' }}
+            }
+          </li>
+          <li id="ref-3">
+            Jason Brownlee,
+            <a
+              href="https://machinelearningmastery.com/implement-simple-linear-regression-scratch-python/"
+              rel="noopener"
+              >How to implement simple linear regression from scratch with Python</a
+            >, for a refresher on linear regression.
+          </li>
+          <li id="ref-4">
+            <a href="https://starwars.fandom.com/wiki/XQ2_Platform" rel="noopener">XQ2 Platform</a>,
+            Wookieepedia.
+          </li>
+        </ol>
+      </div>
     </div>
   </footer>
 

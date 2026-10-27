@@ -1,2 +1,4 @@
 # Exact copies of published design artifacts; keep byte-for-byte.
 design/snapshots/
+# Static mock-ups, kept as they were reviewed.
+design/armada/mockup/

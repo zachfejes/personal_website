@@ -1,0 +1,80 @@
+// Interim hero: the full drawing with construction rings and callouts replaces this next.
+:host {
+  display: block;
+}
+
+header {
+  padding: clamp(3rem, 8vw, 5.5rem) var(--gutter) 2rem;
+  text-align: center;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.75rem);
+
+  h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(1.9rem, 5vw, var(--title-size));
+    line-height: 1.1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sheet-strong);
+  }
+}
+
+.rule {
+  flex: 1;
+  height: 1px;
+  background: var(--sheet-muted);
+  opacity: 0.6;
+}
+
+.dek {
+  margin: 1rem 0 0;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sheet-muted);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 2rem;
+  margin: 0.75rem 0 0;
+  font-family: var(--font-label);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  div {
+    display: flex;
+    gap: 0.6em;
+  }
+
+  dt {
+    color: var(--sheet-muted);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--sheet-text);
+  }
+}
+
+.art {
+  width: min(520px, 70vw);
+  margin: clamp(2rem, 5vw, 3.5rem) auto 0;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    opacity: var(--wireframe-opacity);
+  }
+}
