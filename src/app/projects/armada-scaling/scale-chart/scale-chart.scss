@@ -1,17 +1,16 @@
-// The chart sits on its own dark panel so it reads the same on any band.
+@use '../sheet/sheet' as *;
+
+// Drawn in the page's line style: hairline dashed grid, ships as rings, mono labels. All colors
+// are the page's variables, so the chart reads the same on the dark sheet and on paper.
 :host {
   display: block;
-  color: var(--color-on-dark);
+  color: var(--sheet-text);
 }
 
 .chart {
   display: grid;
   gap: 0.75rem;
   margin: 0;
-  padding: clamp(0.75rem, 2vw, 1.25rem);
-  background: var(--chart-panel, var(--color-ink));
-  border-radius: calc(var(--radius) + 2px);
-  box-shadow: 0 14px 30px -18px rgb(0 0 0 / 60%);
 }
 
 .chart__controls {
@@ -22,7 +21,26 @@
 }
 
 .chart__scale {
+  align-items: center;
   margin-left: auto;
+  gap: 0;
+
+  .chart__toggle + .chart__toggle {
+    margin-left: -1px;
+  }
+}
+
+.chart__group-label {
+  margin-right: 0.75rem;
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sheet-muted);
+
+  @media (width <= $narrow) {
+    display: none;
+  }
 }
 
 .chart__toggles {
@@ -35,24 +53,25 @@
   display: inline-flex;
   gap: 0.5rem;
   align-items: center;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid color-mix(in srgb, var(--color-on-dark) 30%, transparent);
-  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgb(var(--sheet-line-rgb) / 35%);
   background: transparent;
-  color: inherit;
+  color: var(--sheet-muted);
   font-family: var(--font-label);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   cursor: pointer;
-  opacity: 0.55;
 
   &[aria-pressed='true'] {
-    opacity: 1;
-    background: color-mix(in srgb, var(--color-on-dark) 10%, transparent);
+    position: relative;
+    border-color: rgb(var(--sheet-line-rgb) / 70%);
+    background: rgb(var(--sheet-line-rgb) / 8%);
+    color: var(--sheet-strong);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-highlight);
+    outline: 2px solid var(--sheet-accent);
     outline-offset: 2px;
   }
 }
@@ -63,35 +82,37 @@
   height: auto;
   overflow: visible;
   touch-action: pan-y;
-  border-radius: var(--radius);
 
   &:focus-visible {
-    outline: 2px solid var(--color-highlight);
+    outline: 2px solid var(--sheet-accent);
     outline-offset: 4px;
   }
 }
 
 .chart__axis text {
   font-family: var(--font-label);
-  fill: var(--color-muted);
+  fill: var(--sheet-muted);
 }
 
 .chart__title {
-  fill: var(--color-on-dark);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .chart__grid {
-  stroke: var(--color-on-dark);
+  stroke: rgb(var(--sheet-line-rgb) / var(--chart-grid-opacity, 30%));
+  stroke-dasharray: 2 4;
 }
 
 .chart__baseline {
-  stroke: color-mix(in srgb, var(--color-on-dark) 40%, transparent);
+  stroke: var(--sheet-muted);
+  stroke-opacity: 0.6;
 }
 
 .chart__reference {
-  stroke: color-mix(in srgb, var(--color-on-dark) 55%, transparent);
-  stroke-dasharray: 4 4;
+  stroke: var(--sheet-text);
+  stroke-opacity: 0.55;
+  stroke-dasharray: 5 5;
 }
 
 .chart__fit {
@@ -99,41 +120,81 @@
   stroke-linecap: round;
 }
 
+// Ships are rings; planned ships and the calculator's ship are filled in amber.
 .chart__point {
+  fill: none;
+  stroke: var(--sheet-text);
+  stroke-width: 1.2;
   transition: r 0.15s ease;
-  stroke-width: 2;
+}
 
-  &.is-active {
-    stroke: var(--color-on-dark);
-    stroke-width: 2;
-  }
+.chart__point--planned,
+.chart__point--highlight {
+  fill: color-mix(in srgb, var(--sheet-accent) 25%, transparent);
+  stroke: var(--sheet-accent);
 }
 
 .chart__point--highlight {
-  stroke-width: 2.5;
+  stroke-width: 2;
 }
 
 .chart__callout {
   font-family: var(--font-label);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: var(--sheet-accent);
+}
+
+.chart__annotation {
+  pointer-events: none;
+
+  circle,
+  line {
+    fill: none;
+    stroke: var(--sheet-muted);
+  }
+
+  text {
+    font-family: var(--font-label);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    fill: var(--sheet-text);
+  }
+}
+
+.chart__crosshair {
+  pointer-events: none;
+  fill: none;
+  stroke: var(--sheet-accent);
+
+  line {
+    stroke-dasharray: 2 3;
+  }
 }
 
 .chart__tooltip {
   pointer-events: none;
 
   rect {
-    fill: color-mix(in srgb, var(--color-ink) 92%, var(--color-on-dark));
-    stroke: color-mix(in srgb, var(--color-on-dark) 25%, transparent);
+    fill: var(--sheet-surface, var(--sheet-bg));
+    stroke: rgb(var(--sheet-line-rgb) / 45%);
+    stroke-dasharray: 3 3;
   }
 
   text {
     font-family: var(--font-label);
-    fill: var(--color-muted);
+    fill: var(--sheet-muted);
   }
 
   .chart__tooltip-name {
-    fill: var(--color-on-dark);
+    fill: var(--sheet-strong);
     font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .chart__tooltip-value {
+    fill: var(--sheet-accent);
   }
 }
 
@@ -142,17 +203,17 @@
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.5rem 1.5rem;
-  font-size: 0.9rem;
-  color: color-mix(in srgb, var(--color-on-dark) 80%, transparent);
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sheet-muted);
 }
 
 .chart__legend {
   display: inline-flex;
   flex-wrap: wrap;
   gap: 0.25rem 1rem;
-  font-family: var(--font-label);
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
 
   > span {
     display: inline-flex;
@@ -165,18 +226,20 @@
   display: inline-block;
   width: 0.6rem;
   height: 0.6rem;
+  border: 1px solid var(--sheet-text);
   border-radius: 50%;
 }
 
 .chart__swatch--line {
   width: 1rem;
-  height: 3px;
-  border-radius: 2px;
+  height: 2px;
+  border: 0;
+  border-radius: 0;
 }
 
-.chart__swatch--ring {
-  border: 2px solid;
-  background: transparent;
+.chart__swatch--planned {
+  border-color: var(--sheet-accent);
+  background: color-mix(in srgb, var(--sheet-accent) 25%, transparent);
 }
 
 .chart__data {
@@ -185,22 +248,33 @@
   summary {
     cursor: pointer;
     font-family: var(--font-label);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--color-muted);
+    color: var(--sheet-muted);
+    list-style: none;
+
+    &::before {
+      content: '+ ';
+      color: var(--sheet-accent);
+    }
+  }
+
+  &[open] summary::before {
+    content: '− ';
   }
 
   table {
     width: 100%;
     margin-top: 0.5rem;
     border-collapse: collapse;
+    color: var(--sheet-body);
   }
 
   th,
   td {
     padding: 0.3rem 0.5rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-on-dark) 15%, transparent);
+    border-bottom: 1px solid rgb(var(--sheet-line-rgb) / 20%);
     text-align: right;
     font-variant-numeric: tabular-nums;
   }

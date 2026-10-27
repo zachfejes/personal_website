@@ -52,6 +52,16 @@ const listOf = (items: readonly string[]) =>
 const RATIO_DECIMALS = 2;
 
 const DOUBLE = 2;
+/** The fit the page uses is drawn in the page's accent. */
+const POWER_FIT_COLOR = 'var(--sheet-accent)';
+/** Ships labelled on the charts (on wide screens): the extremes, and the planned ones that matter. */
+const LABELLED = {
+  data: ['Executor Star Destroyer', 'TIE Fighter'],
+  fits: ['TIE Fighter'],
+  planned: ['Tri-fighter Droid', 'Naboo Royal Cruiser', 'MC40a'],
+} as const;
+/** The error chart labels the ships furthest from the power fit. */
+const RESIDUAL_LABELS = 2;
 /** Scales are quoted to two significant digits: "1 : 6,200". */
 const SCALE_DIGITS = 2;
 /** The familiar small ship the hero compares the XQ2's scale with. */
@@ -130,13 +140,20 @@ export class ArmadaScalingPage {
   protected readonly fits = computed((): FitLine[] => {
     const chart = this.design().chart;
     return [
-      { id: 'power', label: 'Power fit', color: chart.powerColor, predict: POWER_FIT.predict },
+      { id: 'power', label: 'Power fit', color: POWER_FIT_COLOR, predict: POWER_FIT.predict },
       { id: 'log', label: 'Logarithmic fit', color: chart.logColor, predict: LOG_FIT.predict },
     ];
   });
 
   /** Each ship against the power fit's prediction, with 1 marking a perfect prediction. */
   protected readonly residuals: NamedPoint[] = POWER_RESIDUALS;
+  protected readonly labelled = {
+    ...LABELLED,
+    residuals: [...POWER_RESIDUALS]
+      .sort((a, b) => Math.abs(Math.log(b.y)) - Math.abs(Math.log(a.y)))
+      .slice(0, RESIDUAL_LABELS)
+      .map((r) => r.name),
+  };
   protected readonly residualAxes: { x: AxisLabel; y: AxisLabel } = {
     x: { title: 'Canon length', unit: 'm' },
     y: { title: 'Model ÷ predicted', decimals: RATIO_DECIMALS },

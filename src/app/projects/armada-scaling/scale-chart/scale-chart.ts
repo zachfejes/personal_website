@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { line } from 'd3-shape';
 import { Design } from '../design';
+import { placeLabel } from './annotation';
 import { SCALE_KINDS, ScaleKind, axisTicks, makeScale, sampleRange } from './axis';
 
 export interface NamedPoint {
@@ -37,6 +38,7 @@ export const LENGTH_AXES: { x: AxisLabel; y: AxisLabel } = {
 export interface FitLine {
   id: string;
   label: string;
+  /** Any CSS color, including a variable such as `var(--sheet-accent)`. */
   color: string;
   predict: (x: number) => number;
 }
@@ -72,26 +74,31 @@ const TOOLTIP = {
   offset: 12,
   lineGap: 4,
   radius: 4,
-  /** Average glyph width as a fraction of font size, to size the box without measuring. */
-  charWidth: 0.6,
+  /** Average glyph width (spaced, upper-case mono) as a fraction of font size, to size the box. */
+  charWidth: 0.68,
 } as const;
 const AXIS_TITLE_GAP = { x: 42, y: 46 } as const;
+/** Annotated ships: how far their labels sit from them, SVG units. */
+const ANNOTATION_OFFSET = { dx: 56, dy: 44 } as const;
+/** Glyph width of the spaced, upper-case mono labels, as a fraction of font size. */
+const ANNOTATION_CHAR_WIDTH = 0.68;
 const TICK_GAP = 8;
 
 let nextId = 0;
 
 /**
  * Scatter plot of Armada ships (canon length against model length, unless `axes` says otherwise),
- * with optional fit curves (toggleable), a horizontal reference line, planned ships and one
- * highlighted point. Hover, tap or use the arrow keys to read
- * a point; the same data is available as a table below the chart.
+ * with optional fit curves (toggleable), a horizontal reference line, planned ships, one
+ * highlighted point and, on wide screens, a few named ships labelled on leader lines. Hover, tap
+ * or use the arrow keys to read a point; the same data is available as a table below the chart.
+ * Drawn in the page's line style, with its colors (CSS variables), so it sits on dark or paper.
  */
 @Component({
   selector: 'app-scale-chart',
   templateUrl: './scale-chart.html',
   styleUrl: './scale-chart.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[style.--chart-panel]': 'design().panelColor' },
+  host: { '[style.--chart-grid-opacity]': 'design().gridOpacity' },
 })
 export class ScaleChart {
   /** Accessible name for the chart, also its caption. */
@@ -104,6 +111,8 @@ export class ScaleChart {
   /** A y value to mark with a line across the chart, e.g. "no error". */
   readonly reference = input<number | null>(null);
   readonly design = input.required<Design['chart']>();
+  /** Ships to label on the chart (by name), when it's wide enough to fit them. */
+  readonly annotate = input<readonly string[]>([]);
 
   protected readonly clipId = `scale-chart-clip-${nextId++}`;
   /** Drawing width, px: the container's width once measured. */
@@ -220,23 +229,53 @@ export class ScaleChart {
     }));
   });
 
+  /** Labels for the named ships, on leader lines, when there's room for them. */
+  protected readonly annotations = computed(() => {
+    if (this.width() < this.design().annotateMinWidthPx) return [];
+    const { x, y } = this.axes();
+    const plot = {
+      left: MARGIN.left,
+      right: this.width() - MARGIN.right,
+      top: MARGIN.top,
+      bottom: this.height() - MARGIN.bottom,
+    };
+    const points = this.points();
+    return this.annotate().flatMap((name) => {
+      const p = points.find((q) => q.name === name);
+      if (!p) return [];
+      const text = `${p.name} · ${this.value(p.x, x)} → ${this.value(p.y, y)}`;
+      const textWidth = text.length * this.design().labelSizePx * ANNOTATION_CHAR_WIDTH;
+      return [{ ...placeLabel(p, plot, ANNOTATION_OFFSET, textWidth), cx: p.cx, cy: p.cy, text }];
+    });
+  });
+
   protected readonly tooltip = computed(() => {
     const p = this.active();
     if (!p) return null;
     const size = this.design().labelSizePx;
     const { x, y } = this.axes();
-    const lines = [p.name, `${this.value(p.x, x)} → ${this.value(p.y, y)}`];
+    const from = `${this.value(p.x, x)} → `;
+    const to = this.value(p.y, y);
+    const lines = [p.name, from + to];
     const width =
       Math.max(...lines.map((l) => l.length)) * size * TOOLTIP.charWidth + 2 * TOOLTIP.padX;
     const height = lines.length * size + (lines.length - 1) * TOOLTIP.lineGap + 2 * TOOLTIP.padY;
     const right = p.cx + TOOLTIP.offset + width <= this.width() - MARGIN.right;
     const above = p.cy - TOOLTIP.offset - height >= MARGIN.top;
     return {
-      lines,
+      name: p.name,
+      from,
+      to,
       size,
       width,
       height,
-      x: right ? p.cx + TOOLTIP.offset : p.cx - TOOLTIP.offset - width,
+      // Crosshairs from the point to both axes
+      cx: p.cx,
+      cy: p.cy,
+      axisLeft: MARGIN.left,
+      axisBottom: this.height() - MARGIN.bottom,
+      // Kept inside the plot: on narrow charts, a box to the left can't cover the axis labels.
+      x: right ? p.cx + TOOLTIP.offset : Math.max(MARGIN.left, p.cx - TOOLTIP.offset - width),
       y: above ? p.cy - TOOLTIP.offset - height : p.cy + TOOLTIP.offset,
     };
   });

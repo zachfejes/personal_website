@@ -100,6 +100,7 @@
                 n.shipCount
               }} ships and squadrons"
               [ships]="ships"
+              [annotate]="labelled.data"
               [design]="design().chart"
             />
           </div>
@@ -158,6 +159,7 @@
             caption="Both fits against the data"
             [ships]="ships"
             [fits]="fits()"
+            [annotate]="labelled.fits"
             [design]="design().chart"
           />
         </div>
@@ -344,6 +346,7 @@
             [ships]="residuals"
             [axes]="residualAxes"
             [reference]="1"
+            [annotate]="labelled.residuals"
             [design]="design().chart"
           />
         </div>
@@ -392,6 +395,7 @@
             [fits]="fits().slice(0, 1)"
             [planned]="planned"
             [highlight]="calculated()"
+            [annotate]="labelled.planned"
             [design]="design().chart"
           />
         </div>
