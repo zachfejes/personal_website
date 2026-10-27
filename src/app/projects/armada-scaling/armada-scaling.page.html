@@ -1,5 +1,6 @@
 <article class="sheet">
-  <app-armada-hero [shipCount]="n.shipCount" />
+  <app-armada-hero [facts]="heroFacts" />
+  <app-globe-edge class="sheet-globe" />
 
   <!-- Everything on the thread: a line down the left margin, with a marker at each section. -->
   <div class="sheet-body">
@@ -40,26 +41,34 @@
               little math can solve this problem, and help scale any future models I design.
             </p>
           </div>
-          <app-sheet-frame [dimension]="n.xq2CanonM + ' m'" appReveal>
-            <img
-              class="sheet-view"
-              src="projects/armada-scaling/xq2-side.webp"
-              width="552"
-              height="216"
-              loading="lazy"
-              alt="Wireframe of the XQ2 Platform from the side, showing the tower and the angled arms."
+          <div class="sheet-stack">
+            <app-sheet-photo
+              class="sheet-photo--rising"
+              alt="The XQ2 Platform model among Armada ships on the table"
+              caption="The XQ2 among Armada's ships"
+              appReveal
             />
-            <p class="sheet-label">Side elevation</p>
-            <img
-              class="sheet-view"
-              src="projects/armada-scaling/xq2-front.webp"
-              width="593"
-              height="216"
-              loading="lazy"
-              alt="Wireframe of the XQ2 Platform from the front: a domed tower on a wide, flat deck."
-            />
-            <figcaption class="sheet-label">Front elevation</figcaption>
-          </app-sheet-frame>
+            <app-sheet-frame [dimension]="n.xq2CanonM + ' m'" appReveal>
+              <img
+                class="sheet-view"
+                src="projects/armada-scaling/xq2-side.webp"
+                width="552"
+                height="216"
+                loading="lazy"
+                alt="Wireframe of the XQ2 Platform from the side, showing the tower and the angled arms."
+              />
+              <p class="sheet-label">Side elevation</p>
+              <img
+                class="sheet-view"
+                src="projects/armada-scaling/xq2-front.webp"
+                width="593"
+                height="216"
+                loading="lazy"
+                alt="Wireframe of the XQ2 Platform from the front: a domed tower on a wide, flat deck."
+              />
+              <figcaption class="sheet-label">Front elevation</figcaption>
+            </app-sheet-frame>
+          </div>
         </div>
       </div>
     </section>
@@ -393,30 +402,37 @@
     <section class="sheet-section" aria-labelledby="building">
       <div class="sheet-wrap">
         <app-sheet-head number="07" title="Building the XQ2" />
-        <div class="prose" appReveal>
-          <h2 id="building">Back to the station</h2>
-          <p>
-            With a size worked out, I could get back to the station this all started with. At
-            {{ n.xq2ModelMm }} mm, the XQ2
-            @if (n.xq2Neighbors.below && n.xq2Neighbors.above) {
-              sits between the {{ n.xq2Neighbors.below }} and the {{ n.xq2Neighbors.above }}:
-            } @else {
-              sits
-            }
-            about where an {{ n.xq2CanonM }} m station belongs among Armada's ships, and big enough
-            to carry the detail the first version was missing.
-          </p>
-          <p>
-            Rescaling it changed more than the size. Details that worked at the first scale read
-            differently at the new one, so I reworked the hangar arms, the central tower and the
-            panelling for a {{ n.xq2ModelMm }} mm model, and test-printed parts next to my existing
-            ships to check the proportions by eye before committing to the final print.
-          </p>
-          <p>
-            The design and fabrication deserve their own write-up, so I'll stop there. The short
-            version: the station on the table now looks like it belongs in the same fleet, and the
-            same curve will size whatever I build next.
-          </p>
+        <div class="sheet-two">
+          <div class="prose" appReveal>
+            <h2 id="building">Back to the station</h2>
+            <p>
+              With a size worked out, I could get back to the station this all started with. At
+              {{ n.xq2ModelMm }} mm, the XQ2
+              @if (n.xq2Neighbors.below && n.xq2Neighbors.above) {
+                sits between the {{ n.xq2Neighbors.below }} and the {{ n.xq2Neighbors.above }}:
+              } @else {
+                sits
+              }
+              about where an {{ n.xq2CanonM }} m station belongs among Armada's ships, and big
+              enough to carry the detail the first version was missing.
+            </p>
+            <p>
+              Rescaling it changed more than the size. Details that worked at the first scale read
+              differently at the new one, so I reworked the hangar arms, the central tower and the
+              panelling for a {{ n.xq2ModelMm }} mm model, and test-printed parts next to my
+              existing ships to check the proportions by eye before committing to the final print.
+            </p>
+            <p>
+              The design and fabrication deserve their own write-up, so I'll stop there. The short
+              version: the station on the table now looks like it belongs in the same fleet, and the
+              same curve will size whatever I build next.
+            </p>
+          </div>
+          <app-sheet-photo
+            alt="The finished XQ2 Platform model"
+            caption="The finished XQ2 Platform"
+            appReveal
+          />
         </div>
       </div>
     </section>

@@ -68,6 +68,31 @@ export function modelNeighbors<T extends Measured>(
   return { below, above };
 }
 
+/** Canon lengths are in metres and model lengths in millimetres. */
+const MM_PER_M = 1000;
+
+/**
+ * How many times smaller the model is than the ship it stands for: canon length ÷ model length,
+ * both in the same unit, rounded to `significantDigits` (scales are approximate).
+ */
+export function scaleRatio(canonM: number, modelMm: number, significantDigits: number): number {
+  return Number(((canonM * MM_PER_M) / modelMm).toPrecision(significantDigits));
+}
+
+/** The measured ship closest in canon length to `canonM`, by ratio rather than difference. */
+export function nearestByCanon<T extends Measured>(ships: readonly T[], canonM: number): T | null {
+  let best: T | null = null;
+  let bestDistance = Infinity;
+  for (const ship of ships) {
+    const distance = Math.abs(Math.log(ship.canonM / canonM));
+    if (distance < bestDistance) {
+      best = ship;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
 /** The analysis of the page's data (ships.json). */
 export const ARMADA = analyzeScale(SHIPS);
 

@@ -16,15 +16,92 @@
     </div>
     <div>
       <dt>Data</dt>
-      <dd>{{ shipCount() }} ships and squadrons</dd>
+      <dd>{{ facts().shipCount }} ships and squadrons</dd>
     </div>
   </dl>
-  <figure class="art">
-    <img
-      src="projects/armada-scaling/xq2-top.webp"
-      width="593"
-      height="540"
-      alt="Wireframe of the XQ2 Platform seen from above: a hexagonal core with three arms."
-    />
-  </figure>
+
+  <div class="composition">
+    <div class="stage">
+      <svg class="lines" [attr.viewBox]="viewBox" aria-hidden="true">
+        @for (r of hero.rings; track r) {
+          <circle
+            class="ring"
+            [class.ring--dashed]="r === hero.dashedRing"
+            [attr.cx]="hero.hub.x"
+            [attr.cy]="hero.hub.y"
+            [attr.r]="r"
+          />
+        }
+        <line
+          class="crosshair"
+          [attr.x1]="crosshairs.vertical.x"
+          [attr.x2]="crosshairs.vertical.x"
+          [attr.y1]="crosshairs.vertical.y1"
+          [attr.y2]="crosshairs.vertical.y2"
+        />
+        <line
+          class="crosshair crosshair--across"
+          [attr.x1]="crosshairs.horizontal.x1"
+          [attr.x2]="crosshairs.horizontal.x2"
+          [attr.y1]="crosshairs.horizontal.y"
+          [attr.y2]="crosshairs.horizontal.y"
+        />
+        <g class="orbit-marker">
+          <circle
+            [attr.cx]="orbitMarker.x"
+            [attr.cy]="orbitMarker.y"
+            r="9"
+            class="orbit-marker__ring"
+          />
+          <circle
+            [attr.cx]="orbitMarker.x"
+            [attr.cy]="orbitMarker.y"
+            r="4"
+            class="orbit-marker__dot"
+          />
+        </g>
+      </svg>
+      <img
+        class="art"
+        src="projects/armada-scaling/xq2-top.webp"
+        [width]="hero.art.imageWidth"
+        [height]="hero.art.imageHeight"
+        [style.left]="art.left"
+        [style.top]="art.top"
+        [style.width]="art.width"
+        alt="Wireframe of the XQ2 Platform seen from above: a hexagonal core with three arms."
+      />
+      <!-- Leaders and markers sit over the drawing, so their ends show on it. -->
+      <svg class="lines" [attr.viewBox]="viewBox" aria-hidden="true">
+        @for (p of placements; track p.number; let i = $index) {
+          <g class="leader" [class.leader--accent]="callouts()[i].accent">
+            <path [attr.d]="p.leader" />
+            <circle [attr.cx]="p.target.x" [attr.cy]="p.target.y" r="3" />
+          </g>
+          <g class="marker" [class.marker--accent]="callouts()[i].accent">
+            <circle [attr.cx]="p.target.x" [attr.cy]="p.target.y" r="22" />
+            <text [attr.x]="p.target.x" [attr.y]="p.target.y">{{ p.number }}</text>
+          </g>
+        }
+      </svg>
+    </div>
+
+    <ol class="callouts">
+      @for (c of callouts(); track c.label; let i = $index) {
+        <li
+          class="callout"
+          [class.callout--accent]="c.accent"
+          [style.--x]="placements[i].style.left"
+          [style.--y]="placements[i].style.top"
+          [style.--w]="placements[i].style.width"
+        >
+          <b>{{ placements[i].number }} · {{ c.label }}</b>
+          @if (c.lead) {
+            <span class="callout__lead">{{ c.lead }}</span>
+          }
+          {{ c.text }}
+        </li>
+      }
+    </ol>
+  </div>
 </header>

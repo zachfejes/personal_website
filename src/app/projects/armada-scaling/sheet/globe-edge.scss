@@ -1,0 +1,40 @@
+:host {
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+svg {
+  display: block;
+}
+
+// The surface takes the tone of the section below, fading out.
+.fill-stop {
+  stop-color: var(--sheet-bg-2);
+  stop-opacity: 0.9;
+}
+
+.fill-stop--end {
+  stop-opacity: 0;
+}
+
+.grid {
+  fill: none;
+  stroke: rgb(var(--sheet-line-rgb) / 28%);
+}
+
+.limb {
+  fill: none;
+  stroke: var(--sheet-text);
+  stroke-opacity: 0.7;
+}
+
+.orbit {
+  fill: none;
+  stroke: rgb(var(--sheet-line-rgb) / 32%);
+  stroke-dasharray: 2 5;
+}
+
+.tick {
+  stroke: var(--sheet-muted);
+}
