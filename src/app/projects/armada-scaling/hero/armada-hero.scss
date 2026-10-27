@@ -245,3 +245,71 @@ header {
     }
   }
 }
+
+// Motion on arrival, as if the sheet were being drafted: the drawing fades in, the rings and leader
+// lines draw themselves, the callouts follow in order, then the amber marker begins a slow orbit.
+// Pure CSS, so it runs from the prerendered page; with reduced motion everything is simply there.
+// Timings come from the page's motion settings.
+$draw: var(--draw-ms, 1000ms);
+$stagger: var(--callout-stagger-ms, 180ms);
+
+.art {
+  animation: fade-in calc($draw * 0.5) ease-out both;
+}
+
+.ring:not(.ring--dashed) {
+  stroke-dasharray: 1;
+  animation: draw $draw ease-out both;
+}
+
+.ring--dashed,
+.crosshair,
+.orbit-marker__ring,
+.orbit-marker__dot {
+  animation: fade-in $draw ease-out calc($draw * 0.3) both;
+}
+
+.leader path {
+  stroke-dasharray: 1;
+  animation: draw calc($draw * 0.6) ease-out calc($draw * 0.7 + var(--i) * $stagger) both;
+}
+
+.leader circle,
+.marker,
+.callout {
+  animation: fade-in calc($draw * 0.5) ease-out calc($draw * 1.1 + var(--i) * $stagger) both;
+}
+
+.orbit-marker {
+  transform-box: view-box;
+  animation: orbit var(--orbit-s, 60s) linear calc($draw * 1.8) infinite;
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes orbit {
+  to {
+    rotate: 360deg;
+  }
+}
+
+// The site already shortens animations for reduced motion; an endless orbit is stopped outright.
+@media (prefers-reduced-motion: reduce) {
+  .orbit-marker {
+    animation: none;
+  }
+}

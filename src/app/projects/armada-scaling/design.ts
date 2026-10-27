@@ -22,6 +22,20 @@ export const DESIGN = {
     gridMajorOpacity: 0.055,
     glowOpacity: 0.5,
   },
+  /** Motion (all off with reduced motion). */
+  motion: {
+    /** The hero's lines drawing themselves on arrival. */
+    drawMs: 1000,
+    /** Gap between each callout appearing. */
+    calloutStaggerMs: 180,
+    /** One trip of the amber marker round the hero's dashed ring. */
+    orbitSeconds: 60,
+    /** The ping from a section's marker when it first scrolls into view. */
+    pulseMs: 1200,
+    pulseScale: 1.8,
+    /** Phone field notes opening and closing. */
+    foldMs: 350,
+  },
   chart: {
     /** Axes the charts start on; readers can switch. Log keeps every ship readable. */
     defaultScale: 'log' as ScaleKind,
@@ -114,6 +128,24 @@ export const DESIGN_SCHEMA: Schema<Design> = {
       gridOpacity: { type: 'range', label: 'Fine grid', min: 0, max: 0.2, step: 0.005 },
       gridMajorOpacity: { type: 'range', label: 'Major grid', min: 0, max: 0.2, step: 0.005 },
       glowOpacity: { type: 'range', label: 'Glow', min: 0, max: 1, step: 0.05 },
+    },
+  },
+  motion: {
+    label: 'Motion',
+    controls: {
+      drawMs: { type: 'range', label: 'Hero draw-in', min: 0, max: 3000, step: 50, unit: 'ms' },
+      calloutStaggerMs: {
+        type: 'range',
+        label: 'Callout stagger',
+        min: 0,
+        max: 600,
+        step: 10,
+        unit: 'ms',
+      },
+      orbitSeconds: { type: 'range', label: 'Orbit period', min: 10, max: 180, step: 5, unit: 's' },
+      pulseMs: { type: 'range', label: 'Pulse', min: 200, max: 3000, step: 50, unit: 'ms' },
+      pulseScale: { type: 'range', label: 'Pulse size', min: 1, max: 3, step: 0.1 },
+      foldMs: { type: 'range', label: 'Field note fold', min: 0, max: 1000, step: 25, unit: 'ms' },
     },
   },
   chart: {

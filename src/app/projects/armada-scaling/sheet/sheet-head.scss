@@ -57,3 +57,44 @@
     translate: -50% -50%;
   }
 }
+
+// The ping: a solid ring in the accent that grows out of the orbit and fades, while the centre
+// brightens for a moment. Timing and size come from the page's motion settings.
+.ping {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: var(--marker-ring);
+  height: var(--marker-ring);
+  border: 1px solid var(--sheet-accent);
+  border-radius: 50%;
+  opacity: 0;
+  translate: -50% -50%;
+}
+
+.pulse {
+  .ping {
+    animation: ping var(--pulse-ms, 1200ms) ease-out;
+  }
+
+  &::before {
+    animation: glow var(--pulse-ms, 1200ms) ease-out;
+  }
+}
+
+@keyframes ping {
+  from {
+    opacity: 0.9;
+    scale: 1;
+  }
+
+  to {
+    opacity: 0;
+    scale: var(--pulse-scale, 1.8);
+  }
+}
+
+@keyframes glow {
+  30% {
+    box-shadow: 0 0 10px 3px var(--sheet-accent);
+  }
+}

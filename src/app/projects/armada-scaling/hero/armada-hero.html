@@ -27,6 +27,7 @@
           <circle
             class="ring"
             [class.ring--dashed]="r === hero.dashedRing"
+            [attr.pathLength]="r === hero.dashedRing ? null : 1"
             [attr.cx]="hero.hub.x"
             [attr.cy]="hero.hub.y"
             [attr.r]="r"
@@ -46,7 +47,7 @@
           [attr.y1]="crosshairs.horizontal.y"
           [attr.y2]="crosshairs.horizontal.y"
         />
-        <g class="orbit-marker">
+        <g class="orbit-marker" [style.transform-origin]="hero.hub.x + 'px ' + hero.hub.y + 'px'">
           <circle
             [attr.cx]="orbitMarker.x"
             [attr.cy]="orbitMarker.y"
@@ -75,10 +76,10 @@
       <svg class="lines" [attr.viewBox]="viewBox" aria-hidden="true">
         @for (p of placements; track p.number; let i = $index) {
           <g class="leader" [class.leader--accent]="callouts()[i].accent">
-            <path [attr.d]="p.leader" />
+            <path [attr.d]="p.leader" pathLength="1" [style.--i]="i" />
             <circle [attr.cx]="p.target.x" [attr.cy]="p.target.y" r="3" />
           </g>
-          <g class="marker" [class.marker--accent]="callouts()[i].accent">
+          <g class="marker" [class.marker--accent]="callouts()[i].accent" [style.--i]="i">
             <circle [attr.cx]="p.target.x" [attr.cy]="p.target.y" r="22" />
             <text [attr.x]="p.target.x" [attr.y]="p.target.y">{{ p.number }}</text>
           </g>
@@ -90,6 +91,7 @@
       @for (c of callouts(); track c.label; let i = $index) {
         <li
           class="callout"
+          [style.--i]="i"
           [class.callout--accent]="c.accent"
           [style.--x]="placements[i].style.left"
           [style.--y]="placements[i].style.top"
