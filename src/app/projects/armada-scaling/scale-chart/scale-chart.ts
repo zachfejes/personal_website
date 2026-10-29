@@ -11,7 +11,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { line } from 'd3-shape';
+import { area, line } from 'd3-shape';
 import { Design } from '../design';
 import { placeLabel } from './annotation';
 import { SCALE_KINDS, ScaleKind, axisTicks, makeScale, sampleRange } from './axis';
@@ -20,6 +20,24 @@ export interface NamedPoint {
   name: string;
   x: number;
   y: number;
+  /** Drawn as an error bar of ± this much (y units), and quoted in the read-out. */
+  spread?: number;
+}
+
+/** A shaded band around the data, e.g. "typical miss": its edges, and how far along x it runs. */
+export interface Band {
+  label: string;
+  lower: (x: number) => number;
+  upper: (x: number) => number;
+  /** The band stops here: past the data that supports it. */
+  maxX: number;
+}
+
+/** A ship the reader can show or hide (hidden to start), e.g. one far outside the others. */
+export interface OptionalShip {
+  name: string;
+  /** The toggle's text. */
+  label: string;
 }
 
 /** What one axis shows: a title, a unit (if any) and how many decimals to print. */
@@ -83,6 +101,8 @@ const ANNOTATION_OFFSET = { dx: 56, dy: 44 } as const;
 /** Glyph width of the spaced, upper-case mono labels, as a fraction of font size. */
 const ANNOTATION_CHAR_WIDTH = 0.68;
 const TICK_GAP = 8;
+/** Half the width of an error bar's end caps, SVG units. */
+const CAP_HALF_WIDTH = 4;
 
 let nextId = 0;
 
@@ -113,6 +133,18 @@ export class ScaleChart {
   readonly design = input.required<Design['chart']>();
   /** Ships to label on the chart (by name), when it's wide enough to fit them. */
   readonly annotate = input<readonly string[]>([]);
+  readonly band = input<Band | null>(null);
+  /** A ship hidden until the reader shows it; the axes rescale to fit what's shown. */
+  readonly optional = input<OptionalShip | null>(null);
+
+  protected readonly showOptional = signal(false);
+  /** The ships drawn: all of them, less the optional one while it's hidden. */
+  private readonly shownShips = computed(() => {
+    const optional = this.optional();
+    return optional && !this.showOptional()
+      ? this.ships().filter((s) => s.name !== optional.name)
+      : this.ships();
+  });
 
   protected readonly clipId = `scale-chart-clip-${nextId++}`;
   /** Drawing width, px: the container's width once measured. */
@@ -122,6 +154,7 @@ export class ScaleChart {
     axisTitleGap: AXIS_TITLE_GAP,
     tickGap: TICK_GAP,
     tooltip: TOOLTIP,
+    capHalfWidth: CAP_HALF_WIDTH,
   };
 
   protected readonly scaleKinds = SCALE_KINDS;
@@ -139,7 +172,7 @@ export class ScaleChart {
 
   private readonly all = computed(() => {
     const highlight = this.highlight();
-    return [...this.ships(), ...this.planned(), ...(highlight ? [highlight] : [])];
+    return [...this.shownShips(), ...this.planned(), ...(highlight ? [highlight] : [])];
   });
 
   /** Axis titles, saying when the scale is logarithmic. */
@@ -198,10 +231,43 @@ export class ScaleChart {
     const plot = (series: Series) => (p: NamedPoint) => ({ ...p, series, cx: x(p.x), cy: y(p.y) });
     const highlight = this.highlight();
     return [
-      ...this.ships().map(plot('ship')),
+      ...this.shownShips().map(plot('ship')),
       ...this.planned().map(plot('planned')),
       ...(highlight ? [plot('highlight')(highlight)] : []),
     ];
+  });
+
+  /** The data table lists every point, including a hidden optional ship. */
+  protected readonly rows = computed(() => {
+    const highlight = this.highlight();
+    const row = (series: Series) => (p: NamedPoint) => ({ ...p, series });
+    return [
+      ...this.ships().map(row('ship')),
+      ...this.planned().map(row('planned')),
+      ...(highlight ? [row('highlight')(highlight)] : []),
+    ];
+  });
+
+  /** The band as an SVG area, from the left edge to its end (or the right edge). */
+  protected readonly bandPath = computed(() => {
+    const band = this.band();
+    if (!band) return null;
+    const kind = this.scale();
+    const x = this.x();
+    const y = this.y();
+    const [minX, maxX] = x.domain();
+    const from = kind === 'linear' ? FIT_MIN_X : minX;
+    const to = Math.min(band.maxX, maxX);
+    if (to <= from) return null;
+    const xs = sampleRange(kind, from, to, FIT_SAMPLES);
+    return (
+      area<number>()
+        // A log axis can't show zero or less.
+        .defined((v) => kind === 'linear' || band.lower(v) > 0)
+        .x((v) => x(v))
+        .y0((v) => y(band.lower(v)))
+        .y1((v) => y(band.upper(v)))(xs) ?? null
+    );
   });
 
   /** Points in reading order, for the arrow keys. */
@@ -255,7 +321,10 @@ export class ScaleChart {
     const size = this.design().labelSizePx;
     const { x, y } = this.axes();
     const from = `${this.value(p.x, x)} → `;
-    const to = this.value(p.y, y);
+    const to =
+      p.spread === undefined
+        ? this.value(p.y, y)
+        : `${format(p.y, y.decimals)} ± ${this.value(p.spread, y)}`;
     const lines = [p.name, from + to];
     const width =
       Math.max(...lines.map((l) => l.length)) * size * TOOLTIP.charWidth + 2 * TOOLTIP.padX;
@@ -291,6 +360,11 @@ export class ScaleChart {
       observer.observe(svg);
       destroyRef.onDestroy(() => observer.disconnect());
     });
+  }
+
+  protected toggleOptional(): void {
+    this.showOptional.set(!this.showOptional());
+    this.active.set(null);
   }
 
   protected toggle(id: string): void {

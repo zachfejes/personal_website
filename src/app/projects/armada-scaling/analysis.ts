@@ -7,7 +7,15 @@ import {
   scoreCandidates,
   splitPowerFit,
 } from './candidates';
-import { Fit, Point, logFit, meanPercentError, powerFit, rmse } from './regression';
+import {
+  Fit,
+  Point,
+  linearRegression,
+  logFit,
+  meanPercentError,
+  powerFit,
+  rmse,
+} from './regression';
 
 /** What the analysis needs from a ship: canon length (m) and measured model length (mm). */
 export interface Measured {
@@ -91,6 +99,25 @@ export function nearestByCanon<T extends Measured>(ships: readonly T[], canonM: 
     }
   }
   return best;
+}
+
+/**
+ * How far ships typically sit from a fit, by size: a straight-line trend of each ship's miss,
+ * |actual ÷ predicted − 1|, against the log of its canon length. `at(x)` gives the typical miss
+ * (a fraction) for a ship of canon length x.
+ */
+export function missTrend(
+  points: readonly Point[],
+  predict: (x: number) => number,
+): { intercept: number; slope: number; at: (x: number) => number } {
+  const line = linearRegression(
+    points.map((p) => ({ x: Math.log10(p.x), y: Math.abs(p.y / predict(p.x) - 1) })),
+  );
+  return {
+    intercept: line.intercept,
+    slope: line.slope,
+    at: (x) => line.intercept + line.slope * Math.log10(x),
+  };
 }
 
 /** The analysis of the page's data (ships.json). */

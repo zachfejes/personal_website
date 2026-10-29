@@ -29,7 +29,12 @@ const INPUT_LIMITS = { min: 1, max: 20000, step: 1 } as const;
       <p class="calc__result" role="status">
         @if (modelMm() !== null) {
           <span class="calc__label">Model length</span>
-          <span class="calc__value">{{ modelMm() }}<span> mm</span></span>
+          <span class="calc__value"
+            >{{ modelMm() }}<span> mm</span>
+            @if (spreadMm(); as spread) {
+              <span class="calc__spread">± {{ spread }} mm</span>
+            }
+          </span>
         } @else {
           <span class="calc__label"
             >Enter a length between {{ limits.min }} and {{ limits.max }} m</span
@@ -45,12 +50,20 @@ export class ScaleCalculator {
   /** Canon length in m, shared with the page so the chart can mark it. */
   readonly canonM = model.required<number | null>();
   readonly predict = input.required<(canonM: number) => number>();
+  /** The typical miss at a length, mm, where there's data to say; undefined elsewhere. */
+  readonly spread = input<(canonM: number) => number | undefined>(() => undefined);
 
   protected readonly limits = INPUT_LIMITS;
 
   protected readonly modelMm = computed(() => {
     const canonM = this.canonM();
     return canonM === null ? null : this.predict()(canonM).toFixed(RESULT_DECIMALS);
+  });
+
+  protected readonly spreadMm = computed(() => {
+    const canonM = this.canonM();
+    const spread = canonM === null ? undefined : this.spread()(canonM);
+    return spread === undefined ? null : spread.toFixed(RESULT_DECIMALS);
   });
 
   protected update(event: Event): void {

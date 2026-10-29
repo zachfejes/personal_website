@@ -15,6 +15,18 @@
         }
       </div>
     }
+    @if (optional(); as optional) {
+      <div class="chart__toggles chart__optional" role="group" aria-label="Ships to show">
+        <button
+          type="button"
+          class="chart__toggle"
+          [attr.aria-pressed]="showOptional()"
+          (click)="toggleOptional()"
+        >
+          {{ optional.label }}
+        </button>
+      </div>
+    }
     <div class="chart__toggles chart__scale" role="group" aria-label="Axis scale">
       <span class="chart__group-label" aria-hidden="true">Axes</span>
       @for (kind of scaleKinds; track kind) {
@@ -124,8 +136,11 @@
       </text>
     </g>
 
-    <!-- Reference line and fits -->
+    <!-- Band, reference line and fits -->
     <g [attr.clip-path]="'url(#' + clipId + ')'">
+      @if (bandPath(); as d) {
+        <path class="chart__band" [attr.d]="d" />
+      }
       @let ref = reference();
       @if (ref !== null) {
         <line
@@ -150,6 +165,28 @@
 
     <!-- Points -->
     @for (p of points(); track p.series + p.name) {
+      @if (p.spread !== undefined) {
+        <g class="chart__error-bar">
+          <line
+            [attr.x1]="p.cx"
+            [attr.x2]="p.cx"
+            [attr.y1]="y()(p.y - p.spread)"
+            [attr.y2]="y()(p.y + p.spread)"
+          />
+          <line
+            [attr.x1]="p.cx - view.capHalfWidth"
+            [attr.x2]="p.cx + view.capHalfWidth"
+            [attr.y1]="y()(p.y - p.spread)"
+            [attr.y2]="y()(p.y - p.spread)"
+          />
+          <line
+            [attr.x1]="p.cx - view.capHalfWidth"
+            [attr.x2]="p.cx + view.capHalfWidth"
+            [attr.y1]="y()(p.y + p.spread)"
+            [attr.y2]="y()(p.y + p.spread)"
+          />
+        </g>
+      }
       <circle
         class="chart__point"
         [class.chart__point--planned]="p.series === 'planned'"
@@ -223,6 +260,9 @@
     <span>{{ caption() }}</span>
     <span class="chart__legend">
       <span><span class="chart__swatch"></span>Armada ships</span>
+      @if (band(); as band) {
+        <span><span class="chart__swatch chart__swatch--band"></span>{{ band.label }}</span>
+      }
       @if (planned().length) {
         <span><span class="chart__swatch chart__swatch--planned"></span>Planned ships</span>
       }
@@ -245,7 +285,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (p of points(); track p.series + p.name) {
+        @for (p of rows(); track p.series + p.name) {
           <tr>
             <th scope="row">{{ p.name }}{{ p.series === 'ship' ? '' : ' (predicted)' }}</th>
             <td>{{ format(p.x, axes().x.decimals) }}</td>
