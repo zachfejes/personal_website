@@ -15,8 +15,10 @@ import {
   POWER_RESIDUALS,
   POWER_RMSE,
   POWER_SIZE_BANDS,
+  SHIP_POINTS,
   SPLIT_POWER,
   logFitZeroM,
+  missTrend,
   modelNeighbors,
   nearestByCanon,
   predictModelMm,
@@ -26,7 +28,14 @@ import { ScaleCalculator } from './calculator';
 import { CandidateRow, CandidatesTable } from './candidates-table';
 import { ArmadaHero, HeroFacts } from './hero/armada-hero';
 import { DESIGN, DESIGN_SCHEMA, Design } from './design';
-import { AxisLabel, FitLine, NamedPoint, ScaleChart } from './scale-chart/scale-chart';
+import {
+  AxisLabel,
+  Band,
+  FitLine,
+  NamedPoint,
+  OptionalShip,
+  ScaleChart,
+} from './scale-chart/scale-chart';
 import { MEASUREMENT_SOURCES, SHIPS, XQ2 } from './ships';
 import { GlobeEdge } from './sheet/globe-edge';
 import { SheetFold } from './sheet/sheet-fold';
@@ -61,6 +70,22 @@ const LABELLED = {
   fits: ['TIE Fighter'],
   planned: ['Tri-fighter Droid', 'Naboo Royal Cruiser', 'MC40a'],
 } as const;
+/** A ship far beyond the rest (19 km): hidden on the charts until the reader shows it. */
+const OPTIONAL_SHIP: OptionalShip = { name: 'Executor Star Destroyer', label: 'Executor' };
+/** How far ships typically sit from the power fit at each size. */
+const MISS = missTrend(SHIP_POINTS, POWER_FIT.predict);
+/** The typical miss is drawn only as far as the data supports: up to the largest regular ship. */
+const MISS_RANGE = {
+  min: Math.min(...SHIPS.map((s) => s.canonM)),
+  max: Math.max(...SHIPS.filter((s) => s.name !== OPTIONAL_SHIP.name).map((s) => s.canonM)),
+};
+/** ± the typical miss for a ship of this canon length, in mm; undefined outside the data. */
+const spreadMm = (canonM: number) =>
+  canonM >= MISS_RANGE.min && canonM <= MISS_RANGE.max
+    ? predictModelMm(canonM) * MISS.at(canonM)
+    : undefined;
+const BAND_LABEL = 'Typical miss';
+
 /** The error chart labels the ships furthest from the power fit. */
 const RESIDUAL_LABELS = 2;
 /** Scales are quoted to two significant digits: "1 : 6,200". */
@@ -141,7 +166,27 @@ export class ArmadaScalingPage {
     x: s.canonM,
     y: s.modelMm,
   }));
-  protected readonly planned: NamedPoint[] = PLANNED_POINTS;
+  protected readonly planned: NamedPoint[] = PLANNED_POINTS.map((p) => ({
+    ...p,
+    spread: spreadMm(p.x),
+  }));
+  protected readonly optionalShip = OPTIONAL_SHIP;
+  protected readonly spread = spreadMm;
+  /** The typical miss as a band: around 1 on the error chart, around the fit on the findings chart. */
+  protected readonly bands: { ratio: Band; length: Band } = {
+    ratio: {
+      label: BAND_LABEL,
+      lower: (x) => 1 - MISS.at(x),
+      upper: (x) => 1 + MISS.at(x),
+      maxX: MISS_RANGE.max,
+    },
+    length: {
+      label: BAND_LABEL,
+      lower: (x) => predictModelMm(x) * (1 - MISS.at(x)),
+      upper: (x) => predictModelMm(x) * (1 + MISS.at(x)),
+      maxX: MISS_RANGE.max,
+    },
+  };
   /** Credited in the references, straight from ships.json. */
   protected readonly dataSources = MEASUREMENT_SOURCES;
 
@@ -201,7 +246,12 @@ export class ArmadaScalingPage {
     const canonM = this.canonM();
     return canonM === null
       ? null
-      : { name: this.highlightName(canonM), x: canonM, y: predictModelMm(canonM) };
+      : {
+          name: this.highlightName(canonM),
+          x: canonM,
+          y: predictModelMm(canonM),
+          spread: spreadMm(canonM),
+        };
   });
 
   /** Numbers quoted in the text and equations, computed from the fits. */
@@ -218,6 +268,13 @@ export class ArmadaScalingPage {
     ratio: Math.round(LOG_PERCENT_ERROR / POWER_PERCENT_ERROR),
     xq2CanonM: XQ2.canonM,
     xq2ModelMm: Math.round(predictModelMm(XQ2.canonM)),
+    xq2SpreadMm: Math.round(spreadMm(XQ2.canonM) ?? 0),
+    /** The typical miss at the small and large ends of the data, %. */
+    miss: {
+      smallest: Math.round(MISS.at(MISS_RANGE.min) * PERCENT),
+      largest: Math.round(MISS.at(MISS_RANGE.max) * PERCENT),
+      largestM: MISS_RANGE.max.toLocaleString('en'),
+    },
     /** The measured models just smaller and just larger than the XQ2's. */
     xq2Neighbors: neighborNames(predictModelMm(XQ2.canonM)),
     /** How much a model grows when its canon length doubles: 2^b. */

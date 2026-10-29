@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { DESIGN } from '../design';
-import { AxisLabel, FitLine, NamedPoint, ScaleChart } from './scale-chart';
+import { AxisLabel, Band, FitLine, NamedPoint, ScaleChart } from './scale-chart';
 
 const SHIPS: NamedPoint[] = [
   { name: 'CR90', x: 150, y: 57.6 },
@@ -42,6 +42,8 @@ const renderChart = (
     axes: { x: AxisLabel; y: AxisLabel };
     annotate: string[];
     design: typeof CHART_DESIGN;
+    optional: { name: string; label: string };
+    band: Band;
   }> = {},
 ) =>
   render(ScaleChart, {
@@ -145,5 +147,53 @@ describe('ScaleChart', () => {
       design: { ...CHART_DESIGN, annotateMinWidthPx: WIDER_THAN_DEFAULT_PX },
     });
     expect(screen.queryByText('Victory · 900 m → 137.4 mm')).toBeNull();
+  });
+
+  describe('with an optional ship', () => {
+    const OPTIONAL = { name: 'Victory', label: 'Victory' };
+    const VICTORY_READOUT = readOut('900 m → 137.4 mm');
+
+    it('hides it to start, and shows it from its toggle', async () => {
+      const user = userEvent.setup();
+      await renderChart({ optional: OPTIONAL });
+      const toggle = screen.getByRole('button', { name: OPTIONAL.label });
+      expect(toggle.getAttribute('aria-pressed')).toBe('false');
+      // Reading every point from the keyboard reaches the CR90 and stops: the Victory is hidden.
+      screen.getByRole('img').focus();
+      await user.keyboard('{ArrowRight}{ArrowRight}');
+      expect(screen.queryByText(VICTORY_READOUT)).toBeNull();
+      await user.click(toggle);
+      expect(toggle.getAttribute('aria-pressed')).toBe('true');
+      screen.getByRole('img').focus();
+      await user.keyboard('{ArrowRight}{ArrowRight}');
+      expect(screen.getByText(VICTORY_READOUT)).toBeTruthy();
+    });
+
+    it('still lists it in the data table', async () => {
+      await renderChart({ optional: OPTIONAL });
+      const rows = within(screen.getByRole('table')).getAllByRole('rowheader');
+      expect(rows.map((r) => r.textContent.trim())).toEqual(['CR90', 'Victory']);
+    });
+  });
+
+  it('reads out a point with its spread', async () => {
+    const user = userEvent.setup();
+    const SPREAD_MM = 10;
+    await renderChart({ planned: [{ ...PLANNED[0], spread: SPREAD_MM }] });
+    screen.getByRole('img').focus();
+    // In reading order: CR90 (150 m), XQ2 Platform (884 m).
+    await user.keyboard('{ArrowRight}{ArrowRight}');
+    expect(screen.getByText(readOut('884 m → 146 ± 10 mm'))).toBeTruthy();
+  });
+
+  it('names its band in the legend', async () => {
+    const BAND: Band = {
+      label: 'Typical miss',
+      lower: (x) => x / 2,
+      upper: (x) => x * 2,
+      maxX: 1000,
+    };
+    await renderChart({ band: BAND });
+    expect(screen.getByText(BAND.label)).toBeTruthy();
   });
 });

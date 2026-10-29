@@ -2,6 +2,7 @@ import {
   Measured,
   analyzeScale,
   logFitZeroM,
+  missTrend,
   modelNeighbors,
   nearestByCanon,
   scaleRatio,
@@ -128,5 +129,31 @@ describe('nearestByCanon', () => {
   it('has nothing to compare with no ships', () => {
     const ANY_M = 100;
     expect(nearestByCanon([], ANY_M)).toBeNull();
+  });
+});
+
+describe('missTrend', () => {
+  // Points that miss a perfect prediction (y = x) by 20% at 10 m and 10% at 100 m, alternately
+  // over and under: the miss falls 10 points per tenfold length, from 30% at 1 m.
+  const POINTS = [
+    { x: 10, y: 12 },
+    { x: 10, y: 8 },
+    { x: 100, y: 110 },
+    { x: 100, y: 90 },
+  ];
+  const identity = (x: number) => x;
+  const EXPECTED = { intercept: 0.3, slope: -0.1 };
+  const DIGITS = 9;
+
+  it('fits the miss against log length', () => {
+    const trend = missTrend(POINTS, identity);
+    expect(trend.intercept).toBeCloseTo(EXPECTED.intercept, DIGITS);
+    expect(trend.slope).toBeCloseTo(EXPECTED.slope, DIGITS);
+  });
+
+  it('gives the typical miss at any length', () => {
+    const AT_M = 1000;
+    const MISS_AT_1000_M = 0;
+    expect(missTrend(POINTS, identity).at(AT_M)).toBeCloseTo(MISS_AT_1000_M, DIGITS);
   });
 });

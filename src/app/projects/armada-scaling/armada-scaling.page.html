@@ -101,6 +101,7 @@
               }} ships and squadrons"
               [ships]="ships"
               [annotate]="labelled.data"
+              [optional]="optionalShip"
               [design]="design().chart"
             />
           </div>
@@ -160,6 +161,7 @@
             [ships]="ships"
             [fits]="fits()"
             [annotate]="labelled.fits"
+            [optional]="optionalShip"
             [design]="design().chart"
           />
         </div>
@@ -346,13 +348,21 @@
             dashed line at 1 is a perfect prediction. Ships of {{ n.sizeBands.lengths }} average
             {{ n.sizeBands.percents }} of their predicted size respectively.
           </p>
+          <p class="prose" appReveal>
+            They don't all miss by the same amount, though. The shaded band is the typical miss for
+            a ship of each size: about ±{{ n.miss.smallest }}% for the smallest craft, narrowing to
+            ±{{ n.miss.largest }}% by {{ n.miss.largestM }} m. A millimetre or two is a big share of
+            a fighter's model.
+          </p>
           <div class="sheet-figure" appReveal>
             <app-scale-chart
               caption="Each ship's model length divided by the power fit's prediction"
               [ships]="residuals"
               [axes]="residualAxes"
               [reference]="1"
+              [band]="bands.ratio"
               [annotate]="labelled.residuals"
+              [optional]="optionalShip"
               [design]="design().chart"
             />
           </div>
@@ -386,13 +396,14 @@
               href="#ref-4"
               aria-label="Reference 4"
               ><sup>4</sup></a
-            >, which puts its model at {{ n.xq2ModelMm }} mm.
+            >, which puts its model at {{ n.xq2ModelMm }} mm, give or take about
+            {{ n.xq2SpreadMm }} mm: the typical miss for a ship its size.
           </p>
           <p>Try it with a ship of your own:</p>
-          <app-scale-calculator [(canonM)]="canonM" [predict]="predict" />
+          <app-scale-calculator [(canonM)]="canonM" [predict]="predict" [spread]="spread" />
           <p>
-            I've added a few ships I'd like to design to the chart, along with yours. Let me know if
-            you think of others.
+            I've added a few ships I'd like to design to the chart, along with yours, each with the
+            typical miss for its size. Let me know if you think of others.
           </p>
         </div>
         <div class="sheet-figure" appReveal>
@@ -401,8 +412,10 @@
             [ships]="ships"
             [fits]="fits().slice(0, 1)"
             [planned]="planned"
+            [band]="bands.length"
             [highlight]="calculated()"
             [annotate]="labelled.planned"
+            [optional]="optionalShip"
             [design]="design().chart"
           />
         </div>

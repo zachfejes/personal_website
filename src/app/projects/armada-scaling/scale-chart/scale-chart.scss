@@ -20,6 +20,14 @@
   gap: 0.5rem 1rem;
 }
 
+.chart__optional {
+  margin-left: auto;
+}
+
+.chart__optional + .chart__scale {
+  margin-left: 0;
+}
+
 .chart__scale {
   align-items: center;
   margin-left: auto;
@@ -113,6 +121,16 @@
   stroke: var(--sheet-text);
   stroke-opacity: 0.55;
   stroke-dasharray: 5 5;
+}
+
+.chart__band {
+  fill: color-mix(in srgb, var(--sheet-accent) 13%, transparent);
+  stroke: color-mix(in srgb, var(--sheet-accent) 55%, transparent);
+  stroke-dasharray: 3 3;
+}
+
+.chart__error-bar {
+  stroke: var(--sheet-accent);
 }
 
 .chart__fit {
@@ -235,6 +253,13 @@
   height: 2px;
   border: 0;
   border-radius: 0;
+}
+
+.chart__swatch--band {
+  width: 1rem;
+  border: 1px dashed color-mix(in srgb, var(--sheet-accent) 55%, transparent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--sheet-accent) 13%, transparent);
 }
 
 .chart__swatch--planned {

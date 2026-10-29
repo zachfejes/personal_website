@@ -68,3 +68,12 @@
     font-size: 0.6em;
   }
 }
+
+.calc__value .calc__spread {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--sheet-muted);
+}
