@@ -225,14 +225,15 @@ Delivered in four PRs (#32–#35): (1) theme, thread, field notes and the new se
 globe edge, photo slots; (3) charts, calculator and table restyle; (4) phone folding, motion and
 tuner settings. The sheet pieces live in `projects/armada-scaling/` (`sheet/`, `hero/`) until a
 second project uses them. Motion timings (hero draw-in, callout stagger, orbit period, pulse,
-fold) are in the tuner's "Motion" group. Still to come: the two photos.
+fold) are in the tuner's "Motion" group. The two photo slots hold stand-ins
+(`stand-in-*.webp`) until there are photos of the station.
 
 Status (milestone 6, first version): the page is built as a preview on staging, with the three
 charts, the calculator (canon length → model length), the XQ2 wireframes and the tuning panel.
 Every number in the text is computed from the data; tests check them against the 2018 results.
 That check found a typo in the original: the logarithmic fit is y = 31.84 ln(x) − 78.25, not
-3.84 (the original's chart and error already used 31.84). Next: the photos and a copy
-pass, then publish (posted date, card link, header link to `/projects`).
+3.84 (the original's chart and error already used 31.84). Next: real photos to replace the
+stand-ins, and a copy pass, then publish (posted date, card link, header link to `/projects`).
 
 ## Project backlog
 
