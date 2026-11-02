@@ -36,8 +36,9 @@ export interface Band {
 /** A ship the reader can show or hide (hidden to start), e.g. one far outside the others. */
 export interface OptionalShip {
   name: string;
-  /** The toggle's text. */
-  label: string;
+  /** The toggle's text while the ship is hidden, and while it is shown. */
+  showLabel: string;
+  hideLabel: string;
 }
 
 /** What one axis shows: a title, a unit (if any) and how many decimals to print. */

@@ -17,13 +17,8 @@
     }
     @if (optional(); as optional) {
       <div class="chart__toggles chart__optional" role="group" aria-label="Ships to show">
-        <button
-          type="button"
-          class="chart__toggle"
-          [attr.aria-pressed]="showOptional()"
-          (click)="toggleOptional()"
-        >
-          {{ optional.label }}
+        <button type="button" class="chart__toggle" (click)="toggleOptional()">
+          {{ showOptional() ? optional.hideLabel : optional.showLabel }}
         </button>
       </div>
     }

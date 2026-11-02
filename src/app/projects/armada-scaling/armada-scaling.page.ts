@@ -71,7 +71,11 @@ const LABELLED = {
   planned: ['Tri-fighter Droid', 'Naboo Royal Cruiser', 'MC40a'],
 } as const;
 /** A ship far beyond the rest (19 km): hidden on the charts until the reader shows it. */
-const OPTIONAL_SHIP: OptionalShip = { name: 'Executor Star Destroyer', label: 'Executor' };
+const OPTIONAL_SHIP: OptionalShip = {
+  name: 'Executor Star Destroyer',
+  showLabel: 'Show Massive Ships',
+  hideLabel: 'Hide Massive Ships',
+};
 /** How far ships typically sit from the power fit at each size. */
 const MISS = missTrend(SHIP_POINTS, POWER_FIT.predict);
 /** The typical miss is drawn only as far as the data supports: up to the largest regular ship. */

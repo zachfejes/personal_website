@@ -42,7 +42,7 @@ const renderChart = (
     axes: { x: AxisLabel; y: AxisLabel };
     annotate: string[];
     design: typeof CHART_DESIGN;
-    optional: { name: string; label: string };
+    optional: { name: string; showLabel: string; hideLabel: string };
     band: Band;
   }> = {},
 ) =>
@@ -150,20 +150,19 @@ describe('ScaleChart', () => {
   });
 
   describe('with an optional ship', () => {
-    const OPTIONAL = { name: 'Victory', label: 'Victory' };
+    const OPTIONAL = { name: 'Victory', showLabel: 'Show Victory', hideLabel: 'Hide Victory' };
     const VICTORY_READOUT = readOut('900 m → 137.4 mm');
 
     it('hides it to start, and shows it from its toggle', async () => {
       const user = userEvent.setup();
       await renderChart({ optional: OPTIONAL });
-      const toggle = screen.getByRole('button', { name: OPTIONAL.label });
-      expect(toggle.getAttribute('aria-pressed')).toBe('false');
+      const toggle = screen.getByRole('button', { name: OPTIONAL.showLabel });
       // Reading every point from the keyboard reaches the CR90 and stops: the Victory is hidden.
       screen.getByRole('img').focus();
       await user.keyboard('{ArrowRight}{ArrowRight}');
       expect(screen.queryByText(VICTORY_READOUT)).toBeNull();
       await user.click(toggle);
-      expect(toggle.getAttribute('aria-pressed')).toBe('true');
+      expect(toggle.textContent.trim()).toBe(OPTIONAL.hideLabel);
       screen.getByRole('img').focus();
       await user.keyboard('{ArrowRight}{ArrowRight}');
       expect(screen.getByText(VICTORY_READOUT)).toBeTruthy();
