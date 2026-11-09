@@ -343,24 +343,26 @@ Suggested rewrite of the fifth section:
 
 Title: Testing my assumptions
 
-I initially estimated that the power and logarithmic forms would best fit the data, because in a linear plot the data seems to follow that shape. However, other shapes could fit too, so to be more certain that I've found the best fit, I tried 8 of them. Each one is fitted to the same ships and scored two ways: its average error on those ships, and its average left-out error predicting each ship from a fit made without it (leave-one-out cross-validation). The second is the real test, since a formula with enough parameters can bend through any data, but then it predicts new ships badly (over-fitted). The last column counts ships given a negative model length. A single negative prediction would invalidate the form, as these represent real physical objects.
+I initially estimated that the power and logarithmic forms would best fit the data, because in a linear plot the data seems to follow that shape. However, other shapes could fit too, so to be more certain that I've found the best fit, I tried 8 of them. Each one is fitted to the same ships and scored two ways: its average error on those ships, and its average left-out error predicting each ship from a fit made without it (leave-one-out cross-validation). The latter is the more important test, as we see in assessing the polynomials below. The last column counts ships given a negative model length. A single negative prediction invalidates the form, as these represent real physical objects.
 
-(alternate text when section is collapsed: 8 curve shapes, scored on how well each predicts a ship it wasn't fitted to. The power law wins.)
+(alternate text when section is collapsed: 8 curve shapes, scored on how well each predicts a ship it wasn't fitted to. The power law still wins.)
 
 [Candidate forms, best at predicting a left-out ship first]
 
 What the alternatives show:
 
-- A logarithm has to cross zero somewhere, which is where the negative lengths come from. Shifting it to pass through zero, aln(1+x/c), fixes that but still misses by 22.8% on average.
-- A sine wave starts out straight (sin(kx)≈kx near zero) and only flattens near its peak. To flatten across the whole range, its peak has to sit at or beyond the largest ship, and then it can't bend enough for the small ones: 89.6%.
-- Polynomials fit the ships they're given well enough, then predict left-out ships badly (1,248.5% for the cubic). That's overfitting.
-- Letting the power law's exponent drift with size, ax b+clnx, gives c=−0.004: next to no drift, and 10.3% predicting left-out ships against the plain power law's 10.0%.
-- Fitting small and large ships separately, split at 63.8 m, gives exponents of 0.438 and 0.513, a slightly lower exponent among the small craft. It predicts left-out ships with 10.5% error, so the extra parameters don't buy much.
+- A logarithm has to cross zero somewhere, which is where the negative lengths in my initial analysis came from - a good reminder for me in future. Shifting it to pass through zero, aln(1+x/c) addresses it, but still misses by 22.8% on average.
+- A sine wave starts out roughly straight (sin(kx)≈kx near zero) and only flattens near its peak. To flatten across the whole range, its peak has to sit at or beyond the largest ship, and then it can't bend enough for the small ones, so it misses by 89.6% on average.
+- Polynomials fit the ships they're given well, given high enough order, but then predict left-out ships badly (1,248.5% for the cubic). That's overfitting.
+- Letting the power law's exponent change with size, ax b+clnx, gives c=−0.004: which is next to no drift, and still results in 10.3% error predicting left-out ships against the plain power law's 10.0%. It does have the best RMSE overall, but is slightly overfitting.
+- Fitting small and large ships separately, split at 63.8 m, gives exponents of 0.438 and 0.513, a slightly lower exponent among the small craft. It predicts left-out ships with 10.5% error, so going piecewise isn't worth it.
+
+I was also curious to know how the RMSE changed over the cannon length of each ship; I predicted that the error was narrowing as the size increased. As it turned out, I was only right for the percentage error.
 
 If the power law were missing some shape, its errors would lean one way at some sizes. The chart below divides each ship's real model length by the power fit's prediction; the dashed line at 1 is a perfect prediction. Ships of 5.8–34 m, 38–580 m and 700–19,000 m average 98%, 102% and 100% of their predicted size respectively.
 
-They don't all miss by the same amount though. The shaded band is the typical miss for a ship of each size: about ±13% for the smallest craft, narrowing to ±6% by 2,400 m. A millimetre or two is a big share of a fighter's model.
+They don't all miss by the same amount though. The shaded band is the typical miss for a ship of each size: about ±13% for the smallest craft, narrowing to ±6% by 2,400 m. A millimetre or two is a big share of a fighter's model, but it is a smaller percentage of a larger ship. It's also worth noting that measurement error by percentage is also higher for the smallest ships, which may contribute.
 
 [Each ship's model length divided by the power fit's prediction]
 
-So the power law isn't just a good first guess. None of the alternatives predicts a new ship better, and what error is left looks like scatter in how each model was designed rather than a missing curve.
+This shows that the power law wasn't just a good first guess - none of the alternatives predict a new ship better! The remaining error may also represent design choices for each model, and inaccuracy in measurement - as the error is evenly distributed above and below the estimate line.
