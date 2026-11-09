@@ -83,6 +83,8 @@ Ship and squadron models in Armada are built to a relative scale. You can quickl
 
 It makes sense that Fantasy Flight chose a relative scale - a linear scale would make it impractical to have both an X-Wing and a Star Destroyer on the same table. However, because model and canon sizes don't have a linear relationship, it takes some thought to find the right size for my XQ2 Platform and have it feel correct during play. Fortunately, a little math can solve this problem, and help scale any future models I design (and I have many ideas).
 
+[image of side and front elevation of station wireframe]
+
 # 02 - METHOD 
 
 ## Current Copy
@@ -100,3 +102,265 @@ As expected, it isn't linear: big ships are scaled down much more than small one
 
 ## Notes
 Suggested rewrite of the second section: 
+
+- Change section header to '02 - DATA'
+
+To identify the relationship (if any) between canonical and model dimensions, we start by plotting the available data: the canonical length of each ship and squadron in the game against the measured length of it's model.
+
+Two things in the graph stand out: 
+1. There does seem to be a relationship.
+2. As expected, it isn't linear: big ships are scaled down much more than small ones.
+
+To better visualize the data I've made display of the Executor optional, and have provided both logarithmic (the default) and linear views.
+
+----
+Call-out note block, like in the hero:
+I originally did this assessment prior to the introduction of the Galactic Republic and the Trade Federation factions to the game. Adding the data from those new ships, as well as the newer Empire and Rebel ships, has altered the analysis slightly.
+----
+
+[First chart of existing data]
+
+
+# 03 - FINDING A FIT
+
+
+## Current Copy
+
+Title: Two Candidate Curves
+
+To define a best fit, we need a family of functions to try. By eye, I guessed the relationship was either logarithmic or a power function. Fitting both shows which describes the data better.
+
+A logarithmic function has the general form
+
+[logarithmic function] 
+
+Linear regression3 on ln(x) finds the a and b that give the closest fit:
+
+[closest fit for logarithmic] 
+
+A power function has the form
+
+[power function] 
+
+Finding a and b directly is tough this time, but taking the log of both sides gets us close:
+
+[log expansion of power function] 
+
+That looks messy, but it's linear in log10(x), so linear regression is back on the table. It finds
+
+[a and b solutions] 
+
+so the power function is
+
+[closest fit for power function] 
+
+Now let's plot both against the data. Switch either fit on or off to compare.
+
+[chart including the two fits]
+
+
+## Notes
+Suggested rewrite of the third section: 
+
+I started by identifying the most likely families of functions that could satisfy the observed data. By eye, two appeared likely candidates: the power function, and the logarithmic function.
+
+Fitting both against the data (that is, finding the specific function in each family best describes the data) is the first step. Then we can compare them, and determine which gives the best fit. 
+
+A logarithmic function has the general form
+
+[logarithmic function] 
+
+Treating ln(x) itself as an independent variable, we can use linear regression to finds the a and b that give the closest fit:
+
+[closest fit for logarithmic]
+
+A power function has the form
+
+[power function] 
+
+Finding a and b requires an extra step this time, but the data graph gives us a hint. Taking the log10 of both sides gives us: 
+
+[log expansion of power function] 
+
+That looks messy, but it's linear in log10(x), so linear regression is back on the table. It finds
+
+[a and b solutions] 
+
+so the power function is
+
+[closest fit for power function] 
+
+Now we plot both against the data. Switch either fit on or off to compare.
+
+[chart including the two fits]
+
+# FIELD NOTE - HOW THE FITTING WORKS
+
+Title: One method underneath
+
+Every fit on this page comes from one method: ordinary least squares (OLS). Given points (x1,y1),…,(xn,yn), it finds the straight line y=mx+c that makes the sum of the squared vertical gaps between the points and the line as small as possible:
+
+(alternate text when section is collapsed: Every fit here comes from ordinary least squares, after each curve is turned into a straight line.)
+
+[minimal sum equation] 
+
+Setting the derivatives to zero gives the answer directly, with no searching or iteration, where xˉ and yˉ are the averages:
+
+[rearranged to solve for m and c]
+
+Neither candidate is a straight line, so each is first turned into one:
+
+Logarithmic: fit a line to y against ln(x). Its slope is a and its intercept is b.
+
+Power: fit a line to log10(y) against log10(x). Its slope is b, and its intercept is log10(a), so a=10^intercept. Because it works on logarithms, this fit minimizes proportional errors rather than absolute ones: a 10% miss counts the same for a starfighter as for a Star Destroyer.
+To compare the fits, each is scored on how far its predictions y^i land from the real model lengths yi: by root-mean-square error, in millimetres,
+
+[RMSE Function]
+
+and by average percentage error, which weighs every ship equally whatever its size:
+
+[error function] 
+
+All of this runs when the site loads in your browser, straight from the ship data, so if I update this page in future by adding a ship, it automatically updates every fit, number and chart on this page.
+
+## Notes
+- I would re-label this section as "METHOD NOTE - FITTING AND ERROR"
+
+Suggested rewrite of the first field-note section: 
+
+Every linear regression on this page comes from one method: ordinary least squares (OLS). Given points (x1,y1),…,(xn,yn), it finds the straight line y=mx+c that makes the sum of the squared vertical gaps between the points and the line as small as possible:
+
+(alternate text when section is collapsed: Every linear regression here comes from ordinary least squares (OLS), after each curve is turned into a straight line.)
+
+[minimal sum equation] 
+
+Finding the minimum will involve varying each of the two variables m and c - which would be done by partial derivatives. Because this is the square of a linear equation, we know that it is convex and that the slope at it's minimum is zero. Setting the derivatives to zero gives the answer directly, with no searching or iteration, where xˉ and yˉ are the averages:
+
+[Derivative with respect to m (the inner derivative is −xᵢ):
+∂S/∂m = −2 Σ xᵢ (yᵢ − mxᵢ − c) = 0
+Substitute c = ȳ − m x̄:
+Σ xᵢ [(yᵢ − ȳ) − m(xᵢ − x̄)] = 0
+Rearranging:
+m = Σ xᵢ(yᵢ − ȳ) / Σ xᵢ(xᵢ − x̄)
+Deviations from a mean always sum to zero, so Σ(yᵢ − ȳ) = 0 and Σ(xᵢ − x̄) = 0. That means you can subtract x̄ from xᵢ in both sums without changing either one:
+m = Σ(xᵢ − x̄)(yᵢ − ȳ) / Σ(xᵢ − x̄)²]
+
+[Derivative with respect to c (chain rule; the inner derivative is −1):
+∂S/∂c = −2 Σ (yᵢ − mxᵢ − c) = 0
+This gives Σyᵢ − mΣxᵢ − nc = 0. Dividing by n:
+c = ȳ − m x̄]
+
+Neither candidate is a straight line, so each is first turned into one:
+
+Logarithmic: fit a line to y against ln(x). Its slope is a and its intercept is b.
+
+Power: fit a line to log10(y) against log10(x). Its slope is b, and its intercept is log10(a), so a=10^intercept. Because it works on logarithms, this fit minimizes proportional errors rather than absolute ones: a 10% miss counts the same for a starfighter as for a Star Destroyer.
+
+To compare the fits, each is scored on how far its predictions y^i land from the real model lengths yi: by root-mean-square error, in millimetres,
+
+[RMSE Function]
+
+and by average percentage error, which weighs every ship equally whatever its size:
+
+[error function]
+
+All of this runs when the site loads in your browser, straight from the ship data, so if I update this page in future by adding a ship, it automatically updates every fit, number and chart on this page.
+
+# 04 - Which fit is better?
+
+## Current Copy
+
+Title: The power function, by far
+
+By eye, the power function follows the data much more closely. To confirm it, I measured each fit's average error as a percentage of each model's real length. Percentages keep the biggest ships from dominating: 20 mm off matters a lot for a 60 mm corvette, and much less for a 600 mm Super Star Destroyer.
+
+[logarithmic fit, and power fit]
+
+The logarithmic fit does worst on the smallest craft: below about 15 m it predicts a model of negative length, which it does for 10 of the 45 ships here.
+
+The power function's error is about 12× smaller, so it's the one to use for Armada's scale:
+
+[power function] 
+
+[A · Scale factor
+A 1 m ship would be 3.56 mm on the table.]
+
+[B · Exponent
+Under 1: double the length, and the model grows only 1.46×.]
+
+
+## Notes
+- rename the section "04 - MINIMIZING ERROR"
+- suggest removing the two call-out boxes that describe the A and B values in the equation, as they really don't add much. 
+
+Suggested rewrite of the third section: 
+
+Title: The Power Function Fits
+
+By eye, the power function follows the data much more closely. This is particularly apparent in the logarithmic view.
+
+To confirm it, I used two method to assess the error of each fit: root-mean square, and the average error as a percentage of each model's real length. Percentages keep the biggest ships from dominating: 20 mm off matters a lot for a 60 mm corvette, and much less for a 600 mm Super Star Destroyer.
+
+[logarithmic fit, and power fit]
+
+The logarithmic fit does worst on the smallest craft: below about 15 m it predicts a model of negative length, which it does for 10 of the 45 ships here!
+
+The power function's error is about 12× smaller, so it's the one to use for Armada's scale:
+
+[power function]
+
+
+# 05 - Why a power law?
+
+Title: Eight shapes, tested
+
+I picked the power and logarithmic forms because the plotted data looked that shape. Other shapes could fit too, so I tried 8 of them. Each one is fitted to the same ships and scored two ways: its average error on those ships, and its average left-out error predicting each ship from a fit made without it (leave-one-out cross-validation). The second is the real test. A formula with enough parameters can bend through any data, but then it predicts new ships badly. The last column counts ships given a negative model length.
+
+(alternate text when section is collapsed: 8 curve shapes, scored on how well each predicts a ship it wasn't fitted to. The power law wins.)
+
+[Candidate forms, best at predicting a left-out ship first]
+
+What the alternatives show:
+
+A logarithm has to cross zero somewhere, which is where the negative lengths come from. Shifting it to pass through zero, aln(1+x/c), fixes that but still misses by 22.8% on average.
+A sine wave starts out straight (sin(kx)≈kx near zero) and only flattens near its peak. To flatten across the whole range, its peak has to sit at or beyond the largest ship, and then it can't bend enough for the small ones: 89.6%.
+Polynomials fit the ships they're given well enough, then predict left-out ships badly (1,248.5% for the cubic). That's overfitting.
+Letting the power law's exponent drift with size, ax b+clnx, gives c=−0.004: next to no drift, and 10.3% predicting left-out ships against the plain power law's 10.0%.
+Fitting small and large ships separately, split at 63.8 m, gives exponents of 0.438 and 0.513, a slightly lower exponent among the small craft. It predicts left-out ships with 10.5% error, so the extra parameters don't buy much.
+If the power law were missing some shape, its errors would lean one way at some sizes. The chart below divides each ship's real model length by the power fit's prediction; the dashed line at 1 is a perfect prediction. Ships of 5.8–34 m, 38–580 m and 700–19,000 m average 98%, 102% and 100% of their predicted size respectively.
+
+They don't all miss by the same amount, though. The shaded band is the typical miss for a ship of each size: about ±13% for the smallest craft, narrowing to ±6% by 2,400 m. A millimetre or two is a big share of a fighter's model.
+
+[Each ship's model length divided by the power fit's prediction]
+
+So the power law isn't just a good first guess. None of the alternatives predicts a new ship better, and what error is left looks like scatter in how each model was designed rather than a missing curve.
+
+
+## Notes
+- I would re-label this section as "05/METHOD NOTE - CONFIRMATION"
+
+Suggested rewrite of the fifth section:
+
+Title: Testing my assumptions
+
+I initially estimated that the power and logarithmic forms would best fit the data, because in a linear plot the data seems to follow that shape. However, other shapes could fit too, so to be more certain that I've found the best fit, I tried 8 of them. Each one is fitted to the same ships and scored two ways: its average error on those ships, and its average left-out error predicting each ship from a fit made without it (leave-one-out cross-validation). The second is the real test, since a formula with enough parameters can bend through any data, but then it predicts new ships badly (over-fitted). The last column counts ships given a negative model length. A single negative prediction would invalidate the form, as these represent real physical objects.
+
+(alternate text when section is collapsed: 8 curve shapes, scored on how well each predicts a ship it wasn't fitted to. The power law wins.)
+
+[Candidate forms, best at predicting a left-out ship first]
+
+What the alternatives show:
+
+- A logarithm has to cross zero somewhere, which is where the negative lengths come from. Shifting it to pass through zero, aln(1+x/c), fixes that but still misses by 22.8% on average.
+- A sine wave starts out straight (sin(kx)≈kx near zero) and only flattens near its peak. To flatten across the whole range, its peak has to sit at or beyond the largest ship, and then it can't bend enough for the small ones: 89.6%.
+- Polynomials fit the ships they're given well enough, then predict left-out ships badly (1,248.5% for the cubic). That's overfitting.
+- Letting the power law's exponent drift with size, ax b+clnx, gives c=−0.004: next to no drift, and 10.3% predicting left-out ships against the plain power law's 10.0%.
+- Fitting small and large ships separately, split at 63.8 m, gives exponents of 0.438 and 0.513, a slightly lower exponent among the small craft. It predicts left-out ships with 10.5% error, so the extra parameters don't buy much.
+
+If the power law were missing some shape, its errors would lean one way at some sizes. The chart below divides each ship's real model length by the power fit's prediction; the dashed line at 1 is a perfect prediction. Ships of 5.8–34 m, 38–580 m and 700–19,000 m average 98%, 102% and 100% of their predicted size respectively.
+
+They don't all miss by the same amount though. The shaded band is the typical miss for a ship of each size: about ±13% for the smallest craft, narrowing to ±6% by 2,400 m. A millimetre or two is a big share of a fighter's model.
+
+[Each ship's model length divided by the power fit's prediction]
+
+So the power law isn't just a good first guess. None of the alternatives predicts a new ship better, and what error is left looks like scatter in how each model was designed rather than a missing curve.
