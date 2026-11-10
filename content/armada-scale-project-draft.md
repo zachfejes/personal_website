@@ -359,9 +359,9 @@ What the alternatives show:
 
 I was also curious to know how the RMSE changed over the cannon length of each ship; I predicted that the error was narrowing as the size increased. As it turned out, I was only right for the percentage error.
 
-If the power law were missing some shape, its errors would lean one way at some sizes. The chart below divides each ship's real model length by the power fit's prediction; the dashed line at 1 is a perfect prediction. Ships of 5.8–34 m, 38–580 m and 700–19,000 m average 98%, 102% and 100% of their predicted size respectively.
+If the power law were missing some shape, its errors would lean one way at some sizes. The chart below divides each ship's real model length by the power fit's prediction; the dashed line at 1 is a perfect prediction. Ships of 5.8–34 m, 38–580 m and 700–19,000 m average 98%, 102% and 100% of their predicted size respectively - meaning that the error is well distributed on both sides of the power function.
 
-They don't all miss by the same amount though. The shaded band is the typical miss for a ship of each size: about ±13% for the smallest craft, narrowing to ±6% by 2,400 m. A millimetre or two is a big share of a fighter's model, but it is a smaller percentage of a larger ship. It's also worth noting that measurement error by percentage is also higher for the smallest ships, which may contribute.
+They don't all miss by the same amount though. The shaded band is the typical miss for a ship of each size: about ±13% for the smallest craft, narrowing to ±6% by 2,400 m. This shows that I was was only right in the narrowing of percentage error vs. cannon size - not in linear (mm) error, which actually widens as the ships get bigger. A millimetre or two is a big share of a fighter's model, but it is a smaller percentage of a larger ship. It's also worth noting that measurement error by percentage is also higher for the smallest ships, which may contribute.
 
 [Each ship's model length divided by the power fit's prediction]
 
