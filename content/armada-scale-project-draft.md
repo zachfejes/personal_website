@@ -324,11 +324,12 @@ I picked the power and logarithmic forms because the plotted data looked that sh
 
 What the alternatives show:
 
-A logarithm has to cross zero somewhere, which is where the negative lengths come from. Shifting it to pass through zero, aln(1+x/c), fixes that but still misses by 22.8% on average.
-A sine wave starts out straight (sin(kx)≈kx near zero) and only flattens near its peak. To flatten across the whole range, its peak has to sit at or beyond the largest ship, and then it can't bend enough for the small ones: 89.6%.
-Polynomials fit the ships they're given well enough, then predict left-out ships badly (1,248.5% for the cubic). That's overfitting.
-Letting the power law's exponent drift with size, ax b+clnx, gives c=−0.004: next to no drift, and 10.3% predicting left-out ships against the plain power law's 10.0%.
-Fitting small and large ships separately, split at 63.8 m, gives exponents of 0.438 and 0.513, a slightly lower exponent among the small craft. It predicts left-out ships with 10.5% error, so the extra parameters don't buy much.
+- A logarithm has to cross zero somewhere, which is where the negative lengths come from. Shifting it to pass through zero, aln(1+x/c), fixes that but still misses by 22.8% on average.
+- A sine wave starts out straight (sin(kx)≈kx near zero) and only flattens near its peak. To flatten across the whole range, its peak has to sit at or beyond the largest ship, and then it can't bend enough for the small ones: 89.6%.
+- Polynomials fit the ships they're given well enough, then predict left-out ships badly (1,248.5% for the cubic). That's overfitting.
+- Letting the power law's exponent drift with size, ax b+clnx, gives c=−0.004: next to no drift, and 10.3% predicting left-out ships against the plain power law's 10.0%.
+- Fitting small and large ships separately, split at 63.8 m, gives exponents of 0.438 and 0.513, a slightly lower exponent among the small craft. It predicts left-out ships with 10.5% error, so the extra parameters don't buy much.
+
 If the power law were missing some shape, its errors would lean one way at some sizes. The chart below divides each ship's real model length by the power fit's prediction; the dashed line at 1 is a perfect prediction. Ships of 5.8–34 m, 38–580 m and 700–19,000 m average 98%, 102% and 100% of their predicted size respectively.
 
 They don't all miss by the same amount, though. The shaded band is the typical miss for a ship of each size: about ±13% for the smallest craft, narrowing to ±6% by 2,400 m. A millimetre or two is a big share of a fighter's model.
