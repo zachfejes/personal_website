@@ -50,6 +50,7 @@ It makes sense that Fantasy Flight chose a relative scale - a linear scale would
 
 [image of side and front elevation of station wireframe]
 
+
 # 02 - METHOD 
 
 ## Notes
@@ -65,10 +66,8 @@ Two things in the graph stand out:
 
 To better visualize the data I've made display of the Executor optional, and have provided both logarithmic (the default) and linear views.
 
-----
-Call-out note block, like in the hero:
-I originally did this assessment prior to the introduction of the Galactic Republic and the Trade Federation factions to the game. Adding the data from those new ships, as well as the newer Empire and Rebel ships, has altered the analysis slightly.
-----
+[Call-out note block, like in the hero:
+I originally did this assessment prior to the introduction of the Galactic Republic and the Trade Federation factions to the game. Adding the data from those new ships, as well as the newer Empire and Rebel ships, has altered the analysis slightly.]
 
 [First chart of existing data]
 
