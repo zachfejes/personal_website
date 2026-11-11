@@ -312,6 +312,8 @@ The power function's error is about 12× smaller, so it's the one to use for Arm
 
 # 05 - Why a power law?
 
+## Current Copy
+
 Title: Eight shapes, tested
 
 I picked the power and logarithmic forms because the plotted data looked that shape. Other shapes could fit too, so I tried 8 of them. Each one is fitted to the same ships and scored two ways: its average error on those ships, and its average left-out error predicting each ship from a fit made without it (leave-one-out cross-validation). The second is the real test. A formula with enough parameters can bend through any data, but then it predicts new ships badly. The last column counts ships given a negative model length.
@@ -337,7 +339,7 @@ So the power law isn't just a good first guess. None of the alternatives predict
 
 
 ## Notes
-- I would re-label this section as "05/METHOD NOTE - CONFIRMATION"
+- I would re-label this section as "05 - CONFIRMATION"
 
 Suggested rewrite of the fifth section:
 
@@ -366,3 +368,41 @@ They don't all miss by the same amount though. The shaded band is the typical mi
 [Each ship's model length divided by the power fit's prediction]
 
 This shows that the power law wasn't just a good first guess - none of the alternatives predict a new ship better! The remaining error may also represent design choices for each model, and inaccuracy in measurement - as the error is evenly distributed above and below the estimate line.
+
+
+# 06 - Findings
+
+## Current Copy
+
+Title: Size any ship
+
+With this function, we can find a reasonable model size for any Star Wars ship from its canon length. The XQ2 Platform is 884 m long4, which puts its model at 142 mm, give or take about 10 mm: the typical miss for a ship its size.
+
+Try it with a ship of your own:
+
+[scale calculator] 
+
+I've added a few ships I'd like to design to the chart, along with yours, each with the typical miss for its size. Let me know if you think of others.
+
+[Final chart]
+
+## Notes
+
+
+
+
+
+
+# 07 - Building the XQ2
+
+## Current Copy
+
+Title: Back to the station
+
+With a size worked out, I could get back to the station this all started with. At 142 mm, the XQ2 sits between the Victory Star Destroyer (137 mm) and the Interdictor Star Destroyer (160 mm): about where an 884 m station belongs among Armada's ships, and big enough to carry the detail the first version was missing.
+
+Rescaling it changed more than the size. Details that worked at the first scale read differently at the new one, so I reworked the hangar arms, the central tower and the panelling for a 142 mm model, and test-printed parts next to my existing ships to check the proportions by eye before committing to the final print.
+
+The design and fabrication deserve their own write-up, so I'll stop there. The short version: the station on the table now looks like it belongs in the same fleet, and the same curve will size whatever I build next.
+
+## Notes
