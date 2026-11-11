@@ -1,24 +1,5 @@
 # Landing
 
-## Current copy 
-
-ARMADA SCALING
-WORKING OUT THE NON-LINEAR MODEL SCALE IN STAR WARS: ARMADA. 
-
-Project: Sep 2018
-Method: Regression - Error Analysis
-Data: 45 Ships & Squadrons
-
-Four hero notes: 
-01 · Canon length 884 m, end to end: close to the Victory Star Destroyer (900 m).
-
-02 · Model length≈ 142 mm on the table, from the fit worked out below.
-
-03 · Scale About 1 : 6,200. A TIE Fighter is closer to 1 : 900.
-
-04 · The question No single ratio fits Armada's ships. What rule do they follow?
-
-
 ## Notes
 - I like that everything here is forced to all-caps
 - should remove period at end of subtitle
@@ -38,23 +19,7 @@ Four hero notes:
 - the above content isn't perfect, but it creates a quick narrative of why the project exists.
 
 
-# 01 - BACKGROUND 
-
-## Current Copy
-
-Title: A real station for the table
-
-I love the cinematic nature of Armada, and felt it would be great to use a real station model in the game. The core game (before the Corellian Conflict expansion) featured only unarmed repair stations, so my imagination immediately filled with the XQ platforms from the TIE Fighter and X-Wing games of the 90s.
-
-The problem
-
-After my first design iteration, I realized two important things:
-
-The station needed much more detail.
-The scale felt wrong.
-I'll cover the station's design and fabrication in a separate write-up; here I'd like to focus on the second point. Ship and squadron models in Armada are built to a relative scale: a CR90 model isn't at the same scale to its canon counterpart as a Victory-class Star Destroyer is. For proof, try fitting the CR90 into the Victory's docking bay. I'll wait.
-
-I understand why Fantasy Flight chose a relative scale, but because model and canon sizes don't have a linear relationship, it takes some thought to find the right size for my XQ2 Platform and have it feel correct during play. Fortunately, a little math can solve this problem, and help scale any future models I design.
+# 01 - BACKGROUND  
 
 ## Notes
 Suggested rewrite of the first section: 
@@ -87,19 +52,6 @@ It makes sense that Fantasy Flight chose a relative scale - a linear scale would
 
 # 02 - METHOD 
 
-## Current Copy
-
-Title: Plot the ships
-
-We should be able to find a function that describes Armada's non-linear scale. To start, let's plot the data2: the canon length of each ship and squadron in the game against the measured length of its model.
-
-Two things stand out:
-
-There does seem to be a relationship.
-As expected, it isn't linear: big ships are scaled down much more than small ones.
-
-[First chart of existing data]
-
 ## Notes
 Suggested rewrite of the second section: 
 
@@ -122,42 +74,6 @@ I originally did this assessment prior to the introduction of the Galactic Repub
 
 
 # 03 - FINDING A FIT
-
-
-## Current Copy
-
-Title: Two Candidate Curves
-
-To define a best fit, we need a family of functions to try. By eye, I guessed the relationship was either logarithmic or a power function. Fitting both shows which describes the data better.
-
-A logarithmic function has the general form
-
-[logarithmic function] 
-
-Linear regression3 on ln(x) finds the a and b that give the closest fit:
-
-[closest fit for logarithmic] 
-
-A power function has the form
-
-[power function] 
-
-Finding a and b directly is tough this time, but taking the log of both sides gets us close:
-
-[log expansion of power function] 
-
-That looks messy, but it's linear in log10(x), so linear regression is back on the table. It finds
-
-[a and b solutions] 
-
-so the power function is
-
-[closest fit for power function] 
-
-Now let's plot both against the data. Switch either fit on or off to compare.
-
-[chart including the two fits]
-
 
 ## Notes
 Suggested rewrite of the third section: 
@@ -194,34 +110,8 @@ Now we plot both against the data. Switch either fit on or off to compare.
 
 [chart including the two fits]
 
+
 # FIELD NOTE - HOW THE FITTING WORKS
-
-Title: One method underneath
-
-Every fit on this page comes from one method: ordinary least squares (OLS). Given points (x1,y1),…,(xn,yn), it finds the straight line y=mx+c that makes the sum of the squared vertical gaps between the points and the line as small as possible:
-
-(alternate text when section is collapsed: Every fit here comes from ordinary least squares, after each curve is turned into a straight line.)
-
-[minimal sum equation] 
-
-Setting the derivatives to zero gives the answer directly, with no searching or iteration, where xˉ and yˉ are the averages:
-
-[rearranged to solve for m and c]
-
-Neither candidate is a straight line, so each is first turned into one:
-
-Logarithmic: fit a line to y against ln(x). Its slope is a and its intercept is b.
-
-Power: fit a line to log10(y) against log10(x). Its slope is b, and its intercept is log10(a), so a=10^intercept. Because it works on logarithms, this fit minimizes proportional errors rather than absolute ones: a 10% miss counts the same for a starfighter as for a Star Destroyer.
-To compare the fits, each is scored on how far its predictions y^i land from the real model lengths yi: by root-mean-square error, in millimetres,
-
-[RMSE Function]
-
-and by average percentage error, which weighs every ship equally whatever its size:
-
-[error function] 
-
-All of this runs when the site loads in your browser, straight from the ship data, so if I update this page in future by adding a ship, it automatically updates every fit, number and chart on this page.
 
 ## Notes
 - I would re-label this section as "METHOD NOTE - FITTING AND ERROR"
@@ -266,28 +156,8 @@ and by average percentage error, which weighs every ship equally whatever its si
 
 All of this runs when the site loads in your browser, straight from the ship data, so if I update this page in future by adding a ship, it automatically updates every fit, number and chart on this page.
 
+
 # 04 - Which fit is better?
-
-## Current Copy
-
-Title: The power function, by far
-
-By eye, the power function follows the data much more closely. To confirm it, I measured each fit's average error as a percentage of each model's real length. Percentages keep the biggest ships from dominating: 20 mm off matters a lot for a 60 mm corvette, and much less for a 600 mm Super Star Destroyer.
-
-[logarithmic fit, and power fit]
-
-The logarithmic fit does worst on the smallest craft: below about 15 m it predicts a model of negative length, which it does for 10 of the 45 ships here.
-
-The power function's error is about 12× smaller, so it's the one to use for Armada's scale:
-
-[power function] 
-
-[A · Scale factor
-A 1 m ship would be 3.56 mm on the table.]
-
-[B · Exponent
-Under 1: double the length, and the model grows only 1.46×.]
-
 
 ## Notes
 - rename the section "04 - MINIMIZING ERROR"
@@ -311,33 +181,6 @@ The power function's error is about 12× smaller, so it's the one to use for Arm
 
 
 # 05 - Why a power law?
-
-## Current Copy
-
-Title: Eight shapes, tested
-
-I picked the power and logarithmic forms because the plotted data looked that shape. Other shapes could fit too, so I tried 8 of them. Each one is fitted to the same ships and scored two ways: its average error on those ships, and its average left-out error predicting each ship from a fit made without it (leave-one-out cross-validation). The second is the real test. A formula with enough parameters can bend through any data, but then it predicts new ships badly. The last column counts ships given a negative model length.
-
-(alternate text when section is collapsed: 8 curve shapes, scored on how well each predicts a ship it wasn't fitted to. The power law wins.)
-
-[Candidate forms, best at predicting a left-out ship first]
-
-What the alternatives show:
-
-- A logarithm has to cross zero somewhere, which is where the negative lengths come from. Shifting it to pass through zero, aln(1+x/c), fixes that but still misses by 22.8% on average.
-- A sine wave starts out straight (sin(kx)≈kx near zero) and only flattens near its peak. To flatten across the whole range, its peak has to sit at or beyond the largest ship, and then it can't bend enough for the small ones: 89.6%.
-- Polynomials fit the ships they're given well enough, then predict left-out ships badly (1,248.5% for the cubic). That's overfitting.
-- Letting the power law's exponent drift with size, ax b+clnx, gives c=−0.004: next to no drift, and 10.3% predicting left-out ships against the plain power law's 10.0%.
-- Fitting small and large ships separately, split at 63.8 m, gives exponents of 0.438 and 0.513, a slightly lower exponent among the small craft. It predicts left-out ships with 10.5% error, so the extra parameters don't buy much.
-
-If the power law were missing some shape, its errors would lean one way at some sizes. The chart below divides each ship's real model length by the power fit's prediction; the dashed line at 1 is a perfect prediction. Ships of 5.8–34 m, 38–580 m and 700–19,000 m average 98%, 102% and 100% of their predicted size respectively.
-
-They don't all miss by the same amount, though. The shaded band is the typical miss for a ship of each size: about ±13% for the smallest craft, narrowing to ±6% by 2,400 m. A millimetre or two is a big share of a fighter's model.
-
-[Each ship's model length divided by the power fit's prediction]
-
-So the power law isn't just a good first guess. None of the alternatives predicts a new ship better, and what error is left looks like scatter in how each model was designed rather than a missing curve.
-
 
 ## Notes
 - I would re-label this section as "05 - CONFIRMATION"
@@ -373,7 +216,7 @@ This shows that the power law wasn't just a good first guess - none of the alter
 
 # 06 - Findings
 
-## Current Copy
+## Notes
 
 Title: Size any ship
 
@@ -387,16 +230,10 @@ I've added a few ships I'd like to design to the chart, along with yours, each w
 
 [Final chart]
 
-## Notes
-
-
-
-
-
 
 # 07 - Building the XQ2
 
-## Current Copy
+## Notes
 
 Title: Back to the station
 
@@ -405,5 +242,3 @@ With a size worked out, I could get back to the station this all started with. A
 Rescaling it changed more than the size. Details that worked at the first scale read differently at the new one, so I reworked the hangar arms, the central tower and the panelling for a 142 mm model, and test-printed parts next to my existing ships to check the proportions by eye before committing to the final print.
 
 The design and fabrication deserve their own write-up, so I'll stop there. The short version: the station on the table now looks like it belongs in the same fleet, and the same curve will size whatever I build next.
-
-## Notes
