@@ -196,7 +196,7 @@
           class="chart__callout"
           [attr.x]="p.cx"
           [attr.y]="p.cy - radius(p) - view.tickGap"
-          text-anchor="middle"
+          [attr.text-anchor]="calloutAnchor(p.cx)"
           [style.font-size.px]="design().labelSizePx"
         >
           {{ p.name }}

@@ -104,6 +104,8 @@ const ANNOTATION_CHAR_WIDTH = 0.68;
 const TICK_GAP = 8;
 /** Half the width of an error bar's end caps, SVG units. */
 const CAP_HALF_WIDTH = 4;
+/** A highlighted ship's name is centred over it, unless it sits in this share of either end. */
+const CALLOUT_EDGE_SHARE = 0.15;
 
 let nextId = 0;
 
@@ -410,6 +412,13 @@ export class ScaleChart {
       return;
     }
     event.preventDefault();
+  }
+
+  /** Centred over the point, but kept inside the chart when the point is near either end. */
+  protected calloutAnchor(cx: number): 'start' | 'middle' | 'end' {
+    const edge = this.width() * CALLOUT_EDGE_SHARE;
+    if (cx > this.width() - edge) return 'end';
+    return cx < edge ? 'start' : 'middle';
   }
 
   protected radius(p: Plotted): number {
