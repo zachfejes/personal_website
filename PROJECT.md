@@ -235,6 +235,36 @@ Every number in the text is computed from the data; tests check them against the
 That check found a typo in the original: the logarithmic fit is y = 31.84 ln(x) − 78.25, not
 3.84 (the original's chart and error already used 31.84). Next: publish (posted date, card link, header link to `/projects`).
 
+### Likely reuse candidates
+
+Built for Armada and kept in `projects/armada-scaling/` until a second project page needs them
+(generalize on second use). Update this list as pieces are added or change.
+
+- **Ready as they are** (general inputs, no Armada content):
+  - `sheet/sheet-photo.ts`: photo, caption, placeholder, click-to-enlarge viewer.
+  - `sheet/sheet-head.ts`: section marker on the thread, with the first-view pulse.
+  - `sheet/sheet-paper.ts`: paper aside (optionally on phones only).
+  - `sheet/sheet-fold.ts`: phone fold with a one-line summary; button wording is an input.
+  - `sheet/sheet-frame.ts`: drawing frame with a dimension line.
+  - `sheet/globe-edge.ts` and `sheet/globe.ts`: the wireframe planet edge under the hero.
+  - `tex.ts` and `tex-format.ts`: KaTeX equations.
+  - `scale-chart/annotation.ts`: label placement that avoids points, curves and bands.
+  - `regression.ts` and `candidates.ts`: least-squares fits, error scores, leave-one-out scoring.
+- **Need some generalizing:**
+  - `scale-chart/`: in effect a general scatter chart (log/linear axes, fits, bands, error bars,
+    an optional point, labels, keyboard read-out, data table). Rename to `ScatterChart` and make
+    the axis titles required instead of defaulting to canon/model length.
+  - `hero/`: the drawing-on-rings hero with leader-line callouts, orbit marker and flickering
+    rings. Its layout constants are tuned to the XQ2 image; a `SheetHero` would take the image,
+    hub, rings and callouts as inputs.
+  - Page styles not yet components: the stats block, the dashed note box (`.sheet-callout`), the
+    full-width divider and the two-column/side/stack layouts.
+- **Shared prerequisite:** the sheet theme (color variables, grid, thread) and the layout classes
+  are defined in `armada-scaling.page.scss`; they need to move to a shared stylesheet or a wrapper
+  component before other pages can use the pieces above.
+- **Armada only:** the calculator, the candidate-forms table, the convex-bowl diagram, the ship
+  data and analysis, and `design.ts` (each page has its own; the tuner panel is already shared).
+
 ## Project backlog
 
 Future write-ups to add after Armada Scaling. Tracking only: not scheduled yet. Topics double as
