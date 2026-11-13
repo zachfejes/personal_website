@@ -259,7 +259,7 @@ Built for Armada and kept in `projects/armada-scaling/` until a second project p
     hub, rings and callouts as inputs.
   - Page styles not yet components: the stats block, the dashed note box (`.sheet-callout`), the
     full-width divider and the two-column/side/stack layouts.
-- **Shared prerequisite:** the sheet theme (colour variables, grid, thread) and the layout classes
+- **Shared prerequisite:** the sheet theme (color variables, grid, thread) and the layout classes
   are defined in `armada-scaling.page.scss`; they need to move to a shared stylesheet or a wrapper
   component before other pages can use the pieces above.
 - **Armada only:** the calculator, the candidate-forms table, the convex-bowl diagram, the ship
