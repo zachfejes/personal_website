@@ -387,3 +387,10 @@ h3 {
 .nowrap {
   white-space: nowrap;
 }
+
+// Back to one column after two: a hairline across the full width marks the change.
+.sheet-divider {
+  margin: 2.5rem 0 2rem;
+  border: 0;
+  border-top: 1px solid rgb(var(--sheet-line-rgb) / 35%);
+}

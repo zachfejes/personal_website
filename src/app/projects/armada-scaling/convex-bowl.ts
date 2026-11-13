@@ -112,9 +112,7 @@ const halfEllipse = (c: Contour, front: boolean) =>
           S(m, c)
         </text>
       </svg>
-      <figcaption>
-        S over every m and c: one bowl, one lowest point. Wherever you start, downhill leads there.
-      </figcaption>
+      <figcaption>S is quadratic in both m and c, so it has a single global minimum.</figcaption>
     </figure>
   `,
   styleUrl: './convex-bowl.scss',
