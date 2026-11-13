@@ -29,8 +29,8 @@ export interface Band {
   label: string;
   lower: (x: number) => number;
   upper: (x: number) => number;
-  /** The band stops here: past the data that supports it. */
-  maxX: number;
+  /** Where the band stops, e.g. past the data that supports it; without one it runs the full axis. */
+  maxX?: number;
 }
 
 /** A ship the reader can show or hide (hidden to start), e.g. one far outside the others. */
@@ -258,7 +258,7 @@ export class ScaleChart {
     const y = this.y();
     const [minX, maxX] = x.domain();
     const from = kind === 'linear' ? FIT_MIN_X : minX;
-    const to = Math.min(band.maxX, maxX);
+    const to = Math.min(band.maxX ?? maxX, maxX);
     if (to <= from) return null;
     const xs = sampleRange(kind, from, to, FIT_SAMPLES);
     return (
