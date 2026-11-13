@@ -214,6 +214,7 @@
         <app-sheet-head number="Method note" title="Fitting and error" />
         <h2 id="algorithm" class="sheet-title">One method underneath</h2>
         <app-sheet-fold
+          noun="method note"
           summary="Every linear regression here comes from ordinary least squares (OLS), after each curve is turned into a straight line."
         >
           <div class="sheet-two">
@@ -366,7 +367,7 @@
       <div class="sheet-wrap">
         <app-sheet-head number="05" title="Confirmation" />
         <h2 id="alternatives" class="sheet-title">Testing my assumptions</h2>
-        <app-sheet-fold [summary]="foldSummaries.alternatives">
+        <app-sheet-fold noun="section" [summary]="foldSummaries.alternatives">
           <div class="prose" appReveal>
             <p>
               I initially estimated that the power and logarithmic forms would best fit the data,

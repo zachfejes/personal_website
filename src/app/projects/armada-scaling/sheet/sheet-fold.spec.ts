@@ -3,7 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { SheetFold } from './sheet-fold';
 
 const SUMMARY = 'The short version.';
-const CONTENT = 'The whole field note.';
+const CONTENT = 'The whole method note.';
+const NOUN = 'method note';
 
 /** jsdom has no matchMedia: stand in for a phone (matches) or a wider screen (doesn't). */
 const stubScreen = (narrow: boolean) =>
@@ -14,7 +15,7 @@ const stubScreen = (narrow: boolean) =>
   }));
 
 const renderFold = () =>
-  render(`<app-sheet-fold summary="${SUMMARY}"><p>${CONTENT}</p></app-sheet-fold>`, {
+  render(`<app-sheet-fold noun="${NOUN}" summary="${SUMMARY}"><p>${CONTENT}</p></app-sheet-fold>`, {
     imports: [SheetFold],
   });
 
@@ -36,7 +37,7 @@ describe('SheetFold', () => {
   it('starts folded on a phone, its content out of reach until opened', async () => {
     stubScreen(true);
     await renderFold();
-    const toggle = button(/read the field note/i);
+    const toggle = button(/read the method note/i);
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(body()?.hasAttribute('inert')).toBe(true);
   });
@@ -45,8 +46,8 @@ describe('SheetFold', () => {
     stubScreen(true);
     const user = userEvent.setup();
     await renderFold();
-    await user.click(button(/read the field note/i));
-    const close = button(/close the field note/i);
+    await user.click(button(/read the method note/i));
+    const close = button(/close the method note/i);
     expect(close.getAttribute('aria-expanded')).toBe('true');
     expect(body()?.hasAttribute('inert')).toBe(false);
     await user.click(close);

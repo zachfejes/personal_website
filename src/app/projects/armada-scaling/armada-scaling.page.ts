@@ -295,7 +295,7 @@ export class ArmadaScalingPage {
     },
   };
 
-  /** What each folded field note says on phones, before it's opened. */
+  /** What each folded note says on phones, before it's opened. */
   protected readonly foldSummaries = {
     alternatives:
       `${this.n.candidateCount} curve shapes, scored on how well each predicts a ship it wasn't fitted to.` +

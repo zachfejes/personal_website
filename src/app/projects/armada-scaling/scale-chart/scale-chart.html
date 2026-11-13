@@ -191,17 +191,18 @@
         [attr.cy]="p.cy"
         [attr.r]="radius(p)"
       />
-      @if (p.series === 'highlight') {
-        <text
-          class="chart__callout"
-          [attr.x]="p.cx"
-          [attr.y]="p.cy - radius(p) - view.tickGap"
-          [attr.text-anchor]="calloutAnchor(p.cx)"
-          [style.font-size.px]="design().labelSizePx"
-        >
-          {{ p.name }}
-        </text>
-      }
+    }
+
+    @if (callout(); as c) {
+      <text
+        class="chart__callout"
+        [attr.x]="c.x"
+        [attr.y]="c.y"
+        [attr.text-anchor]="c.anchor"
+        [style.font-size.px]="design().labelSizePx"
+      >
+        {{ c.name }}
+      </text>
     }
 
     <!-- Named ships, on leader lines -->

@@ -87,15 +87,78 @@ export function placeLabelClear(
   );
   const clear = candidates.find((c) => {
     const left = c.anchor === 'start' ? c.x + box.gap : c.x - box.gap - box.width;
-    const right = left + box.width;
-    if (left < plot.left || right > plot.right) return false;
-    return obstacles.every(
-      (o) =>
-        o.x < left - box.clearance ||
-        o.x > right + box.clearance ||
-        o.y < c.y - half - box.clearance ||
-        o.y > c.y + half + box.clearance,
-    );
+    const area = { left, right: left + box.width, top: c.y - half, bottom: c.y + half };
+    return isClear(area, plot, obstacles, box.clearance);
   });
   return clear ?? preferred;
+}
+
+/** Whether a text box sits inside the plot with nothing within `clearance` of it. */
+export function isClear(
+  area: PlotBox,
+  plot: PlotBox,
+  obstacles: readonly Obstacle[],
+  clearance: number,
+): boolean {
+  const inside =
+    area.left >= plot.left &&
+    area.right <= plot.right &&
+    area.top >= plot.top &&
+    area.bottom <= plot.bottom;
+  return (
+    inside &&
+    obstacles.every(
+      (o) =>
+        o.x < area.left - clearance ||
+        o.x > area.right + clearance ||
+        o.y < area.top - clearance ||
+        o.y > area.bottom + clearance,
+    )
+  );
+}
+
+/** Where a point's own name goes (no leader): `y` is the text's baseline. */
+export interface CalloutPlacement {
+  x: number;
+  y: number;
+  anchor: 'start' | 'middle' | 'end';
+}
+
+/**
+ * Where to write a highlighted point's name, right beside it: above it, then above to the left or
+ * right, then below, then level with it, taking the first spot whose text covers nothing. Anything
+ * at the point itself (the point, or another drawn on the same spot) doesn't count. If nowhere is
+ * clear, the name takes the first of those spots that at least stays inside the plot.
+ */
+export function placeCallout(
+  point: { cx: number; cy: number; r: number },
+  plot: PlotBox,
+  box: LabelBox,
+  obstacles: readonly Obstacle[],
+): CalloutPlacement {
+  const { cx, cy, r } = point;
+  const above = cy - r - box.gap;
+  const below = cy + r + box.gap + box.height;
+  const level = cy + box.height / 2;
+  const candidates: CalloutPlacement[] = [
+    { x: cx, y: above, anchor: 'middle' },
+    { x: cx - r, y: above, anchor: 'end' },
+    { x: cx + r, y: above, anchor: 'start' },
+    { x: cx, y: below, anchor: 'middle' },
+    { x: cx - r, y: below, anchor: 'end' },
+    { x: cx + r, y: below, anchor: 'start' },
+    { x: cx - r - box.gap, y: level, anchor: 'end' },
+    { x: cx + r + box.gap, y: level, anchor: 'start' },
+  ];
+  const others = obstacles.filter((o) => Math.hypot(o.x - cx, o.y - cy) > r + box.clearance);
+  const areaOf = (c: CalloutPlacement) => {
+    const left =
+      c.anchor === 'start' ? c.x : c.anchor === 'end' ? c.x - box.width : c.x - box.width / 2;
+    return { left, right: left + box.width, top: c.y - box.height, bottom: c.y };
+  };
+  return (
+    candidates.find((c) => isClear(areaOf(c), plot, others, box.clearance)) ??
+    candidates.find((c) => isClear(areaOf(c), plot, [], 0)) ??
+    candidates[0]
+  );
 }

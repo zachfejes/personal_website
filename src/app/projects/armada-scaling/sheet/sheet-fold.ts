@@ -13,7 +13,7 @@ import { NARROW_QUERY } from './layout';
 let nextId = 0;
 
 /**
- * A field note's body that folds away on phones: there it starts collapsed to a one-line summary
+ * A note's body that folds away on phones: there it starts collapsed to a one-line summary
  * and a button, and opens and closes smoothly. On wider screens the body is always shown and the
  * summary and button are hidden. Folded content stays in the page (for search and the prerendered
  * HTML) but is inert, so keyboards and screen readers skip it until it's opened.
@@ -29,7 +29,7 @@ let nextId = 0;
       [attr.aria-controls]="bodyId"
       (click)="open.set(!open())"
     >
-      {{ open() ? '− Close the field note' : '+ Read the field note' }}
+      {{ open() ? '− Close the ' + noun() : '+ Read the ' + noun() }}
     </button>
     <div class="body" [id]="bodyId" [class.open]="open()" [attr.inert]="folded() ? '' : null">
       <div class="inner"><ng-content /></div>
@@ -41,6 +41,8 @@ let nextId = 0;
 export class SheetFold {
   /** What the note says, in a sentence, while it's folded. */
   readonly summary = input.required<string>();
+  /** What the button calls the folded part: "Read the method note". */
+  readonly noun = input('note');
 
   protected readonly bodyId = `sheet-fold-${nextId++}`;
   protected readonly open = signal(false);

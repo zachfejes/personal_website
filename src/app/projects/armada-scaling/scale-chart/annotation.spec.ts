@@ -1,4 +1,4 @@
-import { PlotBox, placeLabel, placeLabelClear } from './annotation';
+import { PlotBox, placeCallout, placeLabel, placeLabelClear } from './annotation';
 
 // A 1000 × 500 plot; labels go 60 across and 40 down from their point.
 const PLOT: PlotBox = { left: 0, right: 1000, top: 0, bottom: 500 };
@@ -70,6 +70,43 @@ describe('placeLabelClear', () => {
       x: 260,
       y: 160,
       anchor: 'start',
+    });
+  });
+});
+
+describe('placeCallout', () => {
+  // A name 60 wide and 10 tall, 8 from a point of radius 5, keeping 2 clear of anything.
+  const BOX = { width: 60, height: 10, gap: 8, clearance: 2 };
+  const POINT = { cx: 500, cy: 250, r: 5 };
+
+  it('centres the name above the point when nothing is in the way', () => {
+    expect(placeCallout(POINT, PLOT, BOX, [])).toEqual({ x: 500, y: 237, anchor: 'middle' });
+  });
+
+  it('ignores anything drawn on the point itself', () => {
+    expect(placeCallout(POINT, PLOT, BOX, [{ x: 500, y: 250 }])).toEqual({
+      x: 500,
+      y: 237,
+      anchor: 'middle',
+    });
+  });
+
+  it('stays inside the plot when nowhere is clear', () => {
+    // At the top right corner, with the plot filled with points: the centred name would run past
+    // the right edge, so it goes above and to the left instead.
+    const CORNER = { cx: 990, cy: 30, r: 5 };
+    const EVERYWHERE = Array.from({ length: 51 }, (_, i) => i * 20).flatMap((x) =>
+      Array.from({ length: 26 }, (_, j) => ({ x, y: j * 20 })),
+    );
+    expect(placeCallout(CORNER, PLOT, BOX, EVERYWHERE)).toEqual({ x: 985, y: 17, anchor: 'end' });
+  });
+
+  it('moves above and to the left when the spot straight above is taken', () => {
+    // Something at (520, 232) sits in the centred name's box (470–530 across, 227–237 down).
+    expect(placeCallout(POINT, PLOT, BOX, [{ x: 520, y: 232 }])).toEqual({
+      x: 495,
+      y: 237,
+      anchor: 'end',
     });
   });
 });

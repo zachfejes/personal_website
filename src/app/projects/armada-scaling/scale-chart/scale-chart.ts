@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { area, line } from 'd3-shape';
 import { Design } from '../design';
-import { placeLabelClear } from './annotation';
+import { placeCallout, placeLabelClear } from './annotation';
 import { SCALE_KINDS, ScaleKind, axisTicks, makeScale, sampleRange } from './axis';
 
 export interface NamedPoint {
@@ -104,8 +104,6 @@ const ANNOTATION_CHAR_WIDTH = 0.68;
 const TICK_GAP = 8;
 /** Half the width of an error bar's end caps, SVG units. */
 const CAP_HALF_WIDTH = 4;
-/** A highlighted ship's name is centred over it, unless it sits in this share of either end. */
-const CALLOUT_EDGE_SHARE = 0.15;
 
 let nextId = 0;
 
@@ -326,19 +324,48 @@ export class ScaleChart {
     }));
   });
 
+  /** The plotting area, in SVG units. */
+  private readonly plotBox = computed(() => ({
+    left: MARGIN.left,
+    right: this.width() - MARGIN.right,
+    top: MARGIN.top,
+    bottom: this.height() - MARGIN.bottom,
+  }));
+
+  /** What labels keep clear of: every point, and samples along the fits and band. */
+  private readonly obstacles = computed(() => [
+    ...this.points().map((q) => ({ x: q.cx, y: q.cy })),
+    ...this.lineSamples(),
+  ]);
+
+  /** Where the highlighted ship's own name goes, beside it and clear of everything else. */
+  protected readonly callout = computed(() => {
+    const p = this.points().find((q) => q.series === 'highlight');
+    if (!p) return null;
+    const size = this.design().labelSizePx;
+    const box = {
+      width: p.name.length * size * ANNOTATION_CHAR_WIDTH,
+      height: size,
+      gap: TICK_GAP,
+      clearance: this.design().plannedRadius,
+    };
+    const placement = placeCallout(
+      { cx: p.cx, cy: p.cy, r: this.radius(p) },
+      this.plotBox(),
+      box,
+      this.obstacles(),
+    );
+    return { ...placement, name: p.name };
+  });
+
   /** Labels for the named ships, on leader lines, when there's room for them. */
   protected readonly annotations = computed(() => {
     if (this.width() < this.design().annotateMinWidthPx) return [];
     const { x, y } = this.axes();
-    const plot = {
-      left: MARGIN.left,
-      right: this.width() - MARGIN.right,
-      top: MARGIN.top,
-      bottom: this.height() - MARGIN.bottom,
-    };
+    const plot = this.plotBox();
     const points = this.points();
     const size = this.design().labelSizePx;
-    const obstacles = [...points.map((q) => ({ x: q.cx, y: q.cy })), ...this.lineSamples()];
+    const obstacles = this.obstacles();
     return this.annotate().flatMap((name) => {
       const p = points.find((q) => q.name === name);
       if (!p) return [];
@@ -448,13 +475,6 @@ export class ScaleChart {
       return;
     }
     event.preventDefault();
-  }
-
-  /** Centred over the point, but kept inside the chart when the point is near either end. */
-  protected calloutAnchor(cx: number): 'start' | 'middle' | 'end' {
-    const edge = this.width() * CALLOUT_EDGE_SHARE;
-    if (cx > this.width() - edge) return 'end';
-    return cx < edge ? 'start' : 'middle';
   }
 
   protected radius(p: Plotted): number {
