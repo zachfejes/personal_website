@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { area, line } from 'd3-shape';
 import { Design } from '../design';
-import { placeLabel } from './annotation';
+import { placeLabelClear } from './annotation';
 import { SCALE_KINDS, ScaleKind, axisTicks, makeScale, sampleRange } from './axis';
 
 export interface NamedPoint {
@@ -273,6 +273,34 @@ export class ScaleChart {
     );
   });
 
+  /** Samples along the visible fits and the band's edges, in SVG units, for labels to avoid. */
+  private readonly lineSamples = computed(() => {
+    const kind = this.scale();
+    const x = this.x();
+    const y = this.y();
+    const [minX, maxX] = x.domain();
+    const xs = sampleRange(kind, kind === 'linear' ? FIT_MIN_X : minX, maxX, FIT_SAMPLES);
+    const hidden = this.hidden();
+    const band = this.band();
+    const bandEnd = band?.maxX ?? maxX;
+    const inBand = (f: (v: number) => number) => (v: number) => (v <= bandEnd ? f(v) : NaN);
+    const lines = [
+      ...this.fits()
+        .filter((fit) => !hidden.has(fit.id))
+        .map((fit) => fit.predict),
+      // The band's edges and its middle, so a label can't sit inside it either.
+      ...(band
+        ? [band.lower, band.upper, (v: number) => (band.lower(v) + band.upper(v)) / 2].map(inBand)
+        : []),
+    ];
+    return lines.flatMap((f) =>
+      xs
+        .map((v) => ({ v, value: f(v) }))
+        .filter(({ value }) => Number.isFinite(value) && (kind === 'linear' || value > 0))
+        .map(({ v, value }) => ({ x: x(v), y: y(value) })),
+    );
+  });
+
   /** Points in reading order, for the arrow keys. */
   private readonly ordered = computed(() => [...this.points()].sort((a, b) => a.x - b.x));
 
@@ -309,12 +337,20 @@ export class ScaleChart {
       bottom: this.height() - MARGIN.bottom,
     };
     const points = this.points();
+    const size = this.design().labelSizePx;
+    const obstacles = [...points.map((q) => ({ x: q.cx, y: q.cy })), ...this.lineSamples()];
     return this.annotate().flatMap((name) => {
       const p = points.find((q) => q.name === name);
       if (!p) return [];
       const text = `${p.name} · ${this.value(p.x, x)} → ${this.value(p.y, y)}`;
-      const textWidth = text.length * this.design().labelSizePx * ANNOTATION_CHAR_WIDTH;
-      return [{ ...placeLabel(p, plot, ANNOTATION_OFFSET, textWidth), cx: p.cx, cy: p.cy, text }];
+      const box = {
+        width: text.length * size * ANNOTATION_CHAR_WIDTH,
+        height: size,
+        gap: TICK_GAP,
+        clearance: this.design().plannedRadius,
+      };
+      const placement = placeLabelClear(p, plot, ANNOTATION_OFFSET, box, obstacles);
+      return [{ ...placement, cx: p.cx, cy: p.cy, text }];
     });
   });
 
