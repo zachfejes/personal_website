@@ -310,7 +310,7 @@ h3 {
   }
 }
 
-// The chosen fit, set large, with what its two numbers mean underneath.
+// The chosen fit, set large, with what its exponent means underneath.
 .sheet-result {
   margin-top: 1.5rem;
 }
@@ -381,4 +381,9 @@ h3 {
 .references {
   max-width: 80ch;
   font-size: 0.92em;
+}
+
+// Keeps a closing bracket with the maths before it.
+.nowrap {
+  white-space: nowrap;
 }

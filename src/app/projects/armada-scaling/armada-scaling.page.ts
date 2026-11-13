@@ -18,15 +18,14 @@ import {
   SHIP_POINTS,
   SPLIT_POWER,
   logFitZeroM,
+  meanAbsoluteMiss,
   missTrend,
   modelNeighbors,
-  nearestByCanon,
   predictModelMm,
-  scaleRatio,
 } from './analysis';
 import { ScaleCalculator } from './calculator';
 import { CandidateRow, CandidatesTable } from './candidates-table';
-import { ArmadaHero, HeroFacts } from './hero/armada-hero';
+import { ArmadaHero } from './hero/armada-hero';
 import { DESIGN, DESIGN_SCHEMA, Design } from './design';
 import {
   AxisLabel,
@@ -90,12 +89,15 @@ const spreadMm = (canonM: number) =>
     : undefined;
 const BAND_LABEL = 'Typical miss';
 
+/** The average miss in mm for the smallest and the largest third of the ships (by length). */
+const missMmIn = (band: { fromX: number; toX: number }) =>
+  meanAbsoluteMiss(
+    SHIP_POINTS.filter((p) => p.x >= band.fromX && p.x <= Math.min(band.toX, MISS_RANGE.max)),
+    POWER_FIT.predict,
+  );
+
 /** The error chart labels the ships furthest from the power fit. */
 const RESIDUAL_LABELS = 2;
-/** Scales are quoted to two significant digits: "1 : 6,200". */
-const SCALE_DIGITS = 2;
-/** The familiar small ship the hero compares the XQ2's scale with. */
-const REFERENCE_FIGHTER = 'TIE Fighter';
 
 /** "the Victory Star Destroyer (137 mm)": a measured ship by name and rounded model length. */
 const shipLabel = (ship: { name: string; modelMm: number } | null) =>
@@ -226,23 +228,6 @@ export class ArmadaScalingPage {
       impossible: s.impossible,
     }));
 
-  /** What the hero's callouts say about the XQ2. */
-  protected readonly heroFacts: HeroFacts = (() => {
-    const modelMm = predictModelMm(XQ2.canonM);
-    const nearest = nearestByCanon(SHIPS, XQ2.canonM);
-    const fighter = SHIPS.find((s) => s.name === REFERENCE_FIGHTER);
-    return {
-      shipCount: SHIPS.length,
-      canonM: XQ2.canonM,
-      modelMm: Math.round(modelMm),
-      scale: scaleRatio(XQ2.canonM, modelMm, SCALE_DIGITS),
-      nearest: nearest && { name: nearest.name, canonM: nearest.canonM },
-      fighter: fighter
-        ? { name: fighter.name, scale: scaleRatio(fighter.canonM, fighter.modelMm, SCALE_DIGITS) }
-        : null,
-    };
-  })();
-
   /** The calculator's input, marked on the findings chart. */
   protected readonly canonM = signal<number | null>(XQ2.canonM);
   protected readonly predict = predictModelMm;
@@ -270,6 +255,8 @@ export class ArmadaScalingPage {
     powerPercent: fixed(POWER_PERCENT_ERROR, COEFFICIENT_DECIMALS.percent),
     logPercent: fixed(LOG_PERCENT_ERROR, COEFFICIENT_DECIMALS.percent),
     ratio: Math.round(LOG_PERCENT_ERROR / POWER_PERCENT_ERROR),
+    /** Whether the power fit's RMSE is also under half the logarithmic fit's. */
+    rmseUnderHalf: POWER_RMSE < LOG_RMSE / DOUBLE,
     xq2CanonM: XQ2.canonM,
     xq2ModelMm: Math.round(predictModelMm(XQ2.canonM)),
     xq2SpreadMm: Math.round(spreadMm(XQ2.canonM) ?? 0),
@@ -278,6 +265,8 @@ export class ArmadaScalingPage {
       smallest: Math.round(MISS.at(MISS_RANGE.min) * PERCENT),
       largest: Math.round(MISS.at(MISS_RANGE.max) * PERCENT),
       largestM: MISS_RANGE.max.toLocaleString('en'),
+      smallestMm: Math.round(missMmIn(POWER_SIZE_BANDS[0])),
+      largestMm: Math.round(missMmIn(POWER_SIZE_BANDS[POWER_SIZE_BANDS.length - 1])),
     },
     /** The measured models just smaller and just larger than the XQ2's. */
     xq2Neighbors: neighborNames(predictModelMm(XQ2.canonM)),
@@ -295,6 +284,10 @@ export class ArmadaScalingPage {
     /** Whether no other form predicts a left-out ship better. */
     powerBest: this.candidates[0].id === 'power',
     curvature: fixed(POWER_CURVATURE, COEFFICIENT_DECIMALS.curvature),
+    /** Whether the drifting-exponent form has the lowest error on the ships it was fitted to. */
+    curvedBestInSample:
+      [...CANDIDATE_SCORES].sort((a, b) => a.inSample - b.inSample)[0].candidate.id ===
+      'curved-power',
     sizeBands: {
       lengths: listOf(
         POWER_SIZE_BANDS.map(
@@ -315,7 +308,7 @@ export class ArmadaScalingPage {
   protected readonly foldSummaries = {
     alternatives:
       `${this.n.candidateCount} curve shapes, scored on how well each predicts a ship it wasn't fitted to.` +
-      (this.n.powerBest ? ' The power law wins.' : ''),
+      (this.n.powerBest ? ' The power law still wins.' : ''),
   };
 
   /** Equations that quote the computed coefficients. */
@@ -329,9 +322,14 @@ export class ArmadaScalingPage {
       '\\end{aligned}',
     ].join(' '),
     powerFit: `y = ${this.n.powerA} x^{${this.n.powerB}}`,
-    leastSquares: String.raw`\min_{m,\,c} \sum_{i=1}^{n} \left(y_i - (m x_i + c)\right)^2`,
-    slope: String.raw`m = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sum_i (x_i - \bar{x})^2}`,
+    leastSquares: String.raw`S = \sum_{i=1}^{n} \left(y_i - (m x_i + c)\right)^2`,
+    // The derivation's longer lines break before "= 0", so they fit a phone.
+    dSdc: String.raw`\begin{aligned} \frac{\partial S}{\partial c} &= -2 \sum_i (y_i - m x_i - c) \\ &= 0 \end{aligned}`,
     intercept: String.raw`c = \bar{y} - m\,\bar{x}`,
+    dSdm: String.raw`\begin{aligned} \frac{\partial S}{\partial m} &= -2 \sum_i x_i (y_i - m x_i - c) \\ &= 0 \end{aligned}`,
+    substituted: String.raw`\begin{aligned} \sum_i x_i \big[(y_i - \bar{y}) &- m (x_i - \bar{x})\big] \\ &= 0 \end{aligned}`,
+    rearranged: String.raw`m = \frac{\sum_i x_i (y_i - \bar{y})}{\sum_i x_i (x_i - \bar{x})}`,
+    slope: String.raw`m = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sum_i (x_i - \bar{x})^2}`,
     rmse: String.raw`\text{RMSE} = \sqrt{\frac{1}{n} \sum_i \left(\hat{y}_i - y_i\right)^2}`,
     percentError: String.raw`\text{error} = \frac{100\%}{n} \sum_i \left| \frac{\hat{y}_i - y_i}{y_i} \right|`,
   };

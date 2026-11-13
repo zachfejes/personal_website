@@ -4,11 +4,11 @@
     <h1>Armada Scaling</h1>
     <span class="rule" aria-hidden="true"></span>
   </div>
-  <p class="dek">Working out the non-linear model scale in Star Wars: Armada.</p>
+  <p class="dek">Working out the non-linear model scale in Star Wars: Armada</p>
   <dl class="meta">
     <div>
       <dt>Project</dt>
-      <dd>Sep 2018</dd>
+      <dd>Aug 2018, updated 2026</dd>
     </div>
     <div>
       <dt>Method</dt>
@@ -16,7 +16,7 @@
     </div>
     <div>
       <dt>Data</dt>
-      <dd>{{ facts().shipCount }} ships and squadrons</dd>
+      <dd>{{ shipCount() }} ships and squadrons</dd>
     </div>
   </dl>
 
@@ -75,11 +75,11 @@
       <!-- Leaders and markers sit over the drawing, so their ends show on it. -->
       <svg class="lines" [attr.viewBox]="viewBox" aria-hidden="true">
         @for (p of placements; track p.number; let i = $index) {
-          <g class="leader" [class.leader--accent]="callouts()[i].accent">
+          <g class="leader" [class.leader--accent]="callouts[i].accent">
             <path [attr.d]="p.leader" pathLength="1" [style.--i]="i" />
             <circle [attr.cx]="p.target.x" [attr.cy]="p.target.y" r="3" />
           </g>
-          <g class="marker" [class.marker--accent]="callouts()[i].accent" [style.--i]="i">
+          <g class="marker" [class.marker--accent]="callouts[i].accent" [style.--i]="i">
             <circle [attr.cx]="p.target.x" [attr.cy]="p.target.y" r="22" />
             <text [attr.x]="p.target.x" [attr.y]="p.target.y">{{ p.number }}</text>
           </g>
@@ -88,7 +88,7 @@
     </div>
 
     <ol class="callouts">
-      @for (c of callouts(); track c.label; let i = $index) {
+      @for (c of callouts; track c.label; let i = $index) {
         <li
           class="callout"
           [style.--i]="i"
@@ -98,9 +98,6 @@
           [style.--w]="placements[i].style.width"
         >
           <b>{{ placements[i].number }} · {{ c.label }}</b>
-          @if (c.lead) {
-            <span class="callout__lead">{{ c.lead }}</span>
-          }
           {{ c.text }}
         </li>
       }

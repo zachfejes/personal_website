@@ -145,7 +145,7 @@ export const DESIGN_SCHEMA: Schema<Design> = {
       orbitSeconds: { type: 'range', label: 'Orbit period', min: 10, max: 180, step: 5, unit: 's' },
       pulseMs: { type: 'range', label: 'Pulse', min: 200, max: 3000, step: 50, unit: 'ms' },
       pulseScale: { type: 'range', label: 'Pulse size', min: 1, max: 3, step: 0.1 },
-      foldMs: { type: 'range', label: 'Field note fold', min: 0, max: 1000, step: 25, unit: 'ms' },
+      foldMs: { type: 'range', label: 'Note fold', min: 0, max: 1000, step: 25, unit: 'ms' },
     },
   },
   chart: {
