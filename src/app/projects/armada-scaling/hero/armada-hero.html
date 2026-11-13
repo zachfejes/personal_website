@@ -33,14 +33,14 @@
             [attr.r]="r"
           />
         }
-        @for (r of hero.draftRings; track r; let i = $index) {
+        @for (d of hero.draftRings; track d.r) {
           <circle
             class="ring--draft"
-            pathLength="1"
-            [style.--i]="i"
+            [style.--period]="d.period"
+            [style.--delay]="d.delay"
             [attr.cx]="hero.hub.x"
             [attr.cy]="hero.hub.y"
-            [attr.r]="r"
+            [attr.r]="d.r"
           />
         }
         <line

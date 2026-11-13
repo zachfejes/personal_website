@@ -77,16 +77,16 @@ const OPTIONAL_SHIP: OptionalShip = {
 };
 /** How far ships typically sit from the power fit at each size. */
 const MISS = missTrend(SHIP_POINTS, POWER_FIT.predict);
-/** The typical miss is drawn only as far as the data supports: up to the largest regular ship. */
+/** The regular ships' lengths, smallest to largest: the text quotes the typical miss at each end. */
 const MISS_RANGE = {
   min: Math.min(...SHIPS.map((s) => s.canonM)),
   max: Math.max(...SHIPS.filter((s) => s.name !== OPTIONAL_SHIP.name).map((s) => s.canonM)),
 };
-/** ± the typical miss for a ship of this canon length, in mm; undefined outside the data. */
-const spreadMm = (canonM: number) =>
-  canonM >= MISS_RANGE.min && canonM <= MISS_RANGE.max
-    ? predictModelMm(canonM) * MISS.at(canonM)
-    : undefined;
+/**
+ * ± the typical miss for a ship of this canon length, in mm, following the trend past the measured
+ * ships too (as the bands do); never below zero.
+ */
+const spreadMm = (canonM: number) => predictModelMm(canonM) * Math.max(0, MISS.at(canonM));
 const BAND_LABEL = 'Typical miss';
 
 /** The average miss in mm for the smallest and the largest third of the ships (by length). */
@@ -177,19 +177,17 @@ export class ArmadaScalingPage {
   }));
   protected readonly optionalShip = OPTIONAL_SHIP;
   protected readonly spread = spreadMm;
-  /** The typical miss as a band: around 1 on the error chart, around the fit on the findings chart. */
+  /** The typical miss as a band across the whole axis: around 1 on the error chart, around the fit on the findings chart. */
   protected readonly bands: { ratio: Band; length: Band } = {
     ratio: {
       label: BAND_LABEL,
       lower: (x) => 1 - MISS.at(x),
       upper: (x) => 1 + MISS.at(x),
-      maxX: MISS_RANGE.max,
     },
     length: {
       label: BAND_LABEL,
       lower: (x) => predictModelMm(x) * (1 - MISS.at(x)),
       upper: (x) => predictModelMm(x) * (1 + MISS.at(x)),
-      maxX: MISS_RANGE.max,
     },
   };
   /** Credited in the references, straight from ships.json. */
@@ -252,7 +250,7 @@ export class ArmadaScalingPage {
     rmseUnderHalf: POWER_RMSE < LOG_RMSE / DOUBLE,
     xq2CanonM: XQ2.canonM,
     xq2ModelMm: Math.round(predictModelMm(XQ2.canonM)),
-    xq2SpreadMm: Math.round(spreadMm(XQ2.canonM) ?? 0),
+    xq2SpreadMm: Math.round(spreadMm(XQ2.canonM)),
     /** The typical miss at the small and large ends of the data, %. */
     miss: {
       smallest: Math.round(MISS.at(MISS_RANGE.min) * PERCENT),
@@ -297,7 +295,7 @@ export class ArmadaScalingPage {
     },
   };
 
-  /** What each folded field note says on phones, before it's opened. */
+  /** What each folded note says on phones, before it's opened. */
   protected readonly foldSummaries = {
     alternatives:
       `${this.n.candidateCount} curve shapes, scored on how well each predicts a ship it wasn't fitted to.` +

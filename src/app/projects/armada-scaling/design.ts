@@ -14,7 +14,7 @@ export const DESIGN = {
     lineHeight: 1.7,
     headingSizeRem: 2.5,
     titleSizeRem: 4.4,
-    equationSizeEm: 1.15,
+    equationSizeEm: 1.05,
   },
   /** The drawing-sheet background: a fine grid with a coarser one over it, and soft glows. */
   sheet: {
@@ -30,7 +30,7 @@ export const DESIGN = {
     calloutStaggerMs: 180,
     /** One trip of the amber marker round the hero's dashed ring. */
     orbitSeconds: 60,
-    /** One cycle of a hero ring being drafted in, flickering, and erased again. */
+    /** One cycle of a hero ring flickering on, holding, and flickering off (each ring scales it). */
     draftSeconds: 18,
     /** The ping from a section's marker when it first scrolls into view. */
     pulseMs: 1200,

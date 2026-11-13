@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { area, line } from 'd3-shape';
 import { Design } from '../design';
-import { placeLabel } from './annotation';
+import { placeCallout, placeLabelClear } from './annotation';
 import { SCALE_KINDS, ScaleKind, axisTicks, makeScale, sampleRange } from './axis';
 
 export interface NamedPoint {
@@ -29,8 +29,8 @@ export interface Band {
   label: string;
   lower: (x: number) => number;
   upper: (x: number) => number;
-  /** The band stops here: past the data that supports it. */
-  maxX: number;
+  /** Where the band stops, e.g. past the data that supports it; without one it runs the full axis. */
+  maxX?: number;
 }
 
 /** A ship the reader can show or hide (hidden to start), e.g. one far outside the others. */
@@ -258,7 +258,7 @@ export class ScaleChart {
     const y = this.y();
     const [minX, maxX] = x.domain();
     const from = kind === 'linear' ? FIT_MIN_X : minX;
-    const to = Math.min(band.maxX, maxX);
+    const to = Math.min(band.maxX ?? maxX, maxX);
     if (to <= from) return null;
     const xs = sampleRange(kind, from, to, FIT_SAMPLES);
     return (
@@ -268,6 +268,34 @@ export class ScaleChart {
         .x((v) => x(v))
         .y0((v) => y(band.lower(v)))
         .y1((v) => y(band.upper(v)))(xs) ?? null
+    );
+  });
+
+  /** Samples along the visible fits and the band's edges, in SVG units, for labels to avoid. */
+  private readonly lineSamples = computed(() => {
+    const kind = this.scale();
+    const x = this.x();
+    const y = this.y();
+    const [minX, maxX] = x.domain();
+    const xs = sampleRange(kind, kind === 'linear' ? FIT_MIN_X : minX, maxX, FIT_SAMPLES);
+    const hidden = this.hidden();
+    const band = this.band();
+    const bandEnd = band?.maxX ?? maxX;
+    const inBand = (f: (v: number) => number) => (v: number) => (v <= bandEnd ? f(v) : NaN);
+    const lines = [
+      ...this.fits()
+        .filter((fit) => !hidden.has(fit.id))
+        .map((fit) => fit.predict),
+      // The band's edges and its middle, so a label can't sit inside it either.
+      ...(band
+        ? [band.lower, band.upper, (v: number) => (band.lower(v) + band.upper(v)) / 2].map(inBand)
+        : []),
+    ];
+    return lines.flatMap((f) =>
+      xs
+        .map((v) => ({ v, value: f(v) }))
+        .filter(({ value }) => Number.isFinite(value) && (kind === 'linear' || value > 0))
+        .map(({ v, value }) => ({ x: x(v), y: y(value) })),
     );
   });
 
@@ -296,23 +324,60 @@ export class ScaleChart {
     }));
   });
 
+  /** The plotting area, in SVG units. */
+  private readonly plotBox = computed(() => ({
+    left: MARGIN.left,
+    right: this.width() - MARGIN.right,
+    top: MARGIN.top,
+    bottom: this.height() - MARGIN.bottom,
+  }));
+
+  /** What labels keep clear of: every point, and samples along the fits and band. */
+  private readonly obstacles = computed(() => [
+    ...this.points().map((q) => ({ x: q.cx, y: q.cy })),
+    ...this.lineSamples(),
+  ]);
+
+  /** Where the highlighted ship's own name goes, beside it and clear of everything else. */
+  protected readonly callout = computed(() => {
+    const p = this.points().find((q) => q.series === 'highlight');
+    if (!p) return null;
+    const size = this.design().labelSizePx;
+    const box = {
+      width: p.name.length * size * ANNOTATION_CHAR_WIDTH,
+      height: size,
+      gap: TICK_GAP,
+      clearance: this.design().plannedRadius,
+    };
+    const placement = placeCallout(
+      { cx: p.cx, cy: p.cy, r: this.radius(p) },
+      this.plotBox(),
+      box,
+      this.obstacles(),
+    );
+    return { ...placement, name: p.name };
+  });
+
   /** Labels for the named ships, on leader lines, when there's room for them. */
   protected readonly annotations = computed(() => {
     if (this.width() < this.design().annotateMinWidthPx) return [];
     const { x, y } = this.axes();
-    const plot = {
-      left: MARGIN.left,
-      right: this.width() - MARGIN.right,
-      top: MARGIN.top,
-      bottom: this.height() - MARGIN.bottom,
-    };
+    const plot = this.plotBox();
     const points = this.points();
+    const size = this.design().labelSizePx;
+    const obstacles = this.obstacles();
     return this.annotate().flatMap((name) => {
       const p = points.find((q) => q.name === name);
       if (!p) return [];
       const text = `${p.name} · ${this.value(p.x, x)} → ${this.value(p.y, y)}`;
-      const textWidth = text.length * this.design().labelSizePx * ANNOTATION_CHAR_WIDTH;
-      return [{ ...placeLabel(p, plot, ANNOTATION_OFFSET, textWidth), cx: p.cx, cy: p.cy, text }];
+      const box = {
+        width: text.length * size * ANNOTATION_CHAR_WIDTH,
+        height: size,
+        gap: TICK_GAP,
+        clearance: this.design().plannedRadius,
+      };
+      const placement = placeLabelClear(p, plot, ANNOTATION_OFFSET, box, obstacles);
+      return [{ ...placement, cx: p.cx, cy: p.cy, text }];
     });
   });
 

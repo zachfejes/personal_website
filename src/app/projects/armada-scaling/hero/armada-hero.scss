@@ -254,63 +254,61 @@ $stagger: var(--callout-stagger-ms, 180ms);
   animation: orbit var(--orbit-s, 60s) linear calc($draw * 1.8) infinite;
 }
 
-// Drafted rings: once the drawing is in, a ring flickers on and draws itself, holds, then flickers
-// out and is erased, as if the sheet were still being worked on. Two take turns, half a cycle apart.
+// Drafted rings: once the drawing is in, a ring flickers on, holds, then flickers off, as if the
+// sheet were still being worked on. Each ring has its own period and start, so they never settle
+// into a pattern.
+$draft: var(--draft-s, 18s);
+
 .ring--draft {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
   opacity: 0;
-  animation: draft var(--draft-s, 18s) linear calc($draw * 2 + var(--i) * var(--draft-s, 18s) / 2)
+  animation: draft calc($draft * var(--period, 1)) linear calc($draw * 2 + $draft * var(--delay, 0))
     infinite;
 }
 
 @keyframes draft {
   0% {
-    stroke-dashoffset: 1;
     opacity: 0;
   }
 
-  2% {
-    opacity: 0.8;
-  }
-
-  3% {
-    opacity: 0.15;
-  }
-
-  4% {
+  1% {
     opacity: 0.7;
   }
 
-  5% {
-    opacity: 0.25;
+  1.6% {
+    opacity: 0.12;
   }
 
-  7% {
-    opacity: 0.7;
-  }
-
-  18%,
-  45% {
-    stroke-dashoffset: 0;
-    opacity: 0.7;
-  }
-
-  47% {
-    opacity: 0.15;
-  }
-
-  48% {
+  2.4% {
     opacity: 0.6;
   }
 
-  50% {
+  3% {
+    opacity: 0.2;
+  }
+
+  4%,
+  42% {
+    opacity: 0.7;
+  }
+
+  43% {
+    opacity: 0.15;
+  }
+
+  43.8% {
+    opacity: 0.55;
+  }
+
+  44.6% {
     opacity: 0.1;
   }
 
-  55%,
+  45.4% {
+    opacity: 0.4;
+  }
+
+  46.5%,
   100% {
-    stroke-dashoffset: 0;
     opacity: 0;
   }
 }
