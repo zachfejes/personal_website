@@ -288,13 +288,14 @@
               <p>
                 To compare the fits, each is scored on how far its predictions
                 <app-tex tex="\hat{y}_i" /> land from the real model lengths <app-tex tex="y_i" />:
-                by root-mean-square error, in millimetres,
+                first by root-mean-square error, in millimetres:
               </p>
               <app-tex class="equation" [display]="true" [tex]="tex.rmse" />
             </div>
             <div class="prose">
               <p>
-                and by average percentage error, which weighs every ship equally whatever its size:
+                Second, by average percentage error, which weighs every ship equally whatever its
+                size:
               </p>
               <app-tex class="equation" [display]="true" [tex]="tex.percentError" />
             </div>

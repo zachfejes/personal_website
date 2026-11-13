@@ -146,11 +146,11 @@ Logarithmic: fit a line to y against ln(x). Its slope is a and its intercept is 
 
 Power: fit a line to log10(y) against log10(x). Its slope is b, and its intercept is log10(a), so a=10^intercept. Because it works on logarithms, this fit minimizes proportional errors rather than absolute ones: a 10% miss counts the same for a starfighter as for a Star Destroyer.
 
-To compare the fits, each is scored on how far its predictions ŷᵢ land from the real model lengths yᵢ: by root-mean-square error, in millimetres,
+To compare the fits, each is scored on how far its predictions ŷᵢ land from the real model lengths yᵢ: first by root-mean-square error, in millimetres:
 
 [RMSE Function]
 
-and by average percentage error, which weighs every ship equally whatever its size:
+Second, by average percentage error, which weighs every ship equally whatever its size:
 
 [error function]
 
