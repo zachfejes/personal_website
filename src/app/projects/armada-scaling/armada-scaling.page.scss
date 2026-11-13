@@ -310,9 +310,12 @@ h3 {
   }
 }
 
-// The chosen fit, set large, with what its exponent means underneath.
+// The chosen fit, set large and centred on the reading column it closes, with what its exponent
+// means underneath.
 .sheet-result {
+  max-width: var(--reading-width);
   margin-top: 1.5rem;
+  font-size: var(--body-size);
 }
 
 .sheet-result__equation {
@@ -393,4 +396,16 @@ h3 {
   margin: 2.5rem 0 2rem;
   border: 0;
   border-top: 1px solid rgb(var(--sheet-line-rgb) / 35%);
+}
+
+// A note that spans the section, under the text and chart beside it.
+.sheet-callout--wide {
+  margin-top: 2rem;
+}
+
+// The derivation's longest lines are set a little smaller on phones, so they fit on one line.
+.equation--long {
+  @media (width <= $narrow) {
+    font-size: calc(var(--equation-size) * 0.82);
+  }
 }
