@@ -234,39 +234,7 @@
                 searching or iteration, where <app-tex tex="\bar{x}" /> and
                 <app-tex tex="\bar{y}" /> are the averages.
               </p>
-              <p>
-                Derivative with respect to <app-tex tex="c" /> (chain rule; the inner derivative is
-                <span class="nowrap"><app-tex tex="-1" />):</span>
-              </p>
-              <app-tex class="equation" [display]="true" [tex]="tex.dSdc" />
-              <p>
-                This gives <app-tex tex="\sum_i y_i - m \sum_i x_i - nc = 0" />. Dividing by
-                <app-tex tex="n" />:
-              </p>
-              <app-tex class="equation" [display]="true" [tex]="tex.intercept" />
-            </div>
-            <div class="prose">
-              <p>
-                Derivative with respect to <app-tex tex="m" /> (the inner derivative is
-                <span class="nowrap"><app-tex tex="-x_i" />):</span>
-              </p>
-              <app-tex class="equation" [display]="true" [tex]="tex.dSdm" />
-              <p>Substitute <app-tex [tex]="tex.intercept" />:</p>
-              <app-tex class="equation" [display]="true" [tex]="tex.substituted" />
-              <p>Rearranging:</p>
-              <app-tex class="equation" [display]="true" [tex]="tex.rearranged" />
-              <p>
-                Deviations from a mean always sum to zero, so
-                <app-tex tex="\sum_i (y_i - \bar{y}) = 0" /> and
-                <app-tex tex="\sum_i (x_i - \bar{x}) = 0" />. That means you can subtract
-                <app-tex tex="\bar{x}" /> from <app-tex tex="x_i" /> in both sums without changing
-                either one:
-              </p>
-              <app-tex class="equation" [display]="true" [tex]="tex.slope" />
-            </div>
-          </div>
-          <div class="sheet-two">
-            <div class="prose">
+              <app-convex-bowl />
               <p>Neither candidate is a straight line, so each is first turned into one:</p>
               <ul>
                 <li>
@@ -286,20 +254,49 @@
             </div>
             <div class="prose">
               <p>
-                To compare the fits, each is scored on how far its predictions
-                <app-tex tex="\hat{y}_i" /> land from the real model lengths <app-tex tex="y_i" />:
-                by root-mean-square error, in millimetres,
+                Derivative with respect to <app-tex tex="c" /> (chain rule; the inner derivative is
+                <span class="nowrap"><app-tex tex="-1" />):</span>
               </p>
-              <app-tex class="equation" [display]="true" [tex]="tex.rmse" />
+              <app-tex class="equation" [display]="true" [tex]="tex.dSdc" />
               <p>
-                and by average percentage error, which weighs every ship equally whatever its size:
+                This gives <app-tex tex="\sum_i y_i - m \sum_i x_i - nc = 0" />. Dividing by
+                <app-tex tex="n" />:
               </p>
-              <app-tex class="equation" [display]="true" [tex]="tex.percentError" />
+              <app-tex class="equation" [display]="true" [tex]="tex.intercept" />
               <p>
-                All of this runs when the site is built, straight from the ship data, so if I add a
-                ship in future, every fit, number and chart on this page updates automatically.
+                Derivative with respect to <app-tex tex="m" /> (the inner derivative is
+                <span class="nowrap"><app-tex tex="-x_i" />):</span>
               </p>
+              <app-tex class="equation" [display]="true" [tex]="tex.dSdm" />
+              <p>Substitute <app-tex [tex]="tex.intercept" />:</p>
+              <app-tex class="equation" [display]="true" [tex]="tex.substituted" />
+              <p>Rearranging:</p>
+              <app-tex class="equation" [display]="true" [tex]="tex.rearranged" />
+              <p>
+                Deviations from a mean always sum to zero, so
+                <app-tex tex="\sum_i (y_i - \bar{y}) = 0" /> and
+                <app-tex tex="\sum_i (x_i - \bar{x}) = 0" />. That means you can subtract
+                <app-tex tex="\bar{x}" /> from <app-tex tex="x_i" /> in both sums without changing
+                either one:
+              </p>
+              <app-tex class="equation" [display]="true" [tex]="tex.slope" />
             </div>
+          </div>
+          <div class="prose">
+            <p>
+              To compare the fits, each is scored on how far its predictions
+              <app-tex tex="\hat{y}_i" /> land from the real model lengths <app-tex tex="y_i" />: by
+              root-mean-square error, in millimetres,
+            </p>
+            <app-tex class="equation" [display]="true" [tex]="tex.rmse" />
+            <p>
+              and by average percentage error, which weighs every ship equally whatever its size:
+            </p>
+            <app-tex class="equation" [display]="true" [tex]="tex.percentError" />
+            <p>
+              All of this runs when the site is built, straight from the ship data, so if I add a
+              ship in future, every fit, number and chart on this page updates automatically.
+            </p>
           </div>
         </app-sheet-fold>
       </div>

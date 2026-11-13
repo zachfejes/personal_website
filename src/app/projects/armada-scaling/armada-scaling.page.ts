@@ -25,6 +25,7 @@ import {
 } from './analysis';
 import { ScaleCalculator } from './calculator';
 import { CandidateRow, CandidatesTable } from './candidates-table';
+import { ConvexBowl } from './convex-bowl';
 import { ArmadaHero } from './hero/armada-hero';
 import { DESIGN, DESIGN_SCHEMA, Design } from './design';
 import {
@@ -122,6 +123,7 @@ function negativeBelow(zeroM: number | null) {
   imports: [
     ArmadaHero,
     CandidatesTable,
+    ConvexBowl,
     GlobeEdge,
     RevealDirective,
     ScaleCalculator,
