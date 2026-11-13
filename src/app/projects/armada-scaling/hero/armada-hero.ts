@@ -27,7 +27,8 @@ const pct = (value: number, of: number) => `${(value / of) * 100}%`;
 /**
  * The top of the Armada page, drawn like a sheet: title between rules, then the XQ2's top-view
  * wireframe centred on construction rings and crosshairs, with four numbered callouts on leader
- * lines. On phones the callouts become numbered markers on the drawing, listed underneath.
+ * lines. On phones the drawing stands alone, fading out top and bottom, with the callouts listed
+ * underneath.
  */
 @Component({
   selector: 'app-armada-hero',

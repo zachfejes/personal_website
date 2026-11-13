@@ -30,6 +30,8 @@ export const DESIGN = {
     calloutStaggerMs: 180,
     /** One trip of the amber marker round the hero's dashed ring. */
     orbitSeconds: 60,
+    /** One cycle of a hero ring being drafted in, flickering, and erased again. */
+    draftSeconds: 18,
     /** The ping from a section's marker when it first scrolls into view. */
     pulseMs: 1200,
     pulseScale: 1.8,
@@ -143,6 +145,7 @@ export const DESIGN_SCHEMA: Schema<Design> = {
         unit: 'ms',
       },
       orbitSeconds: { type: 'range', label: 'Orbit period', min: 10, max: 180, step: 5, unit: 's' },
+      draftSeconds: { type: 'range', label: 'Drafted rings', min: 4, max: 60, step: 1, unit: 's' },
       pulseMs: { type: 'range', label: 'Pulse', min: 200, max: 3000, step: 50, unit: 'ms' },
       pulseScale: { type: 'range', label: 'Pulse size', min: 1, max: 3, step: 0.1 },
       foldMs: { type: 'range', label: 'Note fold', min: 0, max: 1000, step: 25, unit: 'ms' },

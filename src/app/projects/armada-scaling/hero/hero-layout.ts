@@ -8,7 +8,7 @@ export interface StagePoint {
 export interface CalloutPlacement {
   /** Top-left corner of the box. */
   at: StagePoint;
-  /** Where its leader line ends (and, on phones, where its numbered marker sits). */
+  /** Where its leader line ends. */
   target: StagePoint;
 }
 
@@ -24,15 +24,16 @@ export const HERO = {
   /** Construction rings around the hub; the dashed one carries the amber marker. */
   rings: [180, 250, 330, 420],
   dashedRing: 330,
+  /** Rings that are drafted in and erased again, over and over, between the fixed ones. */
+  draftRings: [290, 375],
   /** How far the crosshairs reach from the hub. */
   crosshair: { up: 440, down: 440, across: 480 },
   callout: { width: 250, anchorDrop: 30, shelf: 90 },
   callouts: [
     { at: { x: 0, y: 100 }, target: { x: 440, y: 190 } },
     { at: { x: 950, y: 70 }, target: { x: 780, y: 170 } },
-    // Scale points at the amber marker on the dashed ring.
     { at: { x: 950, y: 430 }, target: { x: 930, y: 330 } },
-    // The question points at the lower fin.
+    // The question, in amber, points at the lower fin.
     { at: { x: 0, y: 430 }, target: { x: 515, y: 540 } },
   ] satisfies CalloutPlacement[],
 } as const;
