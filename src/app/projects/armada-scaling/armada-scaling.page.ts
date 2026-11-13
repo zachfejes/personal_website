@@ -64,10 +64,9 @@ const RATIO_DECIMALS = 2;
 const DOUBLE = 2;
 /** The fit the page uses is drawn in the page's accent. */
 const POWER_FIT_COLOR = 'var(--sheet-accent)';
-/** Ships labelled on the charts (on wide screens): the extremes, and the planned ones that matter. */
+/** Ships labelled on the charts (on wide screens): the Executor, and the planned ones that matter. */
 const LABELLED = {
-  data: ['Executor Star Destroyer', 'TIE Fighter'],
-  fits: ['TIE Fighter'],
+  data: ['Executor Star Destroyer'],
   planned: ['Tri-fighter Droid', 'Naboo Royal Cruiser', 'MC40a'],
 } as const;
 /** A ship far beyond the rest (19 km): hidden on the charts until the reader shows it. */
@@ -96,9 +95,6 @@ const missMmIn = (band: { fromX: number; toX: number }) =>
     SHIP_POINTS.filter((p) => p.x >= band.fromX && p.x <= Math.min(band.toX, MISS_RANGE.max)),
     POWER_FIT.predict,
   );
-
-/** The error chart labels the ships furthest from the power fit. */
-const RESIDUAL_LABELS = 2;
 
 /** "the Victory Star Destroyer (137 mm)": a measured ship by name and rounded model length. */
 const shipLabel = (ship: { name: string; modelMm: number } | null) =>
@@ -209,13 +205,7 @@ export class ArmadaScalingPage {
 
   /** Each ship against the power fit's prediction, with 1 marking a perfect prediction. */
   protected readonly residuals: NamedPoint[] = POWER_RESIDUALS;
-  protected readonly labelled = {
-    ...LABELLED,
-    residuals: [...POWER_RESIDUALS]
-      .sort((a, b) => Math.abs(Math.log(b.y)) - Math.abs(Math.log(a.y)))
-      .slice(0, RESIDUAL_LABELS)
-      .map((r) => r.name),
-  };
+  protected readonly labelled = LABELLED;
   protected readonly residualAxes: { x: AxisLabel; y: AxisLabel } = {
     x: { title: 'Canon length', unit: 'm' },
     y: { title: 'Model ÷ predicted', decimals: RATIO_DECIMALS },
@@ -326,11 +316,10 @@ export class ArmadaScalingPage {
     ].join(' '),
     powerFit: `y = ${this.n.powerA} x^{${this.n.powerB}}`,
     leastSquares: String.raw`S = \sum_{i=1}^{n} \left(y_i - (m x_i + c)\right)^2`,
-    // The derivation's longer lines break before "= 0", so they fit a phone.
-    dSdc: String.raw`\begin{aligned} \frac{\partial S}{\partial c} &= -2 \sum_i (y_i - m x_i - c) \\ &= 0 \end{aligned}`,
+    dSdc: String.raw`\frac{\partial S}{\partial c} = -2 \sum_i (y_i - m x_i - c) = 0`,
     intercept: String.raw`c = \bar{y} - m\,\bar{x}`,
-    dSdm: String.raw`\begin{aligned} \frac{\partial S}{\partial m} &= -2 \sum_i x_i (y_i - m x_i - c) \\ &= 0 \end{aligned}`,
-    substituted: String.raw`\begin{aligned} \sum_i x_i \big[(y_i - \bar{y}) &- m (x_i - \bar{x})\big] \\ &= 0 \end{aligned}`,
+    dSdm: String.raw`\frac{\partial S}{\partial m} = -2 \sum_i x_i (y_i - m x_i - c) = 0`,
+    substituted: String.raw`\sum_i x_i \left[(y_i - \bar{y}) - m (x_i - \bar{x})\right] = 0`,
     rearranged: String.raw`m = \frac{\sum_i x_i (y_i - \bar{y})}{\sum_i x_i (x_i - \bar{x})}`,
     slope: String.raw`m = \frac{\sum_i (x_i - \bar{x})(y_i - \bar{y})}{\sum_i (x_i - \bar{x})^2}`,
     rmse: String.raw`\text{RMSE} = \sqrt{\frac{1}{n} \sum_i \left(\hat{y}_i - y_i\right)^2}`,

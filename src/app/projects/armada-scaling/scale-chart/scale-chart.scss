@@ -90,6 +90,13 @@
   height: auto;
   overflow: visible;
   touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+
+  // Clicking or tapping the chart focuses it (so the arrow keys work next), but only keyboard focus
+  // draws a ring: no box round the whole chart on click.
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
 
   &:focus-visible {
     outline: 2px solid var(--sheet-accent);

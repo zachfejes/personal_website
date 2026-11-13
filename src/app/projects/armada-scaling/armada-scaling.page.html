@@ -124,12 +124,6 @@
               corner. Show it with the toggle. Log view is the default, and linear is one click
               away.
             </p>
-            <p class="sheet-callout">
-              <b>Note · Updated 2026</b>
-              I originally did this assessment in 2018, before the Galactic Republic and Separatist
-              factions joined the game. Adding the data from those new ships, as well as the newer
-              Empire and Rebel ships, has altered the analysis slightly.
-            </p>
           </div>
           <div class="sheet-figure" appReveal>
             <app-scale-chart
@@ -143,6 +137,12 @@
             />
           </div>
         </div>
+        <p class="sheet-callout sheet-callout--wide" appReveal>
+          <b>Note · Updated 2026</b>
+          I originally did this assessment in 2018, before the Galactic Republic and Separatist
+          factions joined the game. Adding the data from those new ships, as well as the newer
+          Empire and Rebel ships, has altered the analysis slightly.
+        </p>
       </div>
     </section>
 
@@ -201,7 +201,6 @@
             caption="Both fits against the data"
             [ships]="ships"
             [fits]="fits()"
-            [annotate]="labelled.fits"
             [optional]="optionalShip"
             [design]="design().chart"
           />
@@ -258,19 +257,18 @@
                 Derivative with respect to <app-tex tex="c" /> (chain rule; the inner derivative is
                 <span class="nowrap"><app-tex tex="-1" />):</span>
               </p>
-              <app-tex class="equation" [display]="true" [tex]="tex.dSdc" />
-              <p>
-                This gives <app-tex tex="\sum_i y_i - m \sum_i x_i - nc = 0" />. Dividing by
-                <app-tex tex="n" />:
-              </p>
+              <app-tex class="equation equation--long" [display]="true" [tex]="tex.dSdc" />
+              <p>This gives</p>
+              <app-tex class="equation" [display]="true" tex="\sum_i y_i - m \sum_i x_i - nc = 0" />
+              <p>Dividing by <app-tex tex="n" />:</p>
               <app-tex class="equation" [display]="true" [tex]="tex.intercept" />
               <p>
                 Derivative with respect to <app-tex tex="m" /> (the inner derivative is
                 <span class="nowrap"><app-tex tex="-x_i" />):</span>
               </p>
-              <app-tex class="equation" [display]="true" [tex]="tex.dSdm" />
+              <app-tex class="equation equation--long" [display]="true" [tex]="tex.dSdm" />
               <p>Substitute <app-tex [tex]="tex.intercept" />:</p>
-              <app-tex class="equation" [display]="true" [tex]="tex.substituted" />
+              <app-tex class="equation equation--long" [display]="true" [tex]="tex.substituted" />
               <p>Rearranging:</p>
               <app-tex class="equation" [display]="true" [tex]="tex.rearranged" />
               <p>
@@ -457,7 +455,6 @@
               [axes]="residualAxes"
               [reference]="1"
               [band]="bands.ratio"
-              [annotate]="labelled.residuals"
               [optional]="optionalShip"
               [design]="design().chart"
             />
