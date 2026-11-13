@@ -14,7 +14,7 @@ export const DESIGN = {
     lineHeight: 1.7,
     headingSizeRem: 2.5,
     titleSizeRem: 4.4,
-    equationSizeEm: 1.15,
+    equationSizeEm: 1.05,
   },
   /** The drawing-sheet background: a fine grid with a coarser one over it, and soft glows. */
   sheet: {
