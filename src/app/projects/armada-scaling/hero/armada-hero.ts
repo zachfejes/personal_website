@@ -1,31 +1,28 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { HERO, leaderPath } from './hero-layout';
-
-/** What the hero's callouts say about the XQ2, all worked out from the data. */
-export interface HeroFacts {
-  /** How many ships and squadrons the data covers. */
-  shipCount: number;
-  canonM: number;
-  /** Predicted model length, rounded. */
-  modelMm: number;
-  /** Canon ÷ model length, rounded, e.g. 6200 for 1 : 6,200. */
-  scale: number;
-  /** The measured ship closest to it in canon length. */
-  nearest: { name: string; canonM: number } | null;
-  /** A familiar small ship and its scale, for contrast. */
-  fighter: { name: string; scale: number } | null;
-}
 
 interface Callout {
   label: string;
-  /** Set in the accent color, before the rest of the text. */
-  lead?: string;
   text: string;
   accent?: boolean;
 }
 
+/** Why the project exists, in four steps; the last is the question the page answers. */
+const CALLOUTS: readonly Callout[] = [
+  {
+    label: 'The game',
+    text: 'Star Wars: Armada fields beautiful models, from fighters to capital ships.',
+  },
+  { label: 'The goal', text: 'Build custom ships that feel the right size on the table.' },
+  { label: 'The station', text: "First up: the XQ2 Platform, from the '90s X-Wing games." },
+  {
+    label: 'The question',
+    text: "No single ratio fits Armada's ships. What rule do they follow?",
+    accent: true,
+  },
+];
+
 const pct = (value: number, of: number) => `${(value / of) * 100}%`;
-const grouped = (value: number) => value.toLocaleString('en');
 
 /**
  * The top of the Armada page, drawn like a sheet: title between rules, then the XQ2's top-view
@@ -39,7 +36,8 @@ const grouped = (value: number) => value.toLocaleString('en');
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArmadaHero {
-  readonly facts = input.required<HeroFacts>();
+  /** How many ships and squadrons the data covers. */
+  readonly shipCount = input.required<number>();
 
   protected readonly hero = HERO;
   protected readonly viewBox = `0 0 ${HERO.stage.width} ${HERO.stage.height}`;
@@ -76,27 +74,5 @@ export class ArmadaHero {
     },
   }));
 
-  protected readonly callouts = computed((): Callout[] => {
-    const f = this.facts();
-    const nearest = f.nearest
-      ? `: close to the ${f.nearest.name} (${grouped(f.nearest.canonM)} m)`
-      : '';
-    const fighter = f.fighter
-      ? ` A ${f.fighter.name} is closer to 1 : ${grouped(f.fighter.scale)}.`
-      : '';
-    return [
-      { label: 'Canon length', text: `${grouped(f.canonM)} m, end to end${nearest}.` },
-      {
-        label: 'Model length',
-        lead: `≈ ${f.modelMm} mm`,
-        text: ' on the table, from the fit worked out below.',
-        accent: true,
-      },
-      { label: 'Scale', text: `About 1 : ${grouped(f.scale)}.${fighter}` },
-      {
-        label: 'The question',
-        text: "No single ratio fits Armada's ships. What rule do they follow?",
-      },
-    ];
-  });
+  protected readonly callouts = CALLOUTS;
 }

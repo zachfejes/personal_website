@@ -14,7 +14,7 @@ const PULSE_MARGIN = '0px 0px -15% 0px';
 
 /**
  * A section's head on the drawing sheet: an orbit marker sitting on the thread in the left margin,
- * then the section's number (or kind, e.g. "Field note") and its short title. The first time it
+ * then the section's number (or kind, e.g. "Method note") and its short title. The first time it
  * scrolls into view, the marker's orbit sends out one ping (not with reduced motion).
  */
 @Component({

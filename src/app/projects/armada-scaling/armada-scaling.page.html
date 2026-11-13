@@ -1,5 +1,5 @@
 <article class="sheet">
-  <app-armada-hero [facts]="heroFacts" />
+  <app-armada-hero [shipCount]="n.shipCount" />
   <app-globe-edge class="sheet-globe" />
 
   <!-- Everything on the thread: a line down the left margin, with a marker at each section. -->
@@ -11,15 +11,24 @@
           <div class="prose" appReveal>
             <h2 id="background">A real station for the table</h2>
             <p>
-              I love the cinematic nature of Armada, and felt it would be great to use a real
-              station model in the game. The core game (before the Corellian Conflict expansion)
-              featured only unarmed repair stations, so my imagination immediately filled with the
-              XQ platforms from the TIE Fighter and X-Wing games of the 90s<a
-                class="ref"
-                href="#ref-1"
-                aria-label="Reference 1"
-                ><sup>1</sup></a
+              I love Star Wars: Armada, a tabletop game of fleet battles with a real sense of scale,
+              motion and momentum. I got into the game before the pandemic, and quickly found an
+              active gaming community in Toronto.
+            </p>
+            <p>
+              The game has a dynamic system for placing terrain, but uses card cutouts to represent
+              it. That seemed like a disservice to the otherwise wonderful ship models, and I felt
+              it would be great to use a real station model in the game. The core game (before the
+              Corellian Conflict expansion) featured only unarmed repair stations, so my imagination
+              immediately filled with the low-poly XQ platforms from the TIE Fighter and X-Wing
+              games of the 90s<a class="ref" href="#ref-1" aria-label="Reference 1"><sup>1</sup></a
               >.
+            </p>
+            <p>
+              I started my design work by replicating the silhouette of the XQ2 Platform: the three
+              angular landing pads and the central hub. Once that read correctly from a distance, I
+              added a few bulkier features (hangars, the underside) and gave it a first low-detail
+              print to see how it looked beside the game's model ships.
             </p>
             <h3>The problem</h3>
             <p>After my first design iteration, I realized two important things:</p>
@@ -28,26 +37,41 @@
               <li>The scale felt wrong.</li>
             </ul>
             <p>
-              I'll cover the station's design and fabrication in a separate write-up; here I'd like
-              to focus on the second point. Ship and squadron models in Armada are built to a
-              <em>relative</em> scale: a CR90 model isn't at the same scale to its canon counterpart
-              as a Victory-class Star Destroyer is. For proof, try fitting the CR90 into the
-              Victory's docking bay. I'll wait.
+              The first issue was easy enough to resolve: I took artistic liberty and added Star
+              Wars style greebles and details to the model. The second issue needed more thought.
             </p>
             <p>
-              I understand why Fantasy Flight chose a relative scale, but because model and canon
-              sizes don't have a linear relationship, it takes some thought to find the right size
-              for my XQ2 Platform and have it <em>feel</em> correct during play. Fortunately, a
-              little math can solve this problem, and help scale any future models I design.
+              Ship and squadron models in Armada are built to a <em>relative</em> scale. You can
+              quickly confirm this by trying to fit a CR90 model into the hangar of an
+              Imperial-class Star Destroyer: it works in A New Hope, not so much in Armada.
+            </p>
+            <p>
+              It makes sense that Fantasy Flight chose a relative scale: a linear scale would make
+              it impractical to have both an X-wing and a Star Destroyer on the same table. However,
+              because model and canon sizes don't have a linear relationship, it takes some thought
+              to find the right size for my XQ2 Platform and have it <em>feel</em> correct during
+              play. Fortunately, a little math can solve this problem, and help scale any future
+              models I design (and I have many ideas).
             </p>
           </div>
           <div class="sheet-stack">
-            <!-- Stand-in until there's a photo of the XQ2 among Armada's ships. -->
             <app-sheet-photo
               class="sheet-photo--rising"
-              src="projects/armada-scaling/stand-in-fleet.webp"
-              alt="A painted Armada miniature, a long green-grey ship with blue engines, on its clear stand"
-              caption="An Armada ship on the table"
+              src="projects/armada-scaling/xq2-tie-fighter.webp"
+              alt="The XQ2 Platform in TIE Fighter: a domed tower over three brown landing pads, with starfighters parked on the decks"
+              caption="The XQ2 Platform in TIE Fighter"
+              appReveal
+            />
+            <app-sheet-photo
+              src="projects/armada-scaling/cr90-hangar-a-new-hope.webp"
+              alt="The underside of an Imperial Star Destroyer, with the CR90 corvette drawn up inside its hangar"
+              caption="A CR90 inside an Imperial Star Destroyer's hangar, in A New Hope (Lucasfilm/Disney)"
+              appReveal
+            />
+            <app-sheet-photo
+              src="projects/armada-scaling/cr90-isd-armada.webp"
+              alt="Armada models on a starfield mat: a CR90 corvette by a red planet, and an Imperial Star Destroyer only a few times its length"
+              caption="The same two ships at Armada scale"
               appReveal
             />
             <app-sheet-frame [dimension]="n.xq2CanonM + ' m'" appReveal>
@@ -75,26 +99,37 @@
       </div>
     </section>
 
-    <section class="sheet-section" aria-labelledby="method">
+    <section class="sheet-section" aria-labelledby="data">
       <div class="sheet-wrap">
-        <app-sheet-head number="02" title="Method" />
+        <app-sheet-head number="02" title="Data" />
         <div class="sheet-side">
           <div class="prose" appReveal>
-            <h2 id="method">Plot the ships</h2>
+            <h2 id="data">Plot the ships</h2>
             <p>
-              We should be able to find a function that describes Armada's non-linear scale. To
-              start, let's plot the data<a class="ref" href="#ref-2" aria-label="Reference 2"
+              To identify the relationship (if any) between canon and model dimensions, we start by
+              plotting the available data<a class="ref" href="#ref-2" aria-label="Reference 2"
                 ><sup>2</sup></a
               >: the canon length of each ship and squadron in the game against the measured length
               of its model.
             </p>
-            <p>Two things stand out:</p>
+            <p>Two things in the graph stand out:</p>
             <ol>
               <li>There does seem to be a relationship.</li>
               <li>
                 As expected, it isn't linear: big ships are scaled down much more than small ones.
               </li>
             </ol>
+            <p>
+              The Executor is hidden by default, because at 19 km it squeezes everything else into a
+              corner. Show it with the toggle. Log view is the default, and linear is one click
+              away.
+            </p>
+            <p class="sheet-callout">
+              <b>Note · Updated 2026</b>
+              I originally did this assessment in 2018, before the Galactic Republic and Separatist
+              factions joined the game. Adding the data from those new ships, as well as the newer
+              Empire and Rebel ships, has altered the analysis slightly.
+            </p>
           </div>
           <div class="sheet-figure" appReveal>
             <app-scale-chart
@@ -118,18 +153,21 @@
         <div class="sheet-two">
           <div class="prose" appReveal>
             <p>
-              To define a <em>best fit</em>, we need a family of functions to try. By eye, I guessed
-              the relationship was either logarithmic or a power function. Fitting both shows which
-              describes the data better.
+              I started by identifying the most likely families of functions that could satisfy the
+              observed data. By eye, two appeared likely candidates: the power function and the
+              logarithmic function.
+            </p>
+            <p>
+              Fitting both against the data (that is, finding the specific function in each family
+              that best describes the data) is the first step. Then we can compare them, and
+              determine which gives the best fit.
             </p>
             <p>A logarithmic function has the general form</p>
             <app-tex class="equation" [display]="true" tex="y = a \ln(x) + b" />
             <p>
-              Linear regression<a class="ref" href="#ref-3" aria-label="Reference 3"
-                ><sup>3</sup></a
-              >
-              on <app-tex tex="\ln(x)" /> finds the <app-tex tex="a" /> and <app-tex tex="b" /> that
-              give the closest fit:
+              Treating <app-tex tex="\ln(x)" /> itself as an independent variable, we can use linear
+              regression<a class="ref" href="#ref-3" aria-label="Reference 3"><sup>3</sup></a> to
+              find the <app-tex tex="a" /> and <app-tex tex="b" /> that give the closest fit:
             </p>
             <app-tex class="equation" [display]="true" [tex]="tex.logFit" />
           </div>
@@ -137,8 +175,9 @@
             <p>A power function has the form</p>
             <app-tex class="equation" [display]="true" tex="y = a x^{b}" />
             <p>
-              Finding <app-tex tex="a" /> and <app-tex tex="b" /> directly is tough this time, but
-              taking the log of both sides gets us close:
+              Finding <app-tex tex="a" /> and <app-tex tex="b" /> requires an extra step this time,
+              but the data graph gives us a hint. Taking the <app-tex tex="\log_{10}" /> of both
+              sides gives us:
             </p>
             <app-tex
               class="equation"
@@ -155,7 +194,7 @@
           </div>
         </div>
         <p class="prose" appReveal>
-          Now let's plot both against the data. Switch either fit on or off to compare.
+          Now we plot both against the data. Switch either fit on or off to compare.
         </p>
         <div class="sheet-figure" appReveal>
           <app-scale-chart
@@ -170,32 +209,33 @@
       </div>
     </section>
 
-    <!-- A field note: the method's maths, on paper. -->
+    <!-- A method note: the maths behind the fits, on paper. -->
     <app-sheet-paper class="sheet-section" labelledBy="algorithm">
       <div class="sheet-wrap">
-        <app-sheet-head number="Field note" title="How the fitting works" />
+        <app-sheet-head number="Method note" title="Fitting and error" />
         <h2 id="algorithm" class="sheet-title">One method underneath</h2>
         <app-sheet-fold
-          summary="Every fit here comes from ordinary least squares, after each curve is turned into a straight line."
+          summary="Every linear regression here comes from ordinary least squares (OLS), after each curve is turned into a straight line."
         >
           <div class="sheet-two">
             <div class="prose">
               <p>
-                Every fit on this page comes from one method: ordinary least squares. Given points
-                <app-tex tex="(x_1, y_1), \ldots, (x_n, y_n)" />, it finds the straight line
-                <app-tex tex="y = mx + c" /> that makes the sum of the squared vertical gaps between
-                the points and the line as small as possible:
+                Every linear regression on this page comes from one method: ordinary least squares
+                (OLS). Given points <app-tex tex="(x_1, y_1), \ldots, (x_n, y_n)" />, it finds the
+                straight line <app-tex tex="y = mx + c" /> that makes the sum of the squared
+                vertical gaps between the points and the line as small as possible:
               </p>
               <app-tex class="equation" [display]="true" [tex]="tex.leastSquares" />
               <p>
-                Setting the derivatives to zero gives the answer directly, with no searching or
-                iteration, where <app-tex tex="\bar{x}" /> and <app-tex tex="\bar{y}" /> are the
-                averages:
+                Finding the minimum means varying both <app-tex tex="m" /> and <app-tex tex="c" />,
+                so we take a partial derivative with respect to each. <app-tex tex="S" /> is a sum
+                of squares of expressions that are linear in <app-tex tex="m" /> and
+                <app-tex tex="c" />, so it's a convex bowl with one lowest point, where both partial
+                derivatives are zero. Setting them to zero gives the answer directly, with no
+                searching or iteration, where <app-tex tex="\bar{x}" /> and
+                <app-tex tex="\bar{y}" /> are the averages.
               </p>
-              <app-tex class="equation" [display]="true" [tex]="tex.slope" />
-              <app-tex class="equation" [display]="true" [tex]="tex.intercept" />
-            </div>
-            <div class="prose">
+              <app-convex-bowl />
               <p>Neither candidate is a straight line, so each is first turned into one:</p>
               <ul>
                 <li>
@@ -212,21 +252,60 @@
                   same for a starfighter as for a Star Destroyer.
                 </li>
               </ul>
+            </div>
+            <div class="prose">
+              <p>
+                Derivative with respect to <app-tex tex="c" /> (chain rule; the inner derivative is
+                <span class="nowrap"><app-tex tex="-1" />):</span>
+              </p>
+              <app-tex class="equation" [display]="true" [tex]="tex.dSdc" />
+              <p>
+                This gives <app-tex tex="\sum_i y_i - m \sum_i x_i - nc = 0" />. Dividing by
+                <app-tex tex="n" />:
+              </p>
+              <app-tex class="equation" [display]="true" [tex]="tex.intercept" />
+              <p>
+                Derivative with respect to <app-tex tex="m" /> (the inner derivative is
+                <span class="nowrap"><app-tex tex="-x_i" />):</span>
+              </p>
+              <app-tex class="equation" [display]="true" [tex]="tex.dSdm" />
+              <p>Substitute <app-tex [tex]="tex.intercept" />:</p>
+              <app-tex class="equation" [display]="true" [tex]="tex.substituted" />
+              <p>Rearranging:</p>
+              <app-tex class="equation" [display]="true" [tex]="tex.rearranged" />
+              <p>
+                Deviations from a mean always sum to zero, so
+                <app-tex tex="\sum_i (y_i - \bar{y}) = 0" /> and
+                <app-tex tex="\sum_i (x_i - \bar{x}) = 0" />. That means you can subtract
+                <app-tex tex="\bar{x}" /> from <app-tex tex="x_i" /> in both sums without changing
+                either one:
+              </p>
+              <app-tex class="equation" [display]="true" [tex]="tex.slope" />
+            </div>
+          </div>
+          <hr class="sheet-divider" />
+          <div class="sheet-two">
+            <div class="prose">
               <p>
                 To compare the fits, each is scored on how far its predictions
                 <app-tex tex="\hat{y}_i" /> land from the real model lengths <app-tex tex="y_i" />:
-                by root-mean-square error, in millimetres,
+                first by root-mean-square error, in millimetres:
               </p>
               <app-tex class="equation" [display]="true" [tex]="tex.rmse" />
+            </div>
+            <div class="prose">
               <p>
-                and by average percentage error, which weighs every ship equally whatever its size:
+                Second, by average percentage error, which weighs every ship equally whatever its
+                size:
               </p>
               <app-tex class="equation" [display]="true" [tex]="tex.percentError" />
-              <p>
-                All of this runs when the site is built, straight from the ship data, so adding a
-                ship updates every fit, number and chart on this page.
-              </p>
             </div>
+          </div>
+          <div class="prose">
+            <p>
+              All of this runs when the site is built, straight from the ship data, so if I add a
+              ship in future, every fit, number and chart on this page updates automatically.
+            </p>
           </div>
         </app-sheet-fold>
       </div>
@@ -234,14 +313,18 @@
 
     <section class="sheet-section" aria-labelledby="comparison">
       <div class="sheet-wrap">
-        <app-sheet-head number="04" title="Which fit is better?" />
+        <app-sheet-head number="04" title="Comparing fits" />
         <div class="prose" appReveal>
-          <h2 id="comparison">The power function, by far</h2>
+          <h2 id="comparison">The power function fits</h2>
           <p>
-            By eye, the power function follows the data much more closely. To confirm it, I measured
-            each fit's average error as a percentage of each model's real length. Percentages keep
-            the biggest ships from dominating: 20 mm off matters a lot for a 60 mm corvette, and
-            much less for a 600 mm Super Star Destroyer.
+            By eye, the power function follows the data much more closely. This is particularly
+            apparent in the logarithmic view.
+          </p>
+          <p>
+            To confirm it, I used two methods to assess the error of each fit: root-mean-square
+            error, and the average error as a percentage of each model's real length. Percentages
+            keep the biggest ships from dominating: 20 mm off matters a lot for a 60 mm corvette,
+            and much less for a 600 mm Super Star Destroyer.
           </p>
         </div>
         <dl class="stats" appReveal>
@@ -261,45 +344,42 @@
             <p>
               The logarithmic fit does worst on the smallest craft: below about
               {{ negative.belowM }} m it predicts a model of negative length, which it does for
-              {{ negative.count }} of the {{ n.shipCount }} ships here.
+              {{ negative.count }} of the {{ n.shipCount }} ships here!
             </p>
           }
           <p>
-            The power function's error is about {{ n.ratio }}× smaller, so it's the one to use for
-            Armada's scale:
+            The power function's average error is about {{ n.ratio }}× smaller{{
+              n.rmseUnderHalf ? ' (and its RMSE less than half)' : ''
+            }}, so it's the one to use for Armada's scale:
           </p>
         </div>
         <div class="sheet-result" appReveal>
           <app-tex class="sheet-result__equation" [display]="true" [tex]="tex.powerFit" />
-          <div class="sheet-two">
-            <p class="sheet-callout">
-              <b>A · Scale factor</b>
-              A 1 m ship would be {{ n.powerA }} mm on the table.
-            </p>
-            <p class="sheet-callout">
-              <b>B · Exponent</b>
-              Under 1: double the length, and the model grows only {{ n.doubling }}×.
-            </p>
-          </div>
+          <p class="prose">
+            Its exponent is under 1, which is the whole story in one number: double a ship's length
+            and its model grows only {{ n.doubling }}×.
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- On paper on narrow screens only: there it reads as a second field note. -->
+    <!-- On paper on narrow screens only: there it reads as a second note. -->
     <app-sheet-paper class="sheet-section" labelledBy="alternatives" [narrowOnly]="true">
       <div class="sheet-wrap">
-        <app-sheet-head number="05" title="Why a power law?" />
-        <h2 id="alternatives" class="sheet-title">Eight shapes, tested</h2>
+        <app-sheet-head number="05" title="Confirmation" />
+        <h2 id="alternatives" class="sheet-title">Testing my assumptions</h2>
         <app-sheet-fold [summary]="foldSummaries.alternatives">
           <div class="prose" appReveal>
             <p>
-              I picked the power and logarithmic forms because the plotted data looked that shape.
-              Other shapes could fit too, so I tried {{ n.candidateCount }} of them. Each one is
-              fitted to the same ships and scored two ways: its average error on those ships, and
-              its average <em>left-out error</em> predicting each ship from a fit made without it
-              (leave-one-out cross-validation). The second is the real test. A formula with enough
-              parameters can bend through any data, but then it predicts new ships badly. The last
-              column counts ships given a negative model length.
+              I initially estimated that the power and logarithmic forms would best fit the data,
+              because in a linear plot the data seems to follow that shape. However, other shapes
+              could fit too, so to be more certain that I've found the best fit, I tried
+              {{ n.candidateCount }} of them. Each one is fitted to the same ships and scored two
+              ways: its average error on those ships, and its average <em>left-out error</em>
+              predicting each ship from a fit made without it (leave-one-out cross-validation). The
+              latter is the more important test, as we see in assessing the polynomials below. The
+              last column counts ships given a negative model length. A single negative prediction
+              invalidates the form, as these represent real physical objects.
             </p>
           </div>
           <app-candidates-table [rows]="candidates" appReveal />
@@ -308,37 +388,45 @@
               <p>What the alternatives show:</p>
               <ul>
                 <li>
-                  A logarithm has to cross zero somewhere, which is where the negative lengths come
-                  from. Shifting it to pass through zero, <app-tex tex="a \ln(1 + x / c)" />, fixes
-                  that but still misses by {{ n.leaveOneOut['shifted-log'] }}% on average.
+                  A logarithm has to cross zero somewhere, which is where the negative lengths in my
+                  initial analysis came from: a good reminder for me in future. Shifting it to pass
+                  through zero, <app-tex tex="a \ln(1 + x / c)" />, addresses it, but still misses
+                  by {{ n.leaveOneOut['shifted-log'] }}% on average.
                 </li>
                 <li>
-                  A sine wave starts out straight (<app-tex tex="\sin(kx) \approx kx" /> near zero)
-                  and only flattens near its peak. To flatten across the whole range, its peak has
-                  to sit at or beyond the largest ship, and then it can't bend enough for the small
-                  ones: {{ n.leaveOneOut['sine'] }}%.
+                  A sine wave starts out roughly straight (<app-tex tex="\sin(kx) \approx kx" />
+                  near zero) and only flattens near its peak. To flatten across the whole range, its
+                  peak has to sit at or beyond the largest ship, and then it can't bend enough for
+                  the small ones, so it misses by {{ n.leaveOneOut['sine'] }}% on average.
                 </li>
                 <li>
-                  Polynomials fit the ships they're given well enough, then predict left-out ships
-                  badly ({{ n.leaveOneOut['cubic'] }}% for the cubic). That's overfitting.
+                  Polynomials fit the ships they're given well, given high enough order, but then
+                  predict left-out ships badly ({{ n.leaveOneOut['cubic'] }}% for the cubic). That's
+                  overfitting.
                 </li>
               </ul>
             </div>
             <div class="prose">
               <ul class="sheet-continued">
                 <li>
-                  Letting the power law's exponent drift with size,
+                  Letting the power law's exponent change with size,
                   <app-tex tex="a x^{\,b + c \ln x}" />, gives
-                  <app-tex [tex]="'c = ' + n.curvature" />: next to no drift, and
-                  {{ n.leaveOneOut['curved-power'] }}% predicting left-out ships against the plain
-                  power law's {{ n.leaveOneOut['power'] }}%.
+                  <app-tex [tex]="'c = ' + n.curvature" />: next to no drift.
+                  @if (n.curvedBestInSample) {
+                    It has the lowest error on the ships it was fitted to, but does slightly worse
+                    on left-out ships ({{ n.leaveOneOut['curved-power'] }}% against the plain power
+                    law's {{ n.leaveOneOut['power'] }}%): a small sign of overfitting.
+                  } @else {
+                    It predicts left-out ships with {{ n.leaveOneOut['curved-power'] }}% error,
+                    against the plain power law's {{ n.leaveOneOut['power'] }}%.
+                  }
                 </li>
                 @if (n.split; as split) {
                   <li>
                     Fitting small and large ships separately, split at {{ split.atM }} m, gives
                     exponents of {{ split.below }} and {{ split.above }}, a slightly lower exponent
                     among the small craft. It predicts left-out ships with {{ split.leaveOneOut }}%
-                    error, so the extra parameters don't buy much.
+                    error, so going piecewise isn't worth it.
                   </li>
                 }
               </ul>
@@ -348,13 +436,19 @@
             If the power law were missing some shape, its errors would lean one way at some sizes.
             The chart below divides each ship's real model length by the power fit's prediction; the
             dashed line at 1 is a perfect prediction. Ships of {{ n.sizeBands.lengths }} average
-            {{ n.sizeBands.percents }} of their predicted size respectively.
+            {{ n.sizeBands.percents }} of their predicted size respectively. On average the misses
+            balance out at every size, though ships of similar size often miss the same way, which
+            hints at design choices by size class.
           </p>
           <p class="prose" appReveal>
-            They don't all miss by the same amount, though. The shaded band is the typical miss for
-            a ship of each size: about ±{{ n.miss.smallest }}% for the smallest craft, narrowing to
-            ±{{ n.miss.largest }}% by {{ n.miss.largestM }} m. A millimetre or two is a big share of
-            a fighter's model.
+            I expected the size of the miss to shrink as ships got bigger. That's only true as a
+            percentage: the shaded band is the typical miss for a ship of each size, about ±{{
+              n.miss.smallest
+            }}% for the smallest craft, narrowing to ±{{ n.miss.largest }}% by
+            {{ n.miss.largestM }} m. In millimetres the miss grows, from about
+            {{ n.miss.smallestMm }} mm for fighters to about {{ n.miss.largestMm }} mm for capital
+            ships. A millimetre is a big share of a 10 mm fighter, and measuring a model that small
+            is less precise too.
           </p>
           <div class="sheet-figure" appReveal>
             <app-scale-chart
@@ -371,9 +465,9 @@
           <div class="prose" appReveal>
             @if (n.powerBest) {
               <p>
-                So the power law isn't just a good first guess. None of the alternatives predicts a
-                new ship better, and what error is left looks like scatter in how each model was
-                designed rather than a missing curve.
+                This shows that the power law wasn't just a good first guess: none of the
+                alternatives predict a new ship better! The remaining error likely comes from design
+                choices for each model and inaccuracy in measurement.
               </p>
             } @else {
               <p>
@@ -424,7 +518,6 @@
       </div>
     </section>
 
-    <!-- Draft copy, to be rewritten: the station this project was started for. -->
     <section class="sheet-section" aria-labelledby="building">
       <div class="sheet-wrap">
         <app-sheet-head number="07" title="Building the XQ2" />
@@ -432,8 +525,11 @@
           <div class="prose" appReveal>
             <h2 id="building">Back to the station</h2>
             <p>
-              With a size worked out, I could get back to the station this all started with. At
-              {{ n.xq2ModelMm }} mm, the XQ2
+              With the scale worked out, I could finally get back to my XQ2 Platform, and make sure
+              it makes sense on the table.
+            </p>
+            <p>
+              At {{ n.xq2ModelMm }} mm, the XQ2
               @if (n.xq2Neighbors.below && n.xq2Neighbors.above) {
                 sits between the {{ n.xq2Neighbors.below }} and the {{ n.xq2Neighbors.above }}:
               } @else {
@@ -443,24 +539,31 @@
               enough to carry the detail the first version was missing.
             </p>
             <p>
-              Rescaling it changed more than the size. Details that worked at the first scale read
-              differently at the new one, so I reworked the hangar arms, the central tower and the
-              panelling for a {{ n.xq2ModelMm }} mm model, and test-printed parts next to my
-              existing ships to check the proportions by eye before committing to the final print.
+              Back in Blender, I reworked the hangar arms, central tower and panelling for a
+              {{ n.xq2ModelMm }} mm model, adding detail that would read at that scale and that a
+              resin printer could reliably print, and test-printed parts beside my existing ships
+              before the final print.
             </p>
             <p>
-              The design and fabrication deserve their own write-up, so I'll stop there. The short
-              version: the station on the table now looks like it belongs in the same fleet, and the
-              same curve will size whatever I build next.
+              I'm really happy with how the station turned out. It's seen many, many battles, and
+              the game feels more complete with it. I have ideas for many more models that I can now
+              scale, so I'm excited to put this work to further use.
             </p>
           </div>
-          <!-- Stand-in until there's a photo of the finished model. -->
-          <app-sheet-photo
-            src="projects/armada-scaling/stand-in-station.webp"
-            alt="A render of the XQ2 Platform: an octagonal hub with three red-striped arms, on black"
-            caption="The XQ2 Platform"
-            appReveal
-          />
+          <div class="sheet-stack">
+            <app-sheet-photo
+              src="projects/armada-scaling/xq2-blender.webp"
+              alt="A grey render of the XQ2 Platform model: a hexagonal hub with three angled landing pads, on a single post over a terrain base"
+              caption="The XQ2 Platform in Blender"
+              appReveal
+            />
+            <app-sheet-photo
+              src="projects/armada-scaling/xq2-on-the-table.webp"
+              alt="An Armada game on a starfield mat, seen from above: the grey XQ2 Platform among fighter squadrons and ships"
+              caption="The XQ2 Platform on the table, mid-battle"
+              appReveal
+            />
+          </div>
         </div>
       </div>
     </section>

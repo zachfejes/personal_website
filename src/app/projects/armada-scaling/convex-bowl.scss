@@ -1,0 +1,62 @@
+// Drawn in the page's ink, so it reads on paper as on the dark sheet.
+figure {
+  margin: 0.5rem 0 1.5rem;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  height: auto;
+  margin-inline: auto;
+  overflow: visible;
+}
+
+.outline,
+.contour {
+  fill: none;
+  stroke: var(--sheet-text);
+  stroke-width: 1.2;
+}
+
+.contour {
+  stroke-width: 0.8;
+  stroke-opacity: 0.7;
+}
+
+// The far side of each ring, seen through the bowl.
+.contour--back {
+  stroke-dasharray: 2 3;
+  stroke-opacity: 0.4;
+}
+
+.tangent {
+  stroke: var(--sheet-accent);
+  stroke-dasharray: 4 3;
+}
+
+.minimum {
+  fill: var(--sheet-accent);
+}
+
+.label {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--sheet-strong);
+}
+
+.label--muted {
+  fill: var(--sheet-muted);
+  text-transform: none;
+}
+
+figcaption {
+  margin-top: 0.5rem;
+  font-family: var(--font-label);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: var(--sheet-muted);
+  text-align: center;
+}

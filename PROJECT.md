@@ -183,11 +183,11 @@ the file to add or correct a ship; the fits, numbers, equations and charts all f
 Charts start on log axes, where the power law is a straight line and ships from 6 m fighters to
 the 19 km Executor all stay readable; readers can switch to linear. The fits are compared by
 average percentage error (with RMSE alongside), so the largest ships don't dominate the
-comparison. The page's data reference lists every measurement source used in `ships.json`. A "How
-the fitting works" section explains the method itself: ordinary least squares, how each curve is
-turned into a straight-line fit, and the formulas for both error measures.
+comparison. The page's data reference lists every measurement source used in `ships.json`. A "Fitting
+and error" method note explains the method itself: ordinary least squares (derived step by step),
+how each curve is turned into a straight-line fit, and the formulas for both error measures.
 
-A "Why a power law?" section tests the choice of curve (`candidates.ts`). Eight forms (power,
+A "Confirmation" section (05) tests the choice of curve (`candidates.ts`). Eight forms (power,
 logarithmic, quarter sine wave, logarithm through zero, levelling off, quadratic, cubic, and a
 power law whose exponent drifts with size) are fitted to the same ships and scored on average
 error and on leave-one-out error: each ship predicted by a fit made without it, which exposes
@@ -211,7 +211,7 @@ board or a set of field notes, chosen over two other directions in a round of mo
   themselves and the callouts fade in, then an amber marker slowly orbits the dashed ring.
 - **Hero to the first section:** a wireframe globe edge, continuing the rings.
 - **Paper field notes.** Light panels with large curved corners for asides; the thread turns to
-  ink over them. "How the fitting works" is a field note; "Why a power law?" is one on phones
+  ink over them. The "Fitting and error" method note is one; "Confirmation" is one on phones
   only. On phones both start collapsed to a one-line summary and open smoothly.
 - **Drawing language.** Hairline frames with dimension lines for the orthographic views, dashed
   callout boxes, mono labels, and charts drawn the same way (dashed grid, ships as rings, annotated
@@ -225,15 +225,15 @@ Delivered in four PRs (#32–#35): (1) theme, thread, field notes and the new se
 globe edge, photo slots; (3) charts, calculator and table restyle; (4) phone folding, motion and
 tuner settings. The sheet pieces live in `projects/armada-scaling/` (`sheet/`, `hero/`) until a
 second project uses them. Motion timings (hero draw-in, callout stagger, orbit period, pulse,
-fold) are in the tuner's "Motion" group. The two photo slots hold stand-ins
-(`stand-in-*.webp`) until there are photos of the station.
+fold) are in the tuner's "Motion" group. Photos: the XQ2 in TIE Fighter, the CR90 in A
+New Hope (Lucasfilm/Disney), the CR90 and ISD at Armada scale, the station in Blender, and the station on
+the table.
 
 Status (milestone 6, first version): the page is built as a preview on staging, with the three
 charts, the calculator (canon length → model length), the XQ2 wireframes and the tuning panel.
 Every number in the text is computed from the data; tests check them against the 2018 results.
 That check found a typo in the original: the logarithmic fit is y = 31.84 ln(x) − 78.25, not
-3.84 (the original's chart and error already used 31.84). Next: real photos to replace the
-stand-ins, and a copy pass, then publish (posted date, card link, header link to `/projects`).
+3.84 (the original's chart and error already used 31.84). Next: publish (posted date, card link, header link to `/projects`).
 
 ## Project backlog
 
