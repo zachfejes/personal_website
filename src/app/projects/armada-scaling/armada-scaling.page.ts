@@ -177,10 +177,7 @@ export class ArmadaScalingPage {
   }));
   protected readonly optionalShip = OPTIONAL_SHIP;
   protected readonly spread = spreadMm;
-  /**
-   * The typical miss as a band: around 1 on the error chart (across the whole axis), and around the
-   * fit on the findings chart (only as far as the regular ships go).
-   */
+  /** The typical miss as a band across the whole axis: around 1 on the error chart, around the fit on the findings chart. */
   protected readonly bands: { ratio: Band; length: Band } = {
     ratio: {
       label: BAND_LABEL,
@@ -191,7 +188,6 @@ export class ArmadaScalingPage {
       label: BAND_LABEL,
       lower: (x) => predictModelMm(x) * (1 - MISS.at(x)),
       upper: (x) => predictModelMm(x) * (1 + MISS.at(x)),
-      maxX: MISS_RANGE.max,
     },
   };
   /** Credited in the references, straight from ships.json. */
