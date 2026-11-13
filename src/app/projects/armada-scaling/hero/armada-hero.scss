@@ -257,7 +257,7 @@ $stagger: var(--callout-stagger-ms, 180ms);
 // Drafted rings: once the drawing is in, a ring flickers on, holds, then flickers off, as if the
 // sheet were still being worked on. Each ring has its own period and start, so they never settle
 // into a pattern.
-$draft: var(--draft-s, 18s);
+$draft: var(--draft-s, 10s);
 
 .ring--draft {
   opacity: 0;

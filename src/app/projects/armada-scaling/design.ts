@@ -31,7 +31,7 @@ export const DESIGN = {
     /** One trip of the amber marker round the hero's dashed ring. */
     orbitSeconds: 60,
     /** One cycle of a hero ring flickering on, holding, and flickering off (each ring scales it). */
-    draftSeconds: 18,
+    draftSeconds: 10,
     /** The ping from a section's marker when it first scrolls into view. */
     pulseMs: 1200,
     pulseScale: 1.8,
