@@ -134,32 +134,6 @@ header {
   }
 }
 
-.marker {
-  display: none;
-  stroke: var(--sheet-muted);
-
-  circle {
-    fill: var(--sheet-bg);
-  }
-
-  text {
-    fill: var(--sheet-muted);
-    stroke: none;
-    font-family: var(--font-label);
-    font-size: 18px;
-    text-anchor: middle;
-    dominant-baseline: central;
-  }
-}
-
-.marker--accent {
-  stroke: var(--sheet-accent);
-
-  text {
-    fill: var(--sheet-accent);
-  }
-}
-
 .art {
   position: absolute;
   height: auto;
@@ -199,14 +173,15 @@ header {
   color: var(--sheet-accent);
 }
 
-// Phones and narrow windows: the drawing keeps its scale around the hub, cropped at the sides,
-// with numbered markers in place of the leaders; the callouts follow as a list.
+// Phones and narrow windows: the drawing keeps its scale around the hub, cropped at the sides and
+// fading out top and bottom rather than cut off; the callouts follow as a list.
 @media (width <= $stacked) {
   .composition {
     aspect-ratio: auto;
     max-width: none;
     margin-inline: calc(-1 * var(--gutter));
     overflow: hidden;
+    mask-image: linear-gradient(transparent, #000 20%, #000 82%, transparent);
   }
 
   .stage {
@@ -222,10 +197,6 @@ header {
   .leader,
   .crosshair--across {
     display: none;
-  }
-
-  .marker {
-    display: inline;
   }
 
   .callouts {
@@ -274,7 +245,6 @@ $stagger: var(--callout-stagger-ms, 180ms);
 }
 
 .leader circle,
-.marker,
 .callout {
   animation: fade-in calc($draw * 0.5) ease-out calc($draw * 1.1 + var(--i) * $stagger) both;
 }
@@ -282,6 +252,67 @@ $stagger: var(--callout-stagger-ms, 180ms);
 .orbit-marker {
   transform-box: view-box;
   animation: orbit var(--orbit-s, 60s) linear calc($draw * 1.8) infinite;
+}
+
+// Drafted rings: once the drawing is in, a ring flickers on and draws itself, holds, then flickers
+// out and is erased, as if the sheet were still being worked on. Two take turns, half a cycle apart.
+.ring--draft {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  animation: draft var(--draft-s, 18s) linear calc($draw * 2 + var(--i) * var(--draft-s, 18s) / 2)
+    infinite;
+}
+
+@keyframes draft {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+
+  2% {
+    opacity: 0.8;
+  }
+
+  3% {
+    opacity: 0.15;
+  }
+
+  4% {
+    opacity: 0.7;
+  }
+
+  5% {
+    opacity: 0.25;
+  }
+
+  7% {
+    opacity: 0.7;
+  }
+
+  18%,
+  45% {
+    stroke-dashoffset: 0;
+    opacity: 0.7;
+  }
+
+  47% {
+    opacity: 0.15;
+  }
+
+  48% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 0.1;
+  }
+
+  55%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
 }
 
 @keyframes draw {
@@ -308,7 +339,8 @@ $stagger: var(--callout-stagger-ms, 180ms);
 
 // The site already shortens animations for reduced motion; an endless orbit is stopped outright.
 @media (prefers-reduced-motion: reduce) {
-  .orbit-marker {
+  .orbit-marker,
+  .ring--draft {
     animation: none;
   }
 }

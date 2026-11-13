@@ -156,6 +156,7 @@ function negativeBelow(zeroM: number | null) {
     '[style.--draw-ms.ms]': 'design().motion.drawMs',
     '[style.--callout-stagger-ms.ms]': 'design().motion.calloutStaggerMs',
     '[style.--orbit-s.s]': 'design().motion.orbitSeconds',
+    '[style.--draft-s.s]': 'design().motion.draftSeconds',
     '[style.--pulse-ms.ms]': 'design().motion.pulseMs',
     '[style.--pulse-scale]': 'design().motion.pulseScale',
     '[style.--fold-ms.ms]': 'design().motion.foldMs',
