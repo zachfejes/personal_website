@@ -236,8 +236,16 @@ I've added a few ships I'd like to design to the chart, along with yours, each w
 
 Title: Back to the station
 
-With a size worked out, I could get back to the station this all started with. At 142 mm, the XQ2 sits between the Victory Star Destroyer (137 mm) and the Interdictor Star Destroyer (160 mm): about where an 884 m station belongs among Armada's ships, and big enough to carry the detail the first version was missing.
+With the scale worked out, I could finally get back to my XQ2 Station - and ensure it makes sense on the table.
+
+At 142 mm, the XQ2 sits between the Victory Star Destroyer (137 mm) and the Interdictor Star Destroyer (160 mm): about where an 884 m station belongs among Armada's ships, and big enough to carry the detail the first version was missing.
+
+I dove back into blender and starting adding more details that would read well at that scale, she that a resin printer could reliably print.
+
+[Image of the model in Blender]
 
 Rescaling it changed more than the size. Details that worked at the first scale read differently at the new one, so I reworked the hangar arms, the central tower and the panelling for a 142 mm model, and test-printed parts next to my existing ships to check the proportions by eye before committing to the final print.
 
-The design and fabrication deserve their own write-up, so I'll stop there. The short version: the station on the table now looks like it belongs in the same fleet, and the same curve will size whatever I build next.
+[Picture of station on the table]
+
+I'm really happy with how the station turned out. It's seen many, many battles, and I feel like the game feels more complete with it. I have ideas for many more models that I can now scale, so I'm excited to put this work to further use.
