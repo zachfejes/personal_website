@@ -45,10 +45,10 @@ After my first design iteration, I realized two important things:
 
 The first issue was easy enough to resolve: I took artistic liberty and added Star Wars style greebles and details to the model. The second issue needed more thought.
 
-Ship and squadron models in Armada are built to a relative scale. You can quickly confirm this by trying to fit a CR90 model into the hangar of a Victory-class Star Destroyer: it works in A New Hope, not so much in Armada.
+Ship and squadron models in Armada are built to a relative scale. You can quickly confirm this by trying to fit a CR90 model into the hangar of an Imperial-class Star Destroyer: it works in A New Hope, not so much in Armada.
 
 [Picture of the Episode IV CR90 pulled into the Star Destroyer's hangar - needs a credit]
-[Picture of the CR90 and Victory models clearly not fitting into one another]
+[Picture of the CR90 and Imperial Star Destroyer models clearly not fitting into one another]
 
 It makes sense that Fantasy Flight chose a relative scale: a linear scale would make it impractical to have both an X-wing and a Star Destroyer on the same table. However, because model and canon sizes don't have a linear relationship, it takes some thought to find the right size for my XQ2 Platform and have it feel correct during play. Fortunately, a little math can solve this problem, and help scale any future models I design (and I have many ideas).
 
