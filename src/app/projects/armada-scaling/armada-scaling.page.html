@@ -283,17 +283,23 @@
             </div>
           </div>
           <hr class="sheet-divider" />
+          <div class="sheet-two">
+            <div class="prose">
+              <p>
+                To compare the fits, each is scored on how far its predictions
+                <app-tex tex="\hat{y}_i" /> land from the real model lengths <app-tex tex="y_i" />:
+                by root-mean-square error, in millimetres,
+              </p>
+              <app-tex class="equation" [display]="true" [tex]="tex.rmse" />
+            </div>
+            <div class="prose">
+              <p>
+                and by average percentage error, which weighs every ship equally whatever its size:
+              </p>
+              <app-tex class="equation" [display]="true" [tex]="tex.percentError" />
+            </div>
+          </div>
           <div class="prose">
-            <p>
-              To compare the fits, each is scored on how far its predictions
-              <app-tex tex="\hat{y}_i" /> land from the real model lengths <app-tex tex="y_i" />: by
-              root-mean-square error, in millimetres,
-            </p>
-            <app-tex class="equation" [display]="true" [tex]="tex.rmse" />
-            <p>
-              and by average percentage error, which weighs every ship equally whatever its size:
-            </p>
-            <app-tex class="equation" [display]="true" [tex]="tex.percentError" />
             <p>
               All of this runs when the site is built, straight from the ship data, so if I add a
               ship in future, every fit, number and chart on this page updates automatically.
