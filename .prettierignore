@@ -2,3 +2,5 @@
 design/snapshots/
 # Static mock-ups, kept as they were reviewed.
 design/armada/mockup/
+# Content files
+content/
