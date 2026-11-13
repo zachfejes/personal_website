@@ -24,8 +24,15 @@ export const HERO = {
   /** Construction rings around the hub; the dashed one carries the amber marker. */
   rings: [180, 250, 330, 420],
   dashedRing: 330,
-  /** Rings that are drafted in and erased again, over and over, between the fixed ones. */
-  draftRings: [290, 375],
+  /**
+   * Rings between the fixed ones that flicker on, hold, and flicker off, over and over. Each one's
+   * cycle (`period`) and start (`delay`) are multiples of the "Drafted rings" setting; the periods
+   * don't divide evenly, so the rings drift in and out of step instead of taking strict turns.
+   */
+  draftRings: [
+    { r: 290, period: 1, delay: 0 },
+    { r: 375, period: 1.43, delay: 0.35 },
+  ],
   /** How far the crosshairs reach from the hub. */
   crosshair: { up: 440, down: 440, across: 480 },
   callout: { width: 250, anchorDrop: 30, shelf: 90 },
