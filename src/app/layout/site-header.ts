@@ -1,9 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+/** A header link: a page, or a section of one (`fragment`). */
 export interface NavLink {
   label: string;
-  fragment: string;
+  path: string;
+  fragment?: string;
 }
 
 @Component({
@@ -15,9 +17,9 @@ export interface NavLink {
 })
 export class SiteHeader {
   protected readonly links: NavLink[] = [
-    { label: 'Projects', fragment: 'work' },
-    { label: 'About', fragment: 'about' },
-    { label: 'Contact', fragment: 'contact' },
+    { label: 'Projects', path: '/projects' },
+    { label: 'About', path: '/', fragment: 'about' },
+    { label: 'Contact', path: '/', fragment: 'contact' },
   ];
   protected readonly menuOpen = signal(false);
 

@@ -11,9 +11,10 @@ export const HOME_PROJECT_SLOTS = 6;
 export const PROJECTS: readonly Project[] = [
   {
     slug: 'armada-scaling',
-    status: 'coming-soon',
+    status: 'published',
     page: () => import('./armada-scaling/armada-scaling.page').then((m) => m.ArmadaScalingPage),
-    timeline: { start: '2018-09', end: '2018-09' },
+    timeline: { start: '2018-08', end: '2018-08' },
+    posted: '2026-11-14',
     title: 'Armada Scaling',
     category: 'Data · Tabletop',
     summary:
