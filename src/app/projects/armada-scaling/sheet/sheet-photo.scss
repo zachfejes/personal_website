@@ -14,15 +14,15 @@ img,
   box-shadow: 0 24px 40px -22px rgb(0 0 0 / 80%);
 }
 
-// Every photo, and the space held for one, is 16 : 9 unless the page sets another shape.
+// Every photo, and the space held for one, is 16 : 9.
 img {
   height: auto;
-  aspect-ratio: var(--photo-ratio, 16 / 9);
+  aspect-ratio: 16 / 9;
   object-fit: cover;
 }
 
 .placeholder {
-  aspect-ratio: var(--photo-ratio, 16 / 9);
+  aspect-ratio: 16 / 9;
   display: flex;
   flex-direction: column;
   align-items: center;
