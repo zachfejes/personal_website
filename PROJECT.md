@@ -229,11 +229,13 @@ fold) are in the tuner's "Motion" group. Photos: the XQ2 in TIE Fighter, the CR9
 New Hope (Lucasfilm/Disney), the CR90 and ISD at Armada scale, the station in Blender, and the station on
 the table.
 
-Status (milestone 6, first version): the page is built as a preview on staging, with the three
-charts, the calculator (canon length → model length), the XQ2 wireframes and the tuning panel.
+Status (milestone 6, done): published 2026-11-14 (listed on `/projects`, linked from its card;
+the header's Projects link now goes to `/projects`). Built with four charts, the calculator
+(canon length → model length), the XQ2 wireframes, photos with a click-to-enlarge viewer and the
+tuning panel (development and staging only).
 Every number in the text is computed from the data; tests check them against the 2018 results.
 That check found a typo in the original: the logarithmic fit is y = 31.84 ln(x) − 78.25, not
-3.84 (the original's chart and error already used 31.84). Next: publish (posted date, card link, header link to `/projects`).
+3.84 (the original's chart and error already used 31.84).
 
 ### Likely reuse candidates
 
@@ -419,8 +421,8 @@ anything the linters already enforce isn't repeated here.
    of unit-testing special features (interactive charts, fits, math).
 5. ✅ **Project framework:** project registry, `/projects` page, shared project card, routes and
    prerendering per slug. Article building blocks wait for a second project that needs them.
-6. **Armada Scaling:** port the first project using the framework. _In progress: preview on
-   staging, design iteration next._
+6. ✅ **Armada Scaling:** port the first project using the framework. Published on staging
+   2026-11-14; it goes live with the production deploy (milestone 9).
 7. **About / Resume:** bio, experience timeline, skills, PDF download.
 8. **Polish:** SEO, sitemap, accessibility pass, Lighthouse performance check, favicon and social preview images.
    Trim the equation library: pages with math currently ship KaTeX's script (most of the Armada

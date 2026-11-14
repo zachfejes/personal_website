@@ -12,9 +12,11 @@
   </button>
   <nav id="site-nav" class="nav" [class.is-open]="menuOpen()" aria-label="Main">
     <ul>
-      @for (link of links; track link.fragment) {
+      @for (link of links; track link.label) {
         <li>
-          <a routerLink="/" [fragment]="link.fragment" (click)="closeMenu()">{{ link.label }}</a>
+          <a [routerLink]="link.path" [fragment]="link.fragment" (click)="closeMenu()">{{
+            link.label
+          }}</a>
         </li>
       }
     </ul>
