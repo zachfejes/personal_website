@@ -8,7 +8,6 @@ import { SCALE_KINDS, ScaleKind } from './scale-chart/axis';
 export const DESIGN = {
   layout: {
     readingWidthCh: 62,
-    figureWidthRem: 52,
     sectionPaddingRem: 5,
     bodySizeRem: 1.08,
     lineHeight: 1.7,
@@ -35,7 +34,7 @@ export const DESIGN = {
     /** The ping from a section's marker when it first scrolls into view. */
     pulseMs: 1200,
     pulseScale: 1.8,
-    /** Phone field notes opening and closing. */
+    /** Phone notes (the method note, section 05) opening and closing. */
     foldMs: 350,
   },
   chart: {
@@ -55,7 +54,6 @@ export const DESIGN = {
   },
   figures: {
     wireframeOpacity: 0.9,
-    wireframeWidthPct: 100,
   },
 };
 
@@ -72,14 +70,6 @@ export const DESIGN_SCHEMA: Schema<Design> = {
         max: 90,
         step: 1,
         unit: 'ch',
-      },
-      figureWidthRem: {
-        type: 'range',
-        label: 'Figure width',
-        min: 30,
-        max: 80,
-        step: 1,
-        unit: 'rem',
       },
       sectionPaddingRem: {
         type: 'range',
@@ -184,14 +174,6 @@ export const DESIGN_SCHEMA: Schema<Design> = {
     label: 'Figures',
     controls: {
       wireframeOpacity: { type: 'range', label: 'Wireframe opacity', min: 0.3, max: 1, step: 0.05 },
-      wireframeWidthPct: {
-        type: 'range',
-        label: 'Wireframe width',
-        min: 40,
-        max: 100,
-        step: 5,
-        unit: '%',
-      },
     },
   },
 };

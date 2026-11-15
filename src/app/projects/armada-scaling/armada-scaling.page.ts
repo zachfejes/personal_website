@@ -137,7 +137,6 @@ function negativeBelow(zeroM: number | null) {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[style.--reading-width.ch]': 'design().layout.readingWidthCh',
-    '[style.--figure-width.rem]': 'design().layout.figureWidthRem',
     '[style.--section-padding.rem]': 'design().layout.sectionPaddingRem',
     '[style.--body-size.rem]': 'design().layout.bodySizeRem',
     '[style.--body-line-height]': 'design().layout.lineHeight',
@@ -145,7 +144,6 @@ function negativeBelow(zeroM: number | null) {
     '[style.--title-size.rem]': 'design().layout.titleSizeRem',
     '[style.--equation-size.em]': 'design().layout.equationSizeEm',
     '[style.--wireframe-opacity]': 'design().figures.wireframeOpacity',
-    '[style.--wireframe-width.%]': 'design().figures.wireframeWidthPct',
     '[style.--grid-opacity]': 'design().sheet.gridOpacity',
     '[style.--grid-major-opacity]': 'design().sheet.gridMajorOpacity',
     '[style.--glow-opacity]': 'design().sheet.glowOpacity',

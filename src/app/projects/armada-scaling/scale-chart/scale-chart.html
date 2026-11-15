@@ -186,7 +186,6 @@
         class="chart__point"
         [class.chart__point--planned]="p.series === 'planned'"
         [class.chart__point--highlight]="p.series === 'highlight'"
-        [class.is-active]="active() === p"
         [attr.cx]="p.cx"
         [attr.cy]="p.cy"
         [attr.r]="radius(p)"

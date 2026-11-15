@@ -259,8 +259,10 @@ Built for Armada and kept in `projects/armada-scaling/` until a second project p
   - `hero/`: the drawing-on-rings hero with leader-line callouts, orbit marker and flickering
     rings. Its layout constants are tuned to the XQ2 image; a `SheetHero` would take the image,
     hub, rings and callouts as inputs.
-  - Page styles not yet components: the stats block, the dashed note box (`.sheet-callout`), the
-    full-width divider and the two-column/side/stack layouts.
+  - Page styles not yet components: the stats block, the dashed note box (`.sheet-note`), the
+    full-width divider and the layouts (`.sheet-two`, `.sheet-text-figure`, `.sheet-stack`).
+  - `.sheet-view` and `.sheet-label` style the views inside `SheetFrame` but live in the page
+    styles; they move with the frame when it's extracted.
 - **Shared prerequisite:** the sheet theme (color variables, grid, thread) and the layout classes
   are defined in `armada-scaling.page.scss`; they need to move to a shared stylesheet or a wrapper
   component before other pages can use the pieces above.

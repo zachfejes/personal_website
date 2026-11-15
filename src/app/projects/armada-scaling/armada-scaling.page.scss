@@ -1,6 +1,7 @@
 // The drawing sheet: one continuous dark-blue page on a fine grid, with a thread down the left
-// margin that carries a marker for each section. Paper sections ("field notes") swap the same
-// color variables for ink, so everything inside them, the thread included, follows.
+// margin that carries a marker for each section. Paper sections (the method note, and section 05
+// on phones) swap the same color variables for ink, so everything inside them, the thread
+// included, follows.
 
 // Layout and type sizes come from the design settings (design.ts) as custom properties on the
 // host, so the tuning panel can change them live.
@@ -52,17 +53,9 @@
   display: block;
 }
 
-// Colors the content reads. Paper redefines these.
-@mixin sheet-colors {
-  --accent-text: var(--sheet-accent);
-
-  color: var(--sheet-body);
-}
-
 .sheet {
-  @include sheet-colors;
-
   position: relative;
+  color: var(--sheet-body);
   padding-bottom: 6rem;
   background:
     radial-gradient(
@@ -147,7 +140,7 @@
 
 // Layouts within a section
 .sheet-two,
-.sheet-side {
+.sheet-text-figure {
   display: grid;
   gap: clamp(1.5rem, 4vw, 3.5rem);
   align-items: start;
@@ -157,13 +150,14 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.sheet-side {
+// A narrow text column beside a wide figure.
+.sheet-text-figure {
   grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
 }
 
 @media (width <= $narrow) {
   .sheet-two,
-  .sheet-side {
+  .sheet-text-figure {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -289,9 +283,10 @@ h3 {
   }
 }
 
-// Callouts: a dashed box of mono notes, as on a drawing.
-.sheet-callout {
-  margin: 0;
+// A note: a dashed box of mono text, as on a drawing, spanning the section below its text and
+// figure.
+.sheet-note {
+  margin: 2rem 0 0;
   padding: 0.75rem 0.9rem;
   border: 1px dashed rgb(var(--sheet-line-rgb) / 45%);
   font-family: var(--font-label);
@@ -396,11 +391,6 @@ h3 {
   margin: 2.5rem 0 2rem;
   border: 0;
   border-top: 1px solid rgb(var(--sheet-line-rgb) / 35%);
-}
-
-// A note that spans the section, under the text and chart beside it.
-.sheet-callout--wide {
-  margin-top: 2rem;
 }
 
 // The derivation's longest lines are set a little smaller on phones, so they fit on one line.
