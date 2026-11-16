@@ -85,6 +85,8 @@ const MIN_TICKS = 3;
 const FIT_SAMPLES = 160;
 /** On linear axes, curves start just above 0: the log fit is undefined there. */
 const FIT_MIN_X = 1;
+/** Narrower charts drop "log scale" from the axis titles (the Log button says it), to fit. */
+const FULL_TITLE_MIN_WIDTH = 480;
 /** Pointer must be this close to a point (SVG units) to select it. */
 const HIT_RADIUS = 28;
 const TOOLTIP = {
@@ -119,7 +121,11 @@ let nextId = 0;
   templateUrl: './scale-chart.html',
   styleUrl: './scale-chart.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '[style.--chart-grid-opacity]': 'design().gridOpacity' },
+  host: {
+    '[style.--chart-grid-opacity]': 'design().gridOpacity',
+    '[style.--chart-backdrop-opacity]': 'design().backdropOpacity',
+    '[style.--chart-backdrop-spread.px]': 'design().backdropSpreadPx',
+  },
 })
 export class ScaleChart {
   /** Accessible name for the chart, also its caption. */
@@ -176,9 +182,9 @@ export class ScaleChart {
     return [...this.shownShips(), ...this.planned(), ...(highlight ? [highlight] : [])];
   });
 
-  /** Axis titles, saying when the scale is logarithmic. */
+  /** Axis titles, saying when the scale is logarithmic (where there's room). */
   protected readonly titles = computed(() => {
-    const log = this.scale() === 'log';
+    const log = this.scale() === 'log' && this.width() >= FULL_TITLE_MIN_WIDTH;
     const title = ({ title, unit }: AxisLabel) => {
       const notes = [...(unit ? [unit] : []), ...(log ? ['log scale'] : [])];
       return notes.length ? `${title} (${notes.join(', ')})` : title;

@@ -1,4 +1,7 @@
-// Below this width the callouts leave the drawing and become a numbered list.
+@use '../sheet/sheet' as *;
+
+// Below this width the callouts leave the drawing and become a numbered list; on phones
+// ($narrow) the drawing stands alone.
 $stacked: 960px;
 
 :host {
@@ -181,12 +184,13 @@ header {
     max-width: none;
     margin-inline: calc(-1 * var(--gutter));
     overflow: hidden;
-    mask-image: linear-gradient(transparent, #000 20%, #000 82%, transparent);
   }
 
+  // The drawing fades out top and bottom rather than being cut off; the list below stays solid.
   .stage {
     --stage-width: 600px;
 
+    mask-image: linear-gradient(transparent, #000 20%, #000 82%, transparent);
     position: relative;
     left: 50%;
     width: var(--stage-width);
@@ -336,9 +340,62 @@ $draft: var(--draft-s, 10s);
 }
 
 // The site already shortens animations for reduced motion; an endless orbit is stopped outright.
+// Tapping the drawing sends a ping out from the amber marker, as a section's marker does when it
+// first scrolls into view (same timing; it reaches further, as the marker is smaller).
+$orbit-ping-reach: 2.5;
+
+.stage {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.orbit-marker__ping {
+  fill: none;
+  stroke: var(--sheet-accent);
+  stroke-width: 1.5;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.orbit-marker--pinging {
+  .orbit-marker__ping {
+    animation: orbit-ping var(--pulse-ms, 1200ms) ease-out;
+  }
+
+  .orbit-marker__dot {
+    animation: orbit-glow var(--pulse-ms, 1200ms) ease-out;
+  }
+}
+
+@keyframes orbit-ping {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(calc(var(--pulse-scale, 1.8) * #{$orbit-ping-reach}));
+  }
+}
+
+@keyframes orbit-glow {
+  30% {
+    filter: drop-shadow(0 0 4px var(--sheet-accent));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .orbit-marker,
   .ring--draft {
     animation: none;
+  }
+}
+
+// Phones: the drawing alone; the notes would crowd it.
+@media (width <= $narrow) {
+  .callouts {
+    display: none;
   }
 }

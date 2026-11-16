@@ -12,7 +12,7 @@ const PUBLISHED: PublishedProject = {
   category: 'Data · Tabletop',
   summary: 'Working out the model scale.',
   tags: ['Regression', 'Charts'],
-  art: 'chart',
+  art: 'station',
   timeline: { start: '2019-03', end: '2019-06' },
   posted: '2026-10-08',
   page: () => Promise.resolve(StubPage as Type<unknown>),

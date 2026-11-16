@@ -21,7 +21,7 @@
   </dl>
 
   <div class="composition">
-    <div class="stage">
+    <div #stage class="stage">
       <svg class="lines" [attr.viewBox]="viewBox" aria-hidden="true">
         @for (r of hero.rings; track r) {
           <circle
@@ -57,7 +57,18 @@
           [attr.y1]="crosshairs.horizontal.y"
           [attr.y2]="crosshairs.horizontal.y"
         />
-        <g class="orbit-marker" [style.transform-origin]="hero.hub.x + 'px ' + hero.hub.y + 'px'">
+        <g
+          class="orbit-marker"
+          [class.orbit-marker--pinging]="pinging()"
+          [style.transform-origin]="hero.hub.x + 'px ' + hero.hub.y + 'px'"
+        >
+          <circle
+            [attr.cx]="orbitMarker.x"
+            [attr.cy]="orbitMarker.y"
+            r="9"
+            class="orbit-marker__ping"
+            (animationend)="pinging.set(false)"
+          />
           <circle
             [attr.cx]="orbitMarker.x"
             [attr.cy]="orbitMarker.y"

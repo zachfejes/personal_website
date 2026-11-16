@@ -3,14 +3,52 @@
 // Drawn in the page's line style: hairline dashed grid, ships as rings, mono labels. All colors
 // are the page's variables, so the chart reads the same on the dark sheet and on paper.
 :host {
+  position: relative;
+  isolation: isolate;
   display: block;
   color: var(--sheet-text);
+
+  // A soft patch of the page's own color behind the chart, so the grid fades out under it.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * var(--chart-backdrop-spread, 32px));
+    z-index: -1;
+    border-radius: var(--chart-backdrop-spread, 32px);
+    background: var(--sheet-surface, var(--sheet-bg));
+    opacity: var(--chart-backdrop-opacity, 0.85);
+    filter: blur(var(--chart-backdrop-spread, 32px));
+    pointer-events: none;
+  }
 }
 
 .chart {
+  position: relative;
   display: grid;
   gap: 0.75rem;
   margin: 0;
+}
+
+// Phones: the buttons sit under the chart, clear of its axis titles, near the thumb.
+@media (width <= $narrow) {
+  .chart__controls {
+    order: 1;
+    justify-content: flex-start;
+  }
+
+  .chart__plot {
+    order: 0;
+  }
+
+  .chart__caption,
+  .chart__data {
+    order: 2;
+  }
+
+  .chart__optional,
+  .chart__scale {
+    margin-left: 0;
+  }
 }
 
 .chart__controls {

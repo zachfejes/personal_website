@@ -12,7 +12,7 @@ import {
 class StubPage {}
 const loadStub = () => Promise.resolve(StubPage as Type<unknown>);
 
-const base = { category: 'Test', summary: 'A test project.', tags: [], art: 'chart' } as const;
+const base = { category: 'Test', summary: 'A test project.', tags: [], art: 'station' } as const;
 
 const OLDER: PublishedProject = {
   ...base,

@@ -20,7 +20,7 @@ export const PROJECTS: readonly Project[] = [
     summary:
       'Working out the non-linear model scale in Star Wars: Armada, so a custom station feels right on the table.',
     tags: ['Regression', 'Charts', 'Modeling'],
-    art: 'chart',
+    art: 'station',
   },
   {
     slug: 'padi-advanced-open-water',

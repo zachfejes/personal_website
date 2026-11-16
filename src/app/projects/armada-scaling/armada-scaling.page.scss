@@ -53,9 +53,17 @@
   display: block;
 }
 
+// Soft edges (the chart backdrops) never widen the page.
 .sheet {
   position: relative;
+  overflow-x: clip;
   color: var(--sheet-body);
+
+  // Body text is set smaller on phones.
+  @media (width <= $narrow) {
+    --body-size: var(--body-size-narrow);
+  }
+
   padding-bottom: 6rem;
   background:
     radial-gradient(
