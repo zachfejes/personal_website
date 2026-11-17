@@ -428,8 +428,8 @@ anything the linters already enforce isn't repeated here.
    prerendering per slug. Article building blocks wait for a second project that needs them.
 6. ✅ **Armada Scaling:** port the first project using the framework. Published on staging
    2026-11-14; it goes live with the production deploy (milestone 10).
-7. ✅ **About / Resume:** bio, experience timeline, skills, PDF download. Built: `/about`, with a
-   portrait placeholder. The PDF (`public/zachary-fejes-resume.pdf`) is generated from the master
+7. **About / Resume:** bio, experience timeline, skills, PDF download. _In review on staging:
+   `/about` is built, with a portrait placeholder; design feedback next._ The PDF (`public/zachary-fejes-resume.pdf`) is generated from the master
    resume without the phone number or sensitive program detail; regenerate it when the resume
    changes.
 8. **Polish:** SEO, sitemap, accessibility pass, Lighthouse performance check, favicon and social preview images.
