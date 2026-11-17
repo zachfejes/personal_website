@@ -21,14 +21,13 @@ export const EXPERIENCE: readonly Role[] = [
     timeline: { start: '2021-03' },
     steps: ['Staff MTS from Aug 2025', 'Senior MTS from Jun 2022', 'MTS from Mar 2021'],
     summary:
-      'Owned the ground software architecture for Canadarm3 through its preliminary and critical design reviews. Now the ground segment architect across about eight programs, from the lunar surface to Earth orbit.',
+      'Owned the ground software architecture for Canadarm3 through its preliminary and critical design reviews. Now the ground segment architect across programs from the lunar surface to Earth orbit.',
   },
   {
     title: 'Team Lead, Voice Lab',
     organization: 'Royal Bank of Canada',
     timeline: { start: '2019-12', end: '2021-03' },
-    summary:
-      'Led the Voice Lab: its budget, its projects and its technology partners, keeping customer data in Canada while moving to the cloud.',
+    summary: 'Led the Voice Lab: its budget, its projects and its technology partners.',
   },
   {
     title: 'Innovation Developer, Voice Lab',
