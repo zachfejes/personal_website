@@ -67,8 +67,10 @@ Project write-ups like Armada mix prose with interactive charts, equations, and 
   the SVG in templates. Charts draw at their container's real width, so text keeps its size on
   phones, and every chart has a data table for screen readers and the curious.
 - **Equations:** KaTeX, rendered during prerendering. Its stylesheet is a separate file
-  (`katex.css`) that only pages with equations link to. KaTeX's script still ships with each
-  page that uses it (about 75 KB compressed on Armada); trimming that is part of milestone 8.
+  (`katex.css`) that only pages with equations link to. Its script is a lazy chunk the browser
+  only fetches if an equation has to be typeset there (arriving by in-app navigation); a page
+  loaded directly keeps its prerendered equations and never loads it. The server build supplies
+  the typesetter (`TEX_RENDERER` in `app.config.server.ts`).
 - **Design tuning:** a project page under active design keeps its adjustable values (layout,
   type, section bands, chart styling) in one settings file, e.g.
   `src/app/projects/armada-scaling/design.ts`. On development and staging builds the page shows
@@ -427,10 +429,9 @@ anything the linters already enforce isn't repeated here.
    2026-11-14; it goes live with the production deploy (milestone 9).
 7. **About / Resume:** bio, experience timeline, skills, PDF download.
 8. **Polish:** SEO, sitemap, accessibility pass, Lighthouse performance check, favicon and social preview images.
-   Trim the equation library: pages with math currently ship KaTeX's script (most of the Armada
-   page's 83 KB compressed), though the equations are already rendered at build time. Options:
-   render equations to static HTML at build time so no KaTeX code ships, or load it only where
-   an equation changes in the browser.
+   ✅ Equation library trimmed (pulled forward, 2026-11-15): KaTeX now loads only when an
+   equation is typeset in the browser, so the Armada page's scripts went from about 225 KB to
+   147 KB compressed (staging build) when loaded directly.
 9. **Production:** choose a host, connect the domain, add the production deploy workflow.
 
 ## Open questions

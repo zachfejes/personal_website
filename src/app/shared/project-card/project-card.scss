@@ -36,6 +36,29 @@
   }
 }
 
+// The Armada page's drawing sheet: deep blue with a soft glow, on a fine grid with a coarser one.
+.card__art--sheet {
+  --sheet-line-rgb: 170 200 210;
+
+  background:
+    radial-gradient(70% 80% at 50% 50%, rgb(40 70 90 / 55%), transparent 70%),
+    linear-gradient(rgb(var(--sheet-line-rgb) / 4%) 1px, transparent 1px) 0 0 / 3% 5.333%,
+    linear-gradient(90deg, rgb(var(--sheet-line-rgb) / 4%) 1px, transparent 1px) 0 0 / 3% 5.333%,
+    linear-gradient(rgb(var(--sheet-line-rgb) / 7%) 1px, transparent 1px) 0 0 / 15% 26.667%,
+    linear-gradient(90deg, rgb(var(--sheet-line-rgb) / 7%) 1px, transparent 1px) 0 0 / 15% 26.667%,
+    #0b1016;
+}
+
+.sheet-line {
+  stroke: rgb(var(--sheet-line-rgb) / 32%);
+  stroke-width: 0.7;
+}
+
+.sheet-line--faint {
+  stroke: rgb(var(--sheet-line-rgb) / 22%);
+  stroke-width: 0.6;
+}
+
 .card__body {
   display: grid;
   gap: 0.55rem;

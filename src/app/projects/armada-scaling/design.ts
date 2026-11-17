@@ -10,6 +10,8 @@ export const DESIGN = {
     readingWidthCh: 62,
     sectionPaddingRem: 5,
     bodySizeRem: 1.08,
+    /** Body text on phones. */
+    bodySizeNarrowRem: 1,
     lineHeight: 1.7,
     headingSizeRem: 2.5,
     titleSizeRem: 4.4,
@@ -51,6 +53,9 @@ export const DESIGN = {
     annotateMinWidthPx: 560,
     /** Ships, the power fit and planned ships take the page's colors; the log fit has its own. */
     logColor: '#8fb3a2',
+    /** A blurred patch of the page color behind each chart, so the sheet's grid fades under it. */
+    backdropOpacity: 0.85,
+    backdropSpreadPx: 32,
   },
   figures: {
     wireframeOpacity: 0.9,
@@ -84,6 +89,14 @@ export const DESIGN_SCHEMA: Schema<Design> = {
         label: 'Body text',
         min: 0.9,
         max: 1.4,
+        step: 0.01,
+        unit: 'rem',
+      },
+      bodySizeNarrowRem: {
+        type: 'range',
+        label: 'Body text (phones)',
+        min: 0.85,
+        max: 1.3,
         step: 0.01,
         unit: 'rem',
       },
@@ -168,6 +181,15 @@ export const DESIGN_SCHEMA: Schema<Design> = {
         unit: 'px',
       },
       logColor: { type: 'color', label: 'Log fit' },
+      backdropOpacity: { type: 'range', label: 'Backdrop', min: 0, max: 1, step: 0.05 },
+      backdropSpreadPx: {
+        type: 'range',
+        label: 'Backdrop blur',
+        min: 0,
+        max: 64,
+        step: 2,
+        unit: 'px',
+      },
     },
   },
   figures: {

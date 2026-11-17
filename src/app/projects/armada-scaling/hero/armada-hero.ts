@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  inject,
+  input,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { HERO, leaderPath } from './hero-layout';
 
 interface Callout {
@@ -39,6 +49,22 @@ const pct = (value: number, of: number) => `${(value / of) * 100}%`;
 export class ArmadaHero {
   /** How many ships and squadrons the data covers. */
   readonly shipCount = input.required<number>();
+
+  /** Whether the amber marker is sending out a ping (after a tap on the drawing). */
+  protected readonly pinging = signal(false);
+  private readonly stage = viewChild.required<ElementRef<HTMLElement>>('stage');
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    // The drawing is decoration, not a control: a tap on it pings the marker, nothing more.
+    afterNextRender(() => {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const stage = this.stage().nativeElement;
+      const ping = () => this.pinging.set(true);
+      stage.addEventListener('click', ping);
+      destroyRef.onDestroy(() => stage.removeEventListener('click', ping));
+    });
+  }
 
   protected readonly hero = HERO;
   protected readonly viewBox = `0 0 ${HERO.stage.width} ${HERO.stage.height}`;

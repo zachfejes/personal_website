@@ -53,9 +53,17 @@
   display: block;
 }
 
+// Soft edges (the chart backdrops) never widen the page.
 .sheet {
   position: relative;
+  overflow-x: clip;
   color: var(--sheet-body);
+
+  // Body text is set smaller on phones.
+  @media (width <= $narrow) {
+    --body-size: var(--body-size-narrow);
+  }
+
   padding-bottom: 6rem;
   background:
     radial-gradient(
@@ -94,21 +102,20 @@
     );
 }
 
-// The globe rises out of the hero; the sections start partway down it, so the thread begins near
-// its edge.
+// The globe rises out of the hero; the sections start partway down it.
 .sheet-globe {
   margin-bottom: calc(-1 * var(--globe-overlap));
 }
 
-// The thread: one line behind every section after the hero. Paper panels paint their own
-// stretch of it in ink.
+// The thread: one line behind every section after the hero, starting at the first section's
+// marker. Paper panels paint their own stretch of it in ink.
 .sheet-body {
   position: relative;
 
   &::before {
     content: '';
     position: absolute;
-    top: 0;
+    top: calc(var(--section-padding) + var(--head-height) / 2);
     bottom: 0;
     left: var(--thread-x);
     width: 1px;

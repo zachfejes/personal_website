@@ -1,32 +1,26 @@
-<div class="card__art" aria-hidden="true">
+<div class="card__art" [class.card__art--sheet]="project().art === 'station'" aria-hidden="true">
   @switch (project().art) {
-    @case ('chart') {
-      <svg viewBox="0 0 400 225">
-        <path d="M36 190 H372 M36 30 V190" fill="none" class="ink-faint" />
-        <path
-          d="M36 186 C 100 130, 170 96, 372 62"
-          fill="none"
-          class="stroke-accent"
-          stroke-width="2"
-        />
-        <path
-          d="M36 186 C 110 120, 190 92, 372 78"
-          fill="none"
-          class="stroke-light"
-          stroke-dasharray="4 5"
-        />
-        <g class="fill-light">
-          <circle cx="54" cy="172" r="3.5" />
-          <circle cx="80" cy="155" r="3.5" />
-          <circle cx="110" cy="136" r="3.5" />
-          <circle cx="146" cy="120" r="3.5" />
-          <circle cx="196" cy="104" r="3.5" />
-          <circle cx="256" cy="90" r="3.5" />
-          <circle cx="330" cy="72" r="3.5" />
+    @case ('station') {
+      <!-- Armada Scaling: its hero in miniature, the XQ2 on its construction rings. -->
+      <svg viewBox="0 0 400 225" preserveAspectRatio="xMidYMid slice">
+        <g fill="none" class="sheet-line">
+          <circle cx="200" cy="112" r="45" />
+          <circle cx="200" cy="112" r="62.5" />
+          <circle cx="200" cy="112" r="82.5" stroke-dasharray="2 4" />
+          <circle cx="200" cy="112" r="105" />
+          <circle cx="200" cy="112" r="93.75" class="sheet-line--faint" />
+          <path d="M200 0 V225 M50 112 H350" stroke-dasharray="1 4" class="sheet-line--faint" />
         </g>
-        <line x1="196" y1="104" x2="226" y2="140" class="stroke-muted" />
-        <circle cx="226" cy="140" r="2.5" class="fill-muted" />
-        <text x="232" y="150" class="label">y = 3.42x^0.553</text>
+        <image
+          href="projects/armada-scaling/xq2-top.webp"
+          x="134.7"
+          y="61.8"
+          width="130"
+          height="118.4"
+          opacity="0.9"
+        />
+        <circle cx="272.8" cy="73.3" r="4.5" fill="none" class="stroke-accent" />
+        <circle cx="272.8" cy="73.3" r="2" class="fill-accent" />
       </svg>
     }
     @case ('contours') {

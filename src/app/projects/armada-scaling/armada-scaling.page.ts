@@ -139,6 +139,7 @@ function negativeBelow(zeroM: number | null) {
     '[style.--reading-width.ch]': 'design().layout.readingWidthCh',
     '[style.--section-padding.rem]': 'design().layout.sectionPaddingRem',
     '[style.--body-size.rem]': 'design().layout.bodySizeRem',
+    '[style.--body-size-narrow.rem]': 'design().layout.bodySizeNarrowRem',
     '[style.--body-line-height]': 'design().layout.lineHeight',
     '[style.--heading-size.rem]': 'design().layout.headingSizeRem',
     '[style.--title-size.rem]': 'design().layout.titleSizeRem',

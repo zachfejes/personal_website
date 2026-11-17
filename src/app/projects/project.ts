@@ -1,7 +1,7 @@
 import { Type } from '@angular/core';
 
 /** Cover artwork drawn by the project card (see shared/project-card). */
-export type CardArt = 'chart' | 'contours' | 'dive' | 'graph' | 'tiles' | 'visor';
+export type CardArt = 'contours' | 'dive' | 'graph' | 'station' | 'tiles' | 'visor';
 
 /** A calendar date, `YYYY-MM-DD`. */
 export type IsoDate = `${number}-${number}-${number}`;
