@@ -5,7 +5,7 @@
   [lede]="hero.lede"
 >
   <a class="btn btn--primary" routerLink="/" fragment="work">See the projects</a>
-  <a class="btn btn--ghost" routerLink="/" fragment="about">About me</a>
+  <a class="btn btn--ghost" routerLink="/about">About me</a>
 </app-hero>
 
 <section id="work" class="band band--light section" aria-labelledby="work-title">
@@ -44,7 +44,7 @@
         designed for the Lunar Gateway space station. Today I'm the Ground Segment Architect at MDA
         Space, working across programs bound for the lunar surface, cislunar space and Earth orbit.
       </p>
-      <a class="btn btn--primary" routerLink="/" fragment="about">More about me</a>
+      <a class="btn btn--primary" routerLink="/about">More about me</a>
     </div>
     <dl class="facts" appReveal>
       @for (fact of facts; track fact.label) {

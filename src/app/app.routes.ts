@@ -14,6 +14,11 @@ export const routes: Routes = [
     title: `Projects · ${SITE_NAME}`,
     loadComponent: () => import('./pages/projects/projects.page').then((m) => m.ProjectsPage),
   },
+  {
+    path: 'about',
+    title: `About · ${SITE_NAME}`,
+    loadComponent: () => import('./pages/about/about.page').then((m) => m.AboutPage),
+  },
   // One route per project page, generated from the registry and prerendered like the rest.
   ...projectRoutes(PROJECTS, environment.showDrafts),
   {

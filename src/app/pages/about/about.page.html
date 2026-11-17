@@ -1,0 +1,144 @@
+<section class="band band--dark section intro" aria-labelledby="about-title">
+  <div class="container intro__grid">
+    <div class="intro__copy">
+      <p class="eyebrow">About</p>
+      <h1 id="about-title" class="section-title">Zachary Fejes</h1>
+      <p class="section-lede">
+        Software architect for space: ground segments and safety-critical systems. Working towards
+        becoming an astronaut.
+      </p>
+      <div class="btn-row">
+        <a class="btn btn--primary" [href]="resumePdf" download>Download resume (PDF)</a>
+        <a class="btn btn--ghost" href="https://www.linkedin.com/in/zachfejes" rel="noopener"
+          >LinkedIn</a
+        >
+      </div>
+    </div>
+    <!-- Placeholder until there's a portrait. -->
+    <figure class="portrait" aria-hidden="true">
+      <span>Photo to come</span>
+    </figure>
+  </div>
+</section>
+
+<section class="band band--light section" aria-labelledby="story-title">
+  <div class="container">
+    <div class="prose" appReveal>
+      <h2 id="story-title" class="section-title">The long version</h2>
+      <p>
+        I want to go to space. Becoming an astronaut is my primary professional goal, and close
+        behind it is a broader one: helping humanity expand beyond Earth by building the
+        infrastructure and capabilities that will get us there, and let us explore once we arrive.
+      </p>
+      <p>
+        Today I'm the Ground Segment Architect at MDA Space. The ground segment is everything on
+        Earth that makes a space mission work, and my job is to design how it fits together: the
+        systems and interfaces for mission operations and mission planning, the ground network
+        infrastructure, the mission control and training facilities where operators and crew do
+        their work, and the integration with our external partners. It's as much systems
+        architecture as software, so much of my work happens where disciplines meet: guidance,
+        navigation and control, mechanical, thermal, electrical and systems engineering.
+      </p>
+      <p>
+        I've been at MDA Space for more than five years. For most of that time I led the ground
+        software architecture for Canadarm3, the robotic arm Canada designed for the Lunar Gateway,
+        the international space station planned for lunar orbit. I owned the design of all the
+        software mission operations would use to control it, from mission control on Earth and from
+        crew aboard the station. Now I work across a range of programs bound for the lunar surface,
+        cislunar space and Earth orbit.
+      </p>
+      <p>
+        I came to software by way of physics. I studied Electrical Engineering at the University of
+        Toronto (BASc, 2014), specializing in electromagnetics, photonics and control systems, and I
+        still love the physics underneath it all. I moved into software because code let me iterate
+        on ideas faster than anything else.
+      </p>
+      <p>
+        I've also spent years in startups. Some succeeded, some didn't, and all of them taught me
+        something. I was the technical co-founder of Sensassure, a medical-device company tackling
+        adult incontinence and bed sores in hospitals and long-term care. I designed its custom
+        sensors (from materials research to performance testing), the electronics and custom circuit
+        boards, and the embedded C++; I also managed our material suppliers and drafted our
+        provisional patent applications. Next I founded Voyager, a software company for
+        astrodynamics, spacecraft mission planning and visualization, built for space agencies,
+        researchers and educators. It was my first deep dive into professional software design.
+        Then, as technical co-founder of Second Closet, a storage and moving company, I built the
+        website and web infrastructure, our customer and warehouse management tools and barcode
+        printing, and pitched in on everything else, from running warehouses to investor relations.
+        After that I joined RBC's Innovation Lab, first building voice apps and then leading its
+        Voice Lab, exploring multi-modal interfaces with a focus on voice-first technology.
+      </p>
+      <p>
+        Away from work, I'm happiest learning something new and finding a way to use it. I draw,
+        mostly in ink and pencil, and I'm fascinated by perspective and illusion. I model and design
+        in Blender (which, admittedly, isn't really a CAD tool), and 3D print much of what I make. I
+        play piano, read constantly, and am an unapologetic nerd. I'm also a strong believer in
+        therapy, self-reflection and mindfulness as part of doing good work and living well.
+      </p>
+      <p>I was born and raised in Toronto, and now live in Mississauga, Ontario.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band band--accent section" aria-labelledby="experience-title">
+  <div class="container stack">
+    <header class="section-head">
+      <p class="eyebrow">Experience</p>
+      <h2 id="experience-title" class="section-title">Where I've worked</h2>
+    </header>
+    <ol class="timeline" aria-label="Experience">
+      @for (role of experience; track role.title + role.organization) {
+        <li class="timeline__role" appReveal>
+          <p class="timeline__dates">{{ dates(role) }}</p>
+          <h3 class="timeline__title">
+            {{ role.title }} <span class="timeline__org">· {{ role.organization }}</span>
+          </h3>
+          @if (role.steps) {
+            <p class="timeline__steps">{{ role.steps.join(' · ') }}</p>
+          }
+          <p class="timeline__summary">{{ role.summary }}</p>
+        </li>
+      }
+    </ol>
+  </div>
+</section>
+
+<section class="band band--light section" aria-labelledby="skills-title">
+  <div class="container stack">
+    <header class="section-head">
+      <p class="eyebrow">Skills</p>
+      <h2 id="skills-title" class="section-title">What I bring</h2>
+    </header>
+    <div class="skills">
+      @for (group of skills; track group.group) {
+        <div class="skills__group" appReveal>
+          <h3>{{ group.group }}</h3>
+          <ul>
+            @for (item of group.items; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+
+    <header class="section-head">
+      <p class="eyebrow">Education</p>
+      <h2 class="section-title">Education and more</h2>
+    </header>
+    <dl class="education">
+      @for (entry of education; track entry.title) {
+        <div appReveal>
+          <dt>
+            <span class="education__years">{{ entry.years }}</span>
+            {{ entry.title }}
+          </dt>
+          <dd>{{ entry.detail }}</dd>
+        </div>
+      }
+    </dl>
+    <div class="btn-row">
+      <a class="btn btn--ink" [href]="resumePdf" download>Download the full resume (PDF)</a>
+    </div>
+  </div>
+</section>

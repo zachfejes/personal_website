@@ -1,0 +1,181 @@
+// Intro: name and one line beside the portrait.
+.intro__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4rem);
+
+  @media (width <= 720px) {
+    grid-template-columns: minmax(0, 1fr);
+
+    // Under the text on phones, and smaller, so the bio isn't pushed far down.
+    .portrait {
+      max-width: 12rem;
+    }
+  }
+}
+
+.intro__copy {
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+
+  h1 {
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+  }
+}
+
+.portrait {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 20rem;
+  aspect-ratio: 4 / 5;
+  margin: 0;
+  border: 1px dashed color-mix(in srgb, var(--color-on-dark) 35%, transparent);
+  border-radius: var(--radius);
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-on-dark) 6%, transparent) 0 2px,
+    transparent 2px 12px
+  );
+}
+
+// The bio: one readable column.
+.prose {
+  display: grid;
+  gap: 1.1rem;
+  max-width: 66ch;
+  font-size: 1.05rem;
+  line-height: 1.7;
+
+  h2 {
+    margin-bottom: 0.4rem;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+// Experience: a line with a marker at each role, newest first.
+.timeline {
+  display: grid;
+  gap: 2rem;
+  margin: 0;
+  padding: 0 0 0 1.75rem;
+  border-left: 1px solid color-mix(in srgb, var(--color-on-dark) 30%, transparent);
+  list-style: none;
+}
+
+.timeline__role {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+  max-width: 62ch;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0.3rem;
+    left: calc(-1.75rem - 5px);
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--color-highlight);
+  }
+
+  p,
+  h3 {
+    margin: 0;
+  }
+}
+
+.timeline__dates,
+.timeline__steps {
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-on-dark) 70%, transparent);
+}
+
+.timeline__dates {
+  color: var(--color-highlight);
+}
+
+.timeline__title {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.timeline__org {
+  color: color-mix(in srgb, var(--color-on-dark) 75%, transparent);
+}
+
+.timeline__summary {
+  color: color-mix(in srgb, var(--color-on-dark) 88%, transparent);
+}
+
+// Skills: groups in columns.
+.skills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1.5rem 2rem;
+
+  h3 {
+    margin: 0 0 0.6rem;
+    font-family: var(--font-label);
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: var(--label-tracking);
+    text-transform: uppercase;
+    color: var(--color-highlight-on-paper);
+  }
+
+  ul {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+.skills__group {
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+}
+
+// Education and more: year, title and a line.
+.education {
+  display: grid;
+  gap: 1rem;
+  max-width: 62ch;
+  margin: 0;
+
+  dt {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+  }
+
+  dd {
+    margin: 0.2rem 0 0;
+    opacity: 0.85;
+  }
+}
+
+.education__years {
+  margin-right: 0.6rem;
+  font-family: var(--font-label);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--color-highlight-on-paper);
+}
