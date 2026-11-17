@@ -56,4 +56,4 @@ Output goes to `dist/personal-website/browser/`. Per-environment settings live i
 - **Staging:** every merge to `master` runs `.github/workflows/deploy-staging.yml`, which builds the
   staging configuration and deploys it to GitHub Pages. The checks run on the pull request before
   the merge.
-- **Production:** not set up yet (milestone 9 in `PROJECT.md`).
+- **Production:** not set up yet (milestone 10 in `PROJECT.md`).
