@@ -63,7 +63,7 @@ export const EXPERIENCE: readonly Role[] = [
     organization: 'Sensassure',
     years: '2014',
     summary:
-      'Designed the sensors, electronics and circuit boards for a medical device for hospitals and long-term care, and drafted its provisional patent applications.',
+      'Designed the sensors, electronics and circuit boards for a medical device for hospitals and long-term care. Named inventor on its US patent.',
   },
   {
     title: 'Research Intern',
