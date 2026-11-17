@@ -18,7 +18,7 @@ export interface NavLink {
 export class SiteHeader {
   protected readonly links: NavLink[] = [
     { label: 'Projects', path: '/projects' },
-    { label: 'About', path: '/', fragment: 'about' },
+    { label: 'About', path: '/about' },
     { label: 'Contact', path: '/', fragment: 'contact' },
   ];
   protected readonly menuOpen = signal(false);

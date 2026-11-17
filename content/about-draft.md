@@ -1,7 +1,9 @@
 # About: draft copy
 
 Working draft for editing. The short version is live in the home page's About section; the long
-version is for the About / Resume page (milestone 7).
+version is live on the About page (`src/app/pages/about/about.page.html`), which is now its
+source. Experience, skills and education there come from the master resume
+(`src/app/pages/about/resume.ts`).
 
 ## Short version (home page)
 

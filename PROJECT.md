@@ -427,7 +427,9 @@ anything the linters already enforce isn't repeated here.
    prerendering per slug. Article building blocks wait for a second project that needs them.
 6. ✅ **Armada Scaling:** port the first project using the framework. Published on staging
    2026-11-14; it goes live with the production deploy (milestone 9).
-7. **About / Resume:** bio, experience timeline, skills, PDF download.
+7. **About / Resume:** bio, experience timeline, skills, PDF download. _Built: `/about`, with a
+   portrait placeholder. The PDF (`public/zachary-fejes-resume.pdf`) is generated from the master
+   resume without the phone number; regenerate it when the resume changes._
 8. **Polish:** SEO, sitemap, accessibility pass, Lighthouse performance check, favicon and social preview images.
    ✅ Equation library trimmed (pulled forward, 2026-11-15): KaTeX now loads only when an
    equation is typeset in the browser, so the Armada page's scripts went from about 225 KB to
