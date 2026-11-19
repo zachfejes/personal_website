@@ -304,6 +304,9 @@ as draft tags for the project registry.
 | 23  | PADI Open Water Certification           | scuba, exploration, travel, learning, training                                                                            |
 | 24  | PADI Advanced Open Water Certification  | scuba, exploration, travel, learning, training                                                                            |
 | 25  | Running Training                        | running, training, fitness                                                                                                |
+| 26  | Custom Noren (Japanese Door Curtain)    | design, art, printmaking, woodblock, laser cutting, 3D printing, vinyl cutting, textiles, comparison, Japan, Pokémon      |
+| 27  | Automated Satellite Tracker             | kinetic art, CAD, design, laser cutting, 3D printing, embedded software, electronics, control systems, space, satellites  |
+| 28  | Designing a Dungeon                     | pixel art, tilesets, game design, patterns, video games, art, design                                                      |
 
 ## Engineering workflow (milestone 4)
 
