@@ -273,8 +273,9 @@ Built for Armada and kept in `projects/armada-scaling/` until a second project p
 
 ## Project backlog
 
-Future write-ups to add after Armada Scaling. Tracking only: not scheduled yet. Topics double as
-draft tags for the project registry.
+Future write-ups to add after Armada Scaling. HI-SEAS Analog Mission (3) and PADI Advanced Open
+Water (24) are next, as milestone 9; the rest are tracking only, not scheduled yet. Topics double
+as draft tags for the project registry.
 
 | #   | Project                                 | Topics                                                                                                                    |
 | --- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -303,6 +304,10 @@ draft tags for the project registry.
 | 23  | PADI Open Water Certification           | scuba, exploration, travel, learning, training                                                                            |
 | 24  | PADI Advanced Open Water Certification  | scuba, exploration, travel, learning, training                                                                            |
 | 25  | Running Training                        | running, training, fitness                                                                                                |
+| 26  | Custom Noren (Japanese Door Curtain)    | design, art, printmaking, woodblock, laser cutting, 3D printing, vinyl cutting, textiles, comparison, Japan, Pokémon      |
+| 27  | Automated Satellite Tracker             | kinetic art, CAD, design, laser cutting, 3D printing, embedded software, electronics, control systems, space, satellites  |
+| 28  | Designing a Dungeon                     | pixel art, tilesets, game design, patterns, video games, art, design                                                      |
+| 29  | Exploring AI for SysML                  | AI, SysML, model-based systems engineering, modeling, research, software, tooling                                         |
 
 ## Engineering workflow (milestone 4)
 
@@ -426,22 +431,27 @@ anything the linters already enforce isn't repeated here.
 5. ✅ **Project framework:** project registry, `/projects` page, shared project card, routes and
    prerendering per slug. Article building blocks wait for a second project that needs them.
 6. ✅ **Armada Scaling:** port the first project using the framework. Published on staging
-   2026-11-14; it goes live with the production deploy (milestone 9).
-7. **About / Resume:** bio, experience timeline, skills, PDF download. _Built: `/about`, with a
-   portrait placeholder. The PDF (`public/zachary-fejes-resume.pdf`) is generated from the master
-   resume without the phone number; regenerate it when the resume changes._
+   2026-11-14; it goes live with the production deploy (milestone 10).
+7. **About / Resume:** bio, experience timeline, skills, PDF download. _In review on staging:
+   `/about` is built, with a portrait placeholder; design feedback next._ The PDF (`public/zachary-fejes-resume.pdf`) is generated from the master
+   resume without the phone number or sensitive program detail; regenerate it when the resume
+   changes.
 8. **Polish:** SEO, sitemap, accessibility pass, Lighthouse performance check, favicon and social preview images.
    ✅ Equation library trimmed (pulled forward, 2026-11-15): KaTeX now loads only when an
    equation is typeset in the browser, so the Armada page's scripts went from about 225 KB to
    147 KB compressed (staging build) when loaded directly.
-9. **Production:** choose a host, connect the domain, add the production deploy workflow.
+9. **Two more write-ups:** publish at least two more projects before the site goes live, so it
+   launches with more than one write-up: the **HI-SEAS Analog Mission** and the **PADI Advanced
+   Open Water Certification** (both already coming-soon in the registry). The second project page
+   is also when the likely reuse candidates (see Armada Scaling) get extracted.
+10. **Production:** choose a host, connect the domain, add the production deploy workflow.
 
 ## Open questions
 
-- Which production host? (Decide by milestone 9; nothing earlier depends on it.)
+- Which production host? (Decide by milestone 10; nothing earlier depends on it.)
 - Charting library: leaning D3, since the storytelling visuals above need custom drawing that
   Chart.js can't do.
-- Which backlog projects to write up first, after Armada?
+- Which backlog projects to write up after HI-SEAS and PADI Advanced Open Water?
 
 ## Future ideas
 
