@@ -23,6 +23,18 @@ export const PROJECTS: readonly Project[] = [
     art: 'station',
   },
   {
+    slug: 'needle-antenna',
+    status: 'draft',
+    page: () => import('./needle-antenna/needle-antenna.page').then((m) => m.NeedleAntennaPage),
+    timeline: { start: '2026-11' },
+    title: 'A Needle, Driven',
+    category: 'Simulation · Electromagnetics',
+    summary:
+      'Simulating a thin metal needle driven by an AC source: the standing wave inside it, the electric and magnetic fields around it, and the heat it makes.',
+    tags: ['Electromagnetics', 'Simulation', 'Antennas'],
+    art: 'contours',
+  },
+  {
     slug: 'padi-advanced-open-water',
     status: 'coming-soon',
     timeline: { start: '2026-08' },
