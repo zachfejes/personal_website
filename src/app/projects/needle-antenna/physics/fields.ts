@@ -1,4 +1,5 @@
-import { Solution, needleRadius } from './solver';
+import { radiusAt } from './geometry';
+import { Solution } from './solver';
 
 /** A rectangle of the (ρ, z) half plane: ρ from 0 to rhoMax, z from zMin to zMax. */
 export interface FieldWindow {
@@ -8,7 +9,7 @@ export interface FieldWindow {
 }
 
 /** What occupies each grid sample. */
-export const Mask = { Air: 0, Needle: 1, Ground: 2 } as const;
+export const Mask = { Air: 0, Needle: 1 } as const;
 
 /**
  * Complex field phasors on a regular grid over a window. Row 0 is the top (zMax); column 0 is
@@ -36,17 +37,25 @@ interface Sources {
   z: Float64Array;
   /** Regularizing radius: the wire radius at the source, so the kernel stays finite near it. */
   a2: Float64Array;
-  /** Current moment I·h (A·m). */
+  /** Current moment I·w (A·m). */
   mRe: Float64Array;
   mIm: Float64Array;
-  /** Charge (C). */
+  /** Charge λ·w (C). */
   qRe: Float64Array;
   qIm: Float64Array;
 }
 
-/** Needle cells, the apex charge, and their images in the ground plane. */
+const sourceCache = new WeakMap<Solution, Sources>();
+
+/**
+ * Quadrature points of the needle, the apex charge, and the same for the mirror needle. The
+ * mirror carries the same upward current and the opposite charge (the gap drives the two
+ * needles to opposite potentials).
+ */
 function sources(sol: Solution): Sources {
-  const n = sol.cells.length;
+  const cached = sourceCache.get(sol);
+  if (cached) return cached;
+  const n = sol.samples.length;
   const count = 2 * (n + 1);
   const s: Sources = {
     z: new Float64Array(count),
@@ -72,18 +81,18 @@ function sources(sol: Solution): Sources {
     s.qRe[k] = qRe;
     s.qIm[k] = qIm;
   };
-  sol.cells.forEach((c, i) => {
-    const mRe = c.current.re * c.h;
-    const mIm = c.current.im * c.h;
-    put(2 * i, c.z, c.radius, mRe, mIm, c.charge.re, c.charge.im);
-    // Image: same vertical current, opposite charge.
-    put(2 * i + 1, -c.z, c.radius, mRe, mIm, -c.charge.re, -c.charge.im);
+  sol.samples.forEach((p, i) => {
+    const mRe = p.current.re * p.w;
+    const mIm = p.current.im * p.w;
+    const qRe = p.lineCharge.re * p.w;
+    const qIm = p.lineCharge.im * p.w;
+    put(2 * i, p.z, p.radius, mRe, mIm, qRe, qIm);
+    put(2 * i + 1, -p.z, p.radius, mRe, mIm, -qRe, -qIm);
   });
-  const g = sol.params.geometry;
-  const rTip = g.taperLength > 0 ? Math.min(g.tipRadius, g.radius) : g.radius;
-  const zTip = g.length - rTip;
-  put(2 * n, zTip, rTip, 0, 0, sol.tipCharge.re, sol.tipCharge.im);
-  put(2 * n + 1, -zTip, rTip, 0, 0, -sol.tipCharge.re, -sol.tipCharge.im);
+  const { capCenter, capRadius } = sol.profile;
+  put(2 * n, capCenter, capRadius, 0, 0, sol.tipCharge.re, sol.tipCharge.im);
+  put(2 * n + 1, -capCenter, capRadius, 0, 0, -sol.tipCharge.re, -sol.tipCharge.im);
+  sourceCache.set(sol, s);
   return s;
 }
 
@@ -108,13 +117,43 @@ export function createGrid(
     mask: new Uint8Array(size),
   };
   for (let j = 0; j < nZ; j++) {
-    const z = zAt(grid, j);
-    const r = needleRadius(sol.params.geometry, z);
+    // Both needles: the driven one above the gap, its mirror below.
+    const r = radiusAt(sol.profile, Math.abs(zAt(grid, j)));
     for (let i = 0; i < nRho; i++) {
-      grid.mask[j * nRho + i] = z < 0 ? Mask.Ground : rhoAt(grid, i) <= r ? Mask.Needle : Mask.Air;
+      grid.mask[j * nRho + i] = rhoAt(grid, i) <= r ? Mask.Needle : Mask.Air;
     }
   }
   return grid;
+}
+
+/**
+ * For a window symmetric about the gap (zMin = −zMax), rows below the midplane mirror the rows
+ * above: E_z and H_φ are even in z, E_ρ is odd. Returns how many rows need computing directly.
+ */
+export function rowsToCompute(grid: FieldGrid): number {
+  const w = grid.window;
+  return Math.abs(w.zMin + w.zMax) < 1e-12 * w.zMax ? Math.ceil(grid.nZ / 2) : grid.nZ;
+}
+
+/** Copies the computed upper half of a symmetric grid into its lower half. */
+export function mirrorRows(grid: FieldGrid): void {
+  const half = rowsToCompute(grid);
+  if (half === grid.nZ) return;
+  const n = grid.nRho;
+  for (let j = 0; j < half; j++) {
+    const jm = grid.nZ - 1 - j;
+    if (jm === j) continue;
+    for (let i = 0; i < n; i++) {
+      const a = j * n + i;
+      const b = jm * n + i;
+      grid.eRhoRe[b] = -grid.eRhoRe[a];
+      grid.eRhoIm[b] = -grid.eRhoIm[a];
+      grid.eZRe[b] = grid.eZRe[a];
+      grid.eZIm[b] = grid.eZIm[a];
+      grid.hPhiRe[b] = grid.hPhiRe[a];
+      grid.hPhiIm[b] = grid.hPhiIm[a];
+    }
+  }
 }
 
 /**
@@ -192,7 +231,8 @@ export function computeGrid(
   nZ: number,
 ): FieldGrid {
   const grid = createGrid(sol, window, nRho, nZ);
-  fillRows(sol, grid, 0, nZ);
+  fillRows(sol, grid, 0, rowsToCompute(grid));
+  mirrorRows(grid);
   return grid;
 }
 

@@ -1,16 +1,17 @@
 /**
  * Parameters for the needle simulation. All values in SI units.
  *
- * The needle stands upright on an infinite, perfectly conducting ground plane at z = 0, fed at
- * its base by an ideal voltage source V(t) = V̂·cos(ωt + φ) between the needle and the plane.
- * By image theory the fields above the plane are those of a symmetric dipole twice as long.
+ * The needle floats in free space as one arm of a symmetric, center-fed dipole: an ideal voltage
+ * source V(t) = V̂·cos(ωt + φ) sits in a vanishingly small gap at z = 0 between the needle's
+ * base and an identical mirror needle pointing the other way. The circuit closes across that
+ * gap through the source; there is no ground plane.
  */
 export interface NeedleGeometry {
   /** Base to apex (m). */
   length: number;
   /** Shaft radius (m). */
   radius: number;
-  /** Length of the conical point, measured back from the apex (m). 0 for a blunt rod. */
+  /** Length of the conical point, measured back from the apex (m). 0 for a rod with a rounded end. */
   taperLength: number;
   /** Radius of the rounded apex (m). */
   tipRadius: number;
@@ -27,7 +28,7 @@ export interface DriveCircuit {
   feedResistance: number;
   /** Series feed reactance (Ω); positive is inductive. */
   feedReactance: number;
-  /** Shunt capacitance across the feed point, e.g. a connector or mount (F). */
+  /** Shunt capacitance across the feed gap, e.g. the source's terminals (F). */
   baseCapacitance: number;
 }
 
@@ -48,8 +49,13 @@ export interface NeedleMaterial {
 export interface Medium {
   relPermittivity: number;
   relPermeability: number;
-  /** Ambient (and ground-plane) temperature (K). */
+  /** Temperature of the surroundings the needle radiates to (K). */
   ambientTemperature: number;
+  /**
+   * Whether the feed is heat-sunk, holding the needle's base at ambient. Otherwise the needle is
+   * thermally floating and sheds heat by thermal radiation alone.
+   */
+  feedHeatSunk: boolean;
 }
 
 export interface NeedleParams {
@@ -139,6 +145,7 @@ export const VACUUM: Medium = {
   relPermittivity: 1,
   relPermeability: 1,
   ambientTemperature: 293.15,
+  feedHeatSunk: false,
 };
 
 export const DEFAULT_PARAMS: NeedleParams = {

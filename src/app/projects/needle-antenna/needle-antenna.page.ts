@@ -24,7 +24,7 @@ import { FIELD_QUANTITIES, FIELD_VIEWS, FieldMap, FieldQuantity, FieldView } fro
 import { impedance, kelvinToCelsius, num, percent, si } from './format';
 import { ChartSeries, LineChart } from './line-chart';
 import { NeedleStrip } from './needle-strip';
-import { abs, instant } from './physics/complex';
+import { Complex, abs, instant } from './physics/complex';
 import { DEFAULT_PARAMS, MATERIAL_PRESETS, NeedleParams } from './physics/model';
 import { C0, SweepPoint, solve, sweep } from './physics/solver';
 import { PolarPattern } from './polar-pattern';
@@ -59,7 +59,7 @@ export class NeedleAntennaPage {
 
   protected readonly params = signal<NeedleParams>(DEFAULT_PARAMS);
   protected readonly presetId = signal<string>(MATERIAL_PRESETS[0].id);
-  protected readonly view = signal<FieldView>('needle');
+  protected readonly view = signal<FieldView>('antenna');
   protected readonly quantity = signal<FieldQuantity>('e');
   protected readonly showLines = signal(true);
   protected readonly playing = signal(false);
@@ -75,7 +75,7 @@ export class NeedleAntennaPage {
   protected readonly readouts = computed(() => {
     const s = this.sol();
     const g = s.params.geometry;
-    const shaft = s.cells[0];
+    const shaft = s.shaft;
     const tipV = abs(s.voltage[s.voltage.length - 1]);
     return {
       wavelength: si(s.wavelength, 'm'),
@@ -85,23 +85,26 @@ export class NeedleAntennaPage {
       zinMag: si(abs(s.inputImpedance), 'Ω'),
       zSource: impedance(s.sourceImpedance),
       baseCurrent: si(abs(s.current[0]), 'A'),
+      gapVoltage: si(abs(s.gapVoltage), 'V'),
       tipVoltage: si(tipV, 'V'),
       sourceCurrent: si(abs(s.sourceCurrent), 'A'),
       pSource: si(s.power.source, 'W'),
       pRad: si(s.power.radiated, 'W'),
       pOhmic: si(s.power.ohmic, 'W'),
+      pOhmicNeedle: si(s.power.ohmicPerNeedle, 'W'),
       pFeed: si(s.power.feed, 'W'),
       efficiency: percent(s.efficiency),
       rRad: si(s.radiationResistance, 'Ω'),
       rLoss: si(s.lossResistance, 'Ω'),
       skinDepth: si(s.skinDepth, 'm'),
-      skinRatio: num(shaft.radius / s.skinDepth),
+      skinRatio: num(s.params.geometry.radius / s.skinDepth),
       rPerM: si(shaft.resistance, 'Ω/m'),
       xIntPerM: si(s.omega * shaft.internalInductance, 'Ω/m'),
       lPerM: si(shaft.inductance, 'H/m'),
       cPerM: si(shaft.capacitance, 'F/m'),
       z0: si(shaft.z0, 'Ω'),
-      endCap: si(s.endCapacitance, 'F'),
+      endCap: si(s.capCapacitance, 'F'),
+      coneAngle: `${num((2 * s.profile.halfAngle * 180) / Math.PI)}°`,
       peakField: si(s.peakSurfaceField.value, 'V/m'),
       peakFieldAt: `${mm(s.peakSurfaceField.z)} mm`,
       directivity: `${num(10 * Math.log10(s.farField.directivity))} dBi`,
@@ -116,70 +119,78 @@ export class NeedleAntennaPage {
   });
 
   private readonly nodesMm = computed(() => this.sol().nodes.map((z) => z * 1e3));
-  private readonly cellsMm = computed(() => this.sol().cells.map((c) => c.z * 1e3));
+  private readonly samplesMm = computed(() => this.sol().samples.map((q) => q.z * 1e3));
   protected readonly lengthDomain = computed(
     () => [0, this.params().geometry.length * 1e3] as const,
   );
+  /** Both arms, mirror needle below the gap (negative heights). */
+  protected readonly antennaDomain = computed(() => {
+    const L = this.params().geometry.length * 1e3;
+    return [-L, L] as const;
+  });
+  /** Heights across both arms, and values extended to the mirror arm (even or odd in z). */
+  private both(z: readonly number[], values: readonly number[], odd: boolean) {
+    const x = [...z.map((v) => -v).reverse(), ...z];
+    const y = [...values.map((v) => (odd ? -v : v)).reverse(), ...values];
+    return { x, y };
+  }
 
-  protected readonly currentSeries = computed<ChartSeries[]>(() => {
-    const s = this.sol();
+  /** A wave along both arms: the instantaneous value, with its ± envelope as a band. */
+  private wave(
+    z: readonly number[],
+    phasors: readonly Complex[],
+    odd: boolean,
+    label: string,
+    color: string,
+  ): ChartSeries[] {
     const wt = this.wt();
-    const amp = s.current.map(abs);
+    const amp = phasors.map(abs);
+    const now = this.both(
+      z,
+      phasors.map((v) => instant(v, wt)),
+      odd,
+    );
+    const env = this.both(z, amp, false);
     return [
       {
-        label: 'I(z, t)',
-        x: this.nodesMm(),
-        y: s.current.map((i) => instant(i, wt)),
-        color: AMBER,
-        band: { lower: amp.map((a) => -a), upper: amp },
+        label: `${label}(z, t)`,
+        x: now.x,
+        y: now.y,
+        color,
+        band: { lower: env.y.map((a) => -a), upper: env.y },
       },
-      { label: '|I(z)| envelope', x: this.nodesMm(), y: amp, color: AMBER, dash: '3 3' },
+      { label: `|${label}(z)|`, x: env.x, y: env.y, color, dash: '3 3' },
     ];
-  });
+  }
 
-  protected readonly voltageSeries = computed<ChartSeries[]>(() => {
-    const s = this.sol();
-    const wt = this.wt();
-    const amp = s.voltage.map(abs);
-    return [
-      {
-        label: 'V(z, t)',
-        x: this.nodesMm(),
-        y: s.voltage.map((v) => instant(v, wt)),
-        color: TEAL,
-        band: { lower: amp.map((a) => -a), upper: amp },
-      },
-      { label: '|V(z)| envelope', x: this.nodesMm(), y: amp, color: TEAL, dash: '3 3' },
-    ];
-  });
-
-  protected readonly chargeSeries = computed<ChartSeries[]>(() => {
-    const s = this.sol();
-    const wt = this.wt();
-    const lambda = s.cells.map((c) => ({ re: c.charge.re / c.h, im: c.charge.im / c.h }));
-    const amp = lambda.map(abs);
-    return [
-      {
-        label: 'λ(z, t)',
-        x: this.cellsMm(),
-        y: lambda.map((l) => instant(l, wt)),
-        color: PAPER,
-        band: { lower: amp.map((a) => -a), upper: amp },
-      },
-    ];
-  });
+  // Current runs the same way up both arms (even); potential and charge flip sign (odd).
+  protected readonly currentSeries = computed(() =>
+    this.wave(this.nodesMm(), this.sol().current, false, 'I', AMBER),
+  );
+  protected readonly voltageSeries = computed(() =>
+    this.wave(this.nodesMm(), this.sol().voltage, true, 'V', TEAL),
+  );
+  protected readonly chargeSeries = computed(() =>
+    this.wave(
+      this.samplesMm(),
+      this.sol().samples.map((q) => q.lineCharge),
+      true,
+      'λ',
+      PAPER,
+    ),
+  );
 
   protected readonly heatSeries = computed<ChartSeries[]>(() => [
     {
       label: 'Joule heat',
-      x: this.cellsMm(),
-      y: this.sol().cells.map((c) => c.heat),
+      x: this.samplesMm(),
+      y: this.sol().samples.map((q) => q.heat),
       color: ROSE,
     },
   ]);
 
-  protected readonly heatValues = computed(() => this.sol().cells.map((c) => c.heat));
-  protected readonly cellZ = computed(() => this.sol().cells.map((c) => c.z));
+  protected readonly heatValues = computed(() => this.sol().samples.map((q) => q.heat));
+  protected readonly sampleZ = computed(() => this.sol().samples.map((q) => q.z));
 
   protected readonly temperatureSeries = computed<ChartSeries[]>(() => [
     {
@@ -320,6 +331,11 @@ export class NeedleAntennaPage {
   protected onScrub(event: Event): void {
     this.playing.set(false);
     this.wt.set((Number((event.target as HTMLInputElement).value) * Math.PI) / 180);
+  }
+
+  protected onHeatSink(event: Event): void {
+    const on = (event.target as HTMLInputElement).checked;
+    this.params.update((p) => ({ ...p, medium: { ...p.medium, feedHeatSunk: on } }));
   }
 
   protected reset(): void {

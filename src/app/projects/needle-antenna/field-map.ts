@@ -22,16 +22,19 @@ import {
   contourSegments,
   createGrid,
   fillRows,
+  mirrorRows,
+  rowsToCompute,
   rhoAt,
 } from './physics/fields';
-import { Solution, needleRadius } from './physics/solver';
+import { radiusAt } from './physics/geometry';
+import { Solution } from './physics/solver';
 
-export type FieldView = 'radiation' | 'needle' | 'point' | 'apex';
+export type FieldView = 'radiation' | 'antenna' | 'point' | 'apex';
 export type FieldQuantity = 'e' | 'e-rms' | 'h' | 'h-rms';
 
 export const FIELD_VIEWS: readonly { id: FieldView; label: string }[] = [
   { id: 'radiation', label: 'Radiation zone' },
-  { id: 'needle', label: 'Whole needle' },
+  { id: 'antenna', label: 'Whole antenna' },
   { id: 'point', label: 'Point' },
   { id: 'apex', label: 'Apex' },
 ];
@@ -50,10 +53,10 @@ export function fieldWindow(sol: Solution, view: FieldView): FieldWindow {
   switch (view) {
     case 'radiation': {
       const d = Math.max(1.6 * L, 1.25 * sol.wavelength);
-      return { rhoMax: d, zMin: -0.03 * d, zMax: d };
+      return { rhoMax: d, zMin: -d, zMax: d };
     }
-    case 'needle':
-      return { rhoMax: 0.7 * L, zMin: -0.04 * L, zMax: 1.36 * L };
+    case 'antenna':
+      return { rhoMax: 0.85 * L, zMin: -1.3 * L, zMax: 1.3 * L };
     case 'point': {
       const s = Math.max(g.taperLength, 4 * g.radius, 1e-9);
       return { rhoMax: s, zMin: L - 1.6 * s, zMax: L + 0.4 * s };
@@ -184,7 +187,7 @@ function stats(grid: FieldGrid): Stats {
 })
 export class FieldMap {
   readonly solution = input.required<Solution>();
-  readonly view = input<FieldView>('needle');
+  readonly view = input<FieldView>('antenna');
   readonly quantity = input<FieldQuantity>('e');
   /** ωt in radians. */
   readonly phase = input(0);
@@ -255,18 +258,23 @@ export class FieldMap {
       if (!browser) return;
       const nZ = Math.max(40, Math.round((HALF_SAMPLES * (win.zMax - win.zMin)) / win.rhoMax));
       const grid = createGrid(sol, win, HALF_SAMPLES, nZ);
+      // Symmetric windows only compute the half above the gap and mirror it.
+      const rows = rowsToCompute(grid);
       let row = 0;
       let timer = 0;
       this.progress.set(0);
       const step = () => {
         const until = performance.now() + 12;
-        while (row < nZ && performance.now() < until) {
-          fillRows(sol, grid, row, row + ROWS_PER_SLICE);
+        while (row < rows && performance.now() < until) {
+          fillRows(sol, grid, row, Math.min(rows, row + ROWS_PER_SLICE));
           row += ROWS_PER_SLICE;
         }
-        this.progress.set(Math.min(1, row / nZ));
-        if (row < nZ) timer = window.setTimeout(step, 0);
-        else this.grid.set({ grid, stats: stats(grid) });
+        this.progress.set(Math.min(1, row / rows));
+        if (row < rows) timer = window.setTimeout(step, 0);
+        else {
+          mirrorRows(grid);
+          this.grid.set({ grid, stats: stats(grid) });
+        }
       };
       timer = window.setTimeout(step, 30);
       onCleanup(() => clearTimeout(timer));
@@ -319,44 +327,43 @@ export class FieldMap {
 
     if (lines && (q === 'e' || q === 'h')) this.fieldLines(ctx, grid, s, wt, W, H, dpr);
 
-    // Ground plane.
-    if (win.zMin < 0) {
-      const y0 = py(0);
-      ctx.fillStyle = '#26231f';
-      ctx.fillRect(0, y0, W, H - y0);
-      ctx.strokeStyle = 'rgb(227 168 87 / 70%)';
-      ctx.lineWidth = 1.5 * dpr;
-      ctx.beginPath();
-      ctx.moveTo(0, y0);
-      ctx.lineTo(W, y0);
-      ctx.stroke();
-    }
-
-    // The needle, at true scale (never thinner than a hairline).
-    const g = this.solution().params.geometry;
-    const zs = this.profileHeights(g.length, win);
+    // The needle and its mirror, traced from the exact smooth profile at true scale (never
+    // thinner than a hairline).
+    const prof = this.solution().profile;
+    const zs = this.profileHeights(win);
     const minHalf = 0.75 * dpr;
-    ctx.beginPath();
-    zs.forEach((z, i) => {
-      const r = Math.max(px(needleRadius(g, z)) - W / 2, z < g.length ? minHalf : 0);
-      if (i === 0) ctx.moveTo(W / 2 + r, py(z));
-      else ctx.lineTo(W / 2 + r, py(z));
-    });
-    for (let i = zs.length - 1; i >= 0; i--) {
-      const z = zs[i];
-      const r = Math.max(px(needleRadius(g, z)) - W / 2, z < g.length ? minHalf : 0);
-      ctx.lineTo(W / 2 - r, py(z));
-    }
-    ctx.closePath();
     const metal = ctx.createLinearGradient(0, 0, W, 0);
     metal.addColorStop(0.45, '#8d918c');
     metal.addColorStop(0.5, '#e8e6df');
     metal.addColorStop(0.55, '#7d817c');
-    ctx.fillStyle = metal;
-    ctx.fill();
-    ctx.strokeStyle = 'rgb(20 25 23 / 80%)';
-    ctx.lineWidth = 0.6 * dpr;
-    ctx.stroke();
+    for (const side of [1, -1]) {
+      const span = zs.filter((z) => side * z >= 0);
+      if (span.length < 2) continue;
+      const half = (z: number) => {
+        const r = radiusAt(prof, Math.abs(z));
+        return r > 0 ? Math.max(px(r) - W / 2, minHalf) : 0;
+      };
+      ctx.beginPath();
+      span.forEach((z, i) => {
+        if (i === 0) ctx.moveTo(W / 2 + half(z), py(z));
+        else ctx.lineTo(W / 2 + half(z), py(z));
+      });
+      for (let i = span.length - 1; i >= 0; i--) ctx.lineTo(W / 2 - half(span[i]), py(span[i]));
+      ctx.closePath();
+      ctx.fillStyle = metal;
+      ctx.fill();
+      ctx.strokeStyle = 'rgb(20 25 23 / 80%)';
+      ctx.lineWidth = 0.6 * dpr;
+      ctx.stroke();
+    }
+
+    // The source in the feed gap, between the needle's base and its mirror.
+    if (win.zMin < 0 && win.zMax > 0) {
+      const y0 = py(0);
+      const w = Math.max(px(prof.shaftRadius) - W / 2, 3 * dpr) * 1.8;
+      ctx.fillStyle = '#e3a857';
+      ctx.fillRect(W / 2 - w, y0 - 1.5 * dpr, 2 * w, 3 * dpr);
+    }
 
     // Scale bar.
     const bar = this.barLength();
@@ -376,16 +383,25 @@ export class FieldMap {
     ctx.fillText(si(bar, 'm'), bx, by - 7 * dpr);
   }
 
-  /** Heights to trace the needle outline within the window, dense near the apex. */
-  private profileHeights(L: number, win: FieldWindow): number[] {
-    const lo = Math.max(0, win.zMin);
+  /**
+   * Heights to trace both needles' outlines within the window: even steps, plus dense steps
+   * over each cap and the exact ends of the shaft and cone.
+   */
+  private profileHeights(win: FieldWindow): number[] {
+    const p = this.solution().profile;
+    const L = p.length;
+    const lo = Math.max(-L, win.zMin);
     const hi = Math.min(L, win.zMax);
-    const zs: number[] = [];
-    if (hi <= lo) return zs;
-    for (let i = 0; i <= 300; i++) zs.push(lo + ((hi - lo) * i) / 300);
-    const rTip = Math.min(this.solution().params.geometry.tipRadius, hi - lo);
-    for (let i = 1; i <= 40; i++) zs.push(L - rTip + (rTip * i) / 40);
-    return zs.filter((z) => z <= hi).sort((a, b) => a - b);
+    if (hi <= lo) return [];
+    const zs = new Set<number>([0]);
+    for (let i = 0; i <= 400; i++) zs.add(lo + ((hi - lo) * i) / 400);
+    for (const side of [1, -1]) {
+      zs.add(side * p.coneStart);
+      zs.add(side * p.capStart);
+      zs.add(side * L);
+      for (let i = 0; i <= 60; i++) zs.add(side * (p.capStart + ((L - p.capStart) * i) / 60));
+    }
+    return [...zs].filter((z) => z >= lo && z <= hi).sort((a, b) => b - a);
   }
 
   private paint(
@@ -406,18 +422,16 @@ export class FieldMap {
     const soft = top / 1000;
     const softNorm = Math.asinh(top / soft);
     for (let j = 0; j < grid.nZ; j++) {
+      // Inside the metal, extend the field at the surface inward so the smoothed image has no
+      // dark fringe; the needle itself is drawn on top from its exact outline.
+      let surface = 0;
+      while (surface < nR - 1 && grid.mask[j * nR + surface] !== Mask.Air) surface++;
       for (let c = 0; c < nx; c++) {
         const right = c >= nR;
-        const i = right ? c - nR : nR - 1 - c;
+        const i = Math.max(right ? c - nR : nR - 1 - c, surface);
         const k = j * nR + i;
         const o = (j * nx + c) * 4;
         data[o + 3] = 255;
-        if (grid.mask[k] !== Mask.Air) {
-          data[o] = 12;
-          data[o + 1] = 15;
-          data[o + 2] = 14;
-          continue;
-        }
         let lut: Lut = EMBER;
         let t: number;
         if (signed) {

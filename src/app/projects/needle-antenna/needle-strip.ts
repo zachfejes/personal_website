@@ -25,7 +25,7 @@ import { needleRadius } from './physics/solver';
           }
         </linearGradient>
       </defs>
-      <rect class="strip__ground" x="0" y="2" width="5" height="40" />
+      <rect class="strip__feed" x="0" y="2" width="5" height="40" />
       <path class="strip__needle" [attr.d]="outline()" [attr.fill]="'url(#' + id + ')'" />
     </svg>
   `,
@@ -38,7 +38,7 @@ import { needleRadius } from './physics/solver';
       width: 100%;
       height: 2.6rem;
     }
-    .strip__ground {
+    .strip__feed {
       fill: #e3a857;
       opacity: 0.7;
     }

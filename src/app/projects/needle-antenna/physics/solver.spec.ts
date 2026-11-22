@@ -1,7 +1,8 @@
-import { abs } from './complex';
-import { computeGrid, contourSegments } from './fields';
+import { abs, div } from './complex';
+import { computeGrid, contourSegments, zAt } from './fields';
+import { profile, radiusAt } from './geometry';
 import { DEFAULT_PARAMS, NeedleParams } from './model';
-import { C0, needleRadius, solve, sweep } from './solver';
+import { C0, needleCharge, solve, sweep } from './solver';
 import { solveTemperature } from './thermal';
 
 const rod = (frequency: number): NeedleParams => ({
@@ -10,105 +11,163 @@ const rod = (frequency: number): NeedleParams => ({
   drive: { ...DEFAULT_PARAMS.drive, frequency },
 });
 
-describe('needle solver', () => {
-  it('draws the point: shaft, cone and rounded apex', () => {
-    const g = DEFAULT_PARAMS.geometry;
-    expect(needleRadius(g, 0.01)).toBe(g.radius);
-    const mid = needleRadius(g, g.length - g.taperLength / 2);
-    expect(mid).toBeLessThan(g.radius);
-    expect(mid).toBeGreaterThan(g.tipRadius);
-    expect(needleRadius(g, g.length)).toBeLessThan(g.tipRadius / 1000);
-    expect(needleRadius(g, g.length + 1e-6)).toBe(0);
+describe('needle geometry', () => {
+  const p = profile(DEFAULT_PARAMS.geometry);
+  const g = DEFAULT_PARAMS.geometry;
+
+  it('runs shaft → cone → cap, ending at the apex', () => {
+    expect(radiusAt(p, 0.01)).toBe(g.radius);
+    expect(p.coneStart).toBeCloseTo(g.length - g.taperLength, 12);
+    expect(p.capStart).toBeGreaterThan(p.capCenter);
+    expect(radiusAt(p, g.length)).toBeLessThan(g.tipRadius / 1000);
+    expect(radiusAt(p, g.length + 1e-6)).toBe(0);
   });
 
+  it('meets the cap tangentially: radius and slope are continuous', () => {
+    const eps = 1e-9;
+    const z = p.capStart;
+    expect(radiusAt(p, z - eps) / radiusAt(p, z + eps)).toBeCloseTo(1, 4);
+    const slopeIn = (radiusAt(p, z - eps) - radiusAt(p, z - 2 * eps)) / eps;
+    const slopeOut = (radiusAt(p, z + 2 * eps) - radiusAt(p, z + eps)) / eps;
+    expect(slopeOut / slopeIn).toBeCloseTo(1, 2);
+  });
+
+  it('rounds a rod with no taper into a hemisphere', () => {
+    const q = profile({ ...g, taperLength: 0 });
+    expect(q.capRadius).toBe(g.radius);
+    expect(radiusAt(q, g.length - g.radius)).toBeCloseTo(g.radius, 12);
+  });
+});
+
+describe('needle solver (center-fed dipole in free space)', () => {
   it('balances power: source = radiated + Joule heat + feed loss', () => {
     const s = solve({ ...DEFAULT_PARAMS, drive: { ...DEFAULT_PARAMS.drive, feedResistance: 12 } });
-    const { source, radiated, ohmic, feed } = s.power;
+    const { source, radiated, ohmic, feed, input } = s.power;
     expect((radiated + ohmic + feed) / source).toBeCloseTo(1, 3);
+    expect((radiated + ohmic) / input).toBeCloseTo(1, 3);
   });
 
-  it('matches the radiation resistance of a short monopole, 40π²(h/λ)²', () => {
+  it('conserves charge: the needle holds what the gap current delivers', () => {
+    const s = solve(DEFAULT_PARAMS);
+    const delivered = div(s.current[0], { re: 0, im: s.omega });
+    const held = needleCharge(s);
+    expect(
+      abs({ re: held.re - delivered.re, im: held.im - delivered.im }) / abs(delivered),
+    ).toBeLessThan(1e-3);
+  });
+
+  it('matches the radiation resistance of a short dipole, 20π²(ℓ/λ)² with ℓ = 2L', () => {
     const f = 50e6;
     const s = solve(rod(f));
-    const h = DEFAULT_PARAMS.geometry.length;
-    const theory = 40 * Math.PI ** 2 * (h / (C0 / f)) ** 2;
+    const l = 2 * DEFAULT_PARAMS.geometry.length;
+    const theory = 20 * Math.PI ** 2 * (l / (C0 / f)) ** 2;
     expect(Math.abs(s.radiationResistance / theory - 1)).toBeLessThan(0.15);
-    // Electrically short: strongly capacitive.
     expect(s.inputImpedance.im).toBeLessThan(-1000);
   });
 
-  it('resonates a little below a quarter wavelength with about 37 Ω', () => {
+  it('resonates as a half-wave dipole a little short of λ/2, near 73 Ω', () => {
     const fq = C0 / (4 * DEFAULT_PARAMS.geometry.length);
     const pts = sweep(rod(fq), 0.8 * fq, 1.1 * fq, 80);
     const i = pts.findIndex(
       (p, k) => k > 0 && pts[k - 1].inputImpedance.im < 0 && p.inputImpedance.im >= 0,
     );
     expect(i).toBeGreaterThan(0);
-    const f0 = pts[i].frequency;
-    expect(f0 / fq).toBeGreaterThan(0.9);
-    expect(f0 / fq).toBeLessThan(1);
-    expect(pts[i].inputImpedance.re).toBeGreaterThan(30);
-    expect(pts[i].inputImpedance.re).toBeLessThan(45);
+    expect(pts[i].frequency / fq).toBeGreaterThan(0.9);
+    expect(pts[i].frequency / fq).toBeLessThan(1);
+    expect(pts[i].inputImpedance.re).toBeGreaterThan(60);
+    expect(pts[i].inputImpedance.re).toBeLessThan(90);
   });
 
   it('forms a standing wave: current falls to almost nothing at the open apex', () => {
     const s = solve(DEFAULT_PARAMS);
-    const top = abs(s.current[s.current.length - 1]);
-    expect(top / abs(s.current[0])).toBeLessThan(0.01);
+    expect(abs(s.current[s.current.length - 1]) / abs(s.current[0])).toBeLessThan(0.01);
+  });
+
+  it('is converged in the mesh: halving the steps barely moves the input impedance', () => {
+    const coarse = solve(DEFAULT_PARAMS, { baseCells: 80 }).inputImpedance;
+    const fine = solve(DEFAULT_PARAMS, { baseCells: 320 }).inputImpedance;
+    expect(abs({ re: coarse.re - fine.re, im: coarse.im - fine.im }) / abs(fine)).toBeLessThan(
+      0.01,
+    );
   });
 
   it('gives H ≈ I/(2πρ) close to the wire', () => {
     const s = solve(rod(1e9));
     const L = DEFAULT_PARAMS.geometry.length;
     const grid = computeGrid(s, { rhoMax: 0.03, zMin: 0, zMax: 0.045 }, 60, 90);
-    const i = 3; // ρ = 1.75 mm
+    const i = 3;
     const rho = ((i + 0.5) * 0.03) / 60;
     const j = Math.round(((0.045 - L / 3) / 0.045) * 90 - 0.5);
-    const z = 0.045 - ((j + 0.5) * 0.045) / 90;
-    const cell = s.cells.reduce((a, b) => (Math.abs(b.z - z) < Math.abs(a.z - z) ? b : a));
+    const z = zAt(grid, j);
+    const sample = s.samples.reduce((a, b) => (Math.abs(b.z - z) < Math.abs(a.z - z) ? b : a));
     const k = j * 60 + i;
     const h = Math.hypot(grid.hPhiRe[k], grid.hPhiIm[k]);
-    expect(h / (abs(cell.current) / (2 * Math.PI * rho))).toBeCloseTo(1, 1);
+    expect(h / (abs(sample.current) / (2 * Math.PI * rho))).toBeCloseTo(1, 1);
+  });
+
+  it('mirrors the fields across the gap: E_z, H_φ even and E_ρ odd', () => {
+    const s = solve(DEFAULT_PARAMS);
+    const full = computeGrid(s, { rhoMax: 0.03, zMin: -0.03, zMax: 0.03 }, 20, 20);
+    const top = computeGrid(s, { rhoMax: 0.03, zMin: 0, zMax: 0.03 }, 20, 10);
+    const k = 4 * 20 + 15;
+    expect(full.eZRe[k]).toBeCloseTo(top.eZRe[k], 6);
+    expect(full.eRhoIm[(19 - 4) * 20 + 15] / top.eRhoIm[k]).toBeCloseTo(-1, 6);
   });
 
   it('falls off as 1/r in the radiation zone', () => {
     const s = solve(DEFAULT_PARAMS);
     const lambda = s.wavelength;
-    const grid = computeGrid(s, { rhoMax: 20 * lambda, zMin: 0, zMax: 0.25 * lambda }, 200, 4);
+    const grid = computeGrid(
+      s,
+      { rhoMax: 20 * lambda, zMin: -0.1 * lambda, zMax: 0.1 * lambda },
+      200,
+      4,
+    );
     const e = (i: number) => Math.hypot(grid.eZRe[i], grid.eZIm[i], grid.eRhoRe[i], grid.eRhoIm[i]);
-    // Along the ground plane (row 3): ρ·|E| levels off far away.
-    const row = 3 * 200;
-    const a = e(row + 100) * (100.5 / 200);
-    const b = e(row + 190) * (190.5 / 200);
-    expect(b / a).toBeCloseTo(1, 1);
+    const row = 2 * 200;
+    expect((e(row + 190) * 190.5) / (e(row + 100) * 100.5)).toBeCloseTo(1, 1);
   });
 });
 
 describe('thermal solver', () => {
-  it('matches the analytic parabola with uniform heating and no radiation', () => {
-    const n = 50;
-    const L = 0.02;
-    const a = 1e-4;
-    const q = 2; // W/m
-    const k = 20;
-    const nodes = Array.from({ length: n + 1 }, (_, i) => (L * i) / n);
-    const cells = Array.from({ length: n }, () => ({ h: L / n, radius: a, heat: q }));
-    const t = solveTemperature(
+  const n = 50;
+  const L = 0.02;
+  const a = 1e-4;
+  const k = 20;
+  const nodes = Array.from({ length: n + 1 }, (_, i) => (L * i) / n);
+  const interval = (q: number) => ({
+    conductance: (k * Math.PI * a * a) / (L / n),
+    heat: (q * L) / n,
+    area: 2 * Math.PI * a * (L / n),
+  });
+
+  it('matches the analytic parabola with uniform heating, a cold base and no radiation', () => {
+    const q = 2;
+    const t = solveTemperature({
       nodes,
-      cells,
-      {
-        resistivity: 1,
-        relPermeability: 1,
-        thermalConductivity: k,
-        emissivity: 0,
-        meltingPoint: 2000,
-      },
-      300,
-      a,
-    );
-    // T(L) − T0 = qL²/(2kA)
+      intervals: nodes.slice(1).map(() => interval(q)),
+      endArea: 0,
+      emissivity: 0,
+      ambient: 300,
+      clampBase: true,
+    });
     const expected = 300 + (q * L * L) / (2 * k * Math.PI * a * a);
     expect(t.maxTemperature / expected).toBeCloseTo(1, 2);
+  });
+
+  it('balances heat by radiation alone when floating', () => {
+    const q = 0.5;
+    const t = solveTemperature({
+      nodes,
+      intervals: nodes.slice(1).map(() => interval(q)),
+      endArea: 0,
+      emissivity: 0.5,
+      ambient: 300,
+      clampBase: false,
+    });
+    // Uniform heating, uniform surface: uniform temperature with q = εσ·2πa·(T⁴ − T₀⁴).
+    const expected = Math.pow(q / (0.5 * 5.670374419e-8 * 2 * Math.PI * a) + 300 ** 4, 0.25);
+    expect(t.temperature[n / 2] / expected).toBeCloseTo(1, 3);
   });
 });
 

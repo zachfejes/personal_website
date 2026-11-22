@@ -1,5 +1,3 @@
-import { NeedleMaterial } from './model';
-
 const STEFAN_BOLTZMANN = 5.670374419e-8;
 
 export interface ThermalProfile {
@@ -10,56 +8,69 @@ export interface ThermalProfile {
   maxTemperature: number;
 }
 
-/** What the thermal solver needs from each electrical cell. */
-export interface HeatedCell {
-  h: number;
-  radius: number;
-  /** Time-averaged Joule heat per meter (W/m). */
+/** One stretch of needle between two nodes. */
+export interface ThermalInterval {
+  /** Conductance along the metal between the two nodes (W/K). */
+  conductance: number;
+  /** Heat generated in the stretch (W). */
   heat: number;
+  /** Surface area radiating to the surroundings (m²). */
+  area: number;
+}
+
+export interface ThermalProblem {
+  nodes: number[];
+  intervals: ThermalInterval[];
+  /** Radiating area beyond the last node (the apex cap) (m²). */
+  endArea: number;
+  emissivity: number;
+  /** Temperature of the surroundings (K). */
+  ambient: number;
+  /** Hold the base at ambient (a heat-sunk feed); otherwise no heat leaves through the base. */
+  clampBase: boolean;
 }
 
 /**
- * Steady temperature along the needle. Heat flows along the metal by conduction to the base,
- * which is held at ambient by the ground plane, and leaves the surface by thermal radiation (in
- * vacuum there is no convection). Finite volumes on the electrical nodes, Newton iteration on
- * the T⁴ radiation term, tridiagonal solve each step.
+ * Steady temperature along the needle. Heat flows along the metal by conduction and leaves the
+ * surface by grey-body radiation εσ(T⁴ − T₀⁴); in vacuum there is no convection. The base is
+ * either held at ambient or insulated (by symmetry nothing crosses the feed gap from the mirror
+ * needle, which is at the same temperature). Finite volumes on the nodes, Newton iteration on
+ * the T⁴ term, a tridiagonal solve each step.
  */
-export function solveTemperature(
-  nodes: number[],
-  cells: HeatedCell[],
-  material: NeedleMaterial,
-  ambient: number,
-  tipRadius: number,
-): ThermalProfile {
+export function solveTemperature(problem: ThermalProblem): ThermalProfile {
+  const { nodes, intervals, ambient, clampBase } = problem;
   const n = nodes.length;
-  const conductance = cells.map(
-    (c) => (material.thermalConductivity * Math.PI * c.radius * c.radius) / c.h,
-  );
+  const emissivity = Math.max(problem.emissivity, 1e-4);
   const source = new Array<number>(n).fill(0);
   const area = new Array<number>(n).fill(0);
-  cells.forEach((c, i) => {
-    source[i] += 0.5 * c.heat * c.h;
-    source[i + 1] += 0.5 * c.heat * c.h;
-    const side = 2 * Math.PI * c.radius * c.h;
-    area[i] += 0.5 * side;
-    area[i + 1] += 0.5 * side;
+  intervals.forEach((s, i) => {
+    source[i] += 0.5 * s.heat;
+    source[i + 1] += 0.5 * s.heat;
+    area[i] += 0.5 * s.area;
+    area[i + 1] += 0.5 * s.area;
   });
-  area[n - 1] += 2 * Math.PI * tipRadius * tipRadius;
-  const radiative = area.map((a) => material.emissivity * STEFAN_BOLTZMANN * a);
-  const t = new Array<number>(n).fill(ambient);
+  area[n - 1] += problem.endArea;
+  const radiative = area.map((a) => emissivity * STEFAN_BOLTZMANN * a);
   const ambient4 = ambient ** 4;
+  // Start from each node shedding its own heat by radiation; Newton takes it from there.
+  const t = source.map((q, i) =>
+    clampBase && i === 0 ? ambient : Math.pow(q / Math.max(radiative[i], 1e-300) + ambient4, 0.25),
+  );
 
   const lower = new Array<number>(n).fill(0);
   const diag = new Array<number>(n).fill(0);
   const upper = new Array<number>(n).fill(0);
   const rhs = new Array<number>(n).fill(0);
   for (let iter = 0; iter < 200; iter++) {
-    diag[0] = 1;
-    upper[0] = 0;
-    rhs[0] = ambient;
-    for (let i = 1; i < n; i++) {
-      const gl = conductance[i - 1];
-      const gu = i < n - 1 ? conductance[i] : 0;
+    for (let i = 0; i < n; i++) {
+      if (i === 0 && clampBase) {
+        diag[0] = 1;
+        upper[0] = 0;
+        rhs[0] = ambient;
+        continue;
+      }
+      const gl = i > 0 ? intervals[i - 1].conductance : 0;
+      const gu = i < n - 1 ? intervals[i].conductance : 0;
       const ti = t[i];
       // Radiation linearized about the current guess: f(T) ≈ f(Ti) + f'(Ti)(T − Ti).
       const f = radiative[i] * (ti ** 4 - ambient4);
@@ -73,7 +84,7 @@ export function solveTemperature(
     let change = 0;
     for (let i = 0; i < n; i++) change = Math.max(change, Math.abs(next[i] - t[i]) / next[i]);
     for (let i = 0; i < n; i++) t[i] = next[i];
-    if (change < 1e-9) break;
+    if (change < 1e-10) break;
   }
   return { nodes, temperature: t, maxTemperature: Math.max(...t) };
 }

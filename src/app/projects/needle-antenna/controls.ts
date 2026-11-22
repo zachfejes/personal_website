@@ -120,13 +120,13 @@ export const CONTROL_GROUPS: readonly ControlGroup[] = [
       },
       {
         path: 'drive.baseCapacitance',
-        label: 'Base capacitance',
+        label: 'Gap capacitance',
         unit: 'pF',
         factor: 1e-12,
         min: fixed(0),
         max: fixed(10),
         log: false,
-        hint: 'Shunt capacitance across the feed, e.g. a mount or connector.',
+        hint: 'Shunt capacitance across the feed gap, e.g. the source’s own terminals.',
       },
     ],
   },
@@ -179,7 +179,7 @@ export const CONTROL_GROUPS: readonly ControlGroup[] = [
     controls: [
       {
         path: 'medium.ambientTemperature',
-        label: 'Ambient / mount temperature',
+        label: 'Surroundings temperature',
         unit: 'K',
         factor: 1,
         min: fixed(4),
