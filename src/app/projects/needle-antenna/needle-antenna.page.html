@@ -1,0 +1,558 @@
+<article class="sim">
+  <header class="sim__head">
+    <p class="eyebrow">Simulation · Electromagnetics</p>
+    <h1 class="sim__title">A needle, <span class="accent">driven</span></h1>
+    <p class="sim__lede">
+      A thin metal needle floats in empty space: a straight wire, pointed at one end and rounded at
+      the other, cut by a tiny gap where an ideal AC voltage source drives it (through a balun, so
+      the feed is balanced). The two pieces either side of the gap make a dipole antenna, fed at its
+      center or anywhere along its length. The needle behaves as a waveguide: current and charge
+      settle into a standing wave along it, the wave leaks into the space around it as radiation,
+      and the metal turns part of it into heat. Change the needle, the drive and the material, and
+      watch the steady state follow.
+    </p>
+  </header>
+
+  <div class="sim__layout">
+    <aside class="panel" aria-label="Simulation parameters">
+      @for (group of groups; track group.id) {
+        <fieldset class="panel__group">
+          <legend>{{ group.title }}</legend>
+          @if (group.id === 'geometry') {
+            <label class="check">
+              <input
+                type="checkbox"
+                [checked]="params().geometry.mirrorPointed"
+                (change)="onMirrorPointed($event)"
+              />
+              Other arm pointed too
+            </label>
+            <p class="control__hint">
+              Off: the dipole’s other arm is a plain rod with a hemispherical end of the shaft
+              radius. On: it is a copy of the needle.
+            </p>
+          }
+          @if (group.id === 'material') {
+            <label class="control control--select">
+              <span class="control__label">Preset</span>
+              <select [value]="presetId()" (change)="onPreset($event)">
+                @for (m of presets; track m.id) {
+                  <option [value]="m.id">{{ m.name }}</option>
+                }
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+          }
+          @if (group.id === 'medium') {
+            <label class="control control--select">
+              <span class="control__label">Medium</span>
+              <select disabled>
+                <option>Vacuum (homogeneous)</option>
+              </select>
+            </label>
+            <label class="check">
+              <input
+                type="checkbox"
+                [checked]="params().medium.feedHeatSunk"
+                (change)="onHeatSink($event)"
+              />
+              Feed heat-sunk at ambient
+            </label>
+            <p class="control__hint">
+              Off: the antenna floats and sheds heat only by thermal radiation. On: the feed holds
+              the needle’s base at the surroundings’ temperature.
+            </p>
+          }
+          @for (c of group.controls; track c.path) {
+            <div class="control">
+              <label class="control__label" [for]="'n-' + c.path">
+                {{ c.label }}
+                @if (c.unit) {
+                  <span class="control__unit">{{ c.unit }}</span>
+                }
+              </label>
+              <input
+                class="control__number"
+                type="text"
+                inputmode="decimal"
+                [id]="'n-' + c.path"
+                [value]="display(c)"
+                (change)="onNumber(c, $event)"
+              />
+              <input
+                class="control__slider"
+                type="range"
+                min="0"
+                [max]="sliderSteps"
+                [value]="sliderPosition(c)"
+                [attr.aria-label]="c.label"
+                (input)="onSlider(c, $event)"
+              />
+              @if (c.hint) {
+                <p class="control__hint">{{ c.hint }}</p>
+              }
+            </div>
+          }
+        </fieldset>
+      }
+      <div class="panel__actions">
+        <button type="button" class="btn btn--ghost" (click)="tuneToResonance()">
+          Tune to resonance
+        </button>
+        <button type="button" class="btn btn--ghost" (click)="reset()">Reset</button>
+      </div>
+    </aside>
+
+    <div class="sim__main">
+      @let r = readouts();
+      <dl class="stats">
+        <div>
+          <dt>Input impedance</dt>
+          <dd>{{ r.zin }}</dd>
+        </div>
+        <div>
+          <dt>Base current</dt>
+          <dd>{{ r.baseCurrent }}</dd>
+        </div>
+        <div>
+          <dt>Radiated</dt>
+          <dd>{{ r.pRad }}</dd>
+        </div>
+        <div>
+          <dt>Heat in needle</dt>
+          <dd>{{ r.pOhmic }}</dd>
+        </div>
+        <div>
+          <dt>Efficiency</dt>
+          <dd>{{ r.efficiency }}</dd>
+        </div>
+        <div>
+          <dt>Hottest point</dt>
+          <dd [class.warn]="r.melts">{{ r.tMax }}</dd>
+        </div>
+        <div>
+          <dt>Wavelength</dt>
+          <dd>{{ r.wavelength }}</dd>
+        </div>
+        <div>
+          <dt>Total length / λ</dt>
+          <dd>{{ r.electricalLength }}</dd>
+        </div>
+      </dl>
+      @if (r.melts) {
+        <p class="alert">
+          The needle would pass its melting point ({{ r.meltingPoint }}). The model keeps the
+          metal’s properties fixed, so treat the profile as “it fails” rather than a real
+          temperature.
+        </p>
+      }
+      @if (r.emission) {
+        <p class="alert">
+          The surface field reaches {{ r.peakField }}: past a few GV/m a sharp tip in vacuum starts
+          emitting electrons (field emission), which this model does not include.
+        </p>
+      }
+
+      <section class="block" aria-labelledby="fields-title">
+        <div class="block__head">
+          <h2 id="fields-title" class="block__title">01 — Fields around the needle</h2>
+          <p class="block__lede">
+            A slice through the axis of the antenna: the pointed needle above, the rounded arm
+            below, the source in the gap between them (amber). The fields are rotationally
+            symmetric: E lies in this plane (radial and axial), H circles the arms (in and out of
+            the page). The lines are instantaneous electric field lines: watch them detach from the
+            antenna and travel off as radiation.
+          </p>
+        </div>
+        <div class="toolbar" role="group" aria-label="Field view">
+          <div class="seg" role="radiogroup" aria-label="View">
+            @for (v of views; track v.id) {
+              <button
+                type="button"
+                role="radio"
+                [attr.aria-checked]="view() === v.id"
+                [class.on]="view() === v.id"
+                (click)="view.set(v.id)"
+              >
+                {{ v.label }}
+              </button>
+            }
+          </div>
+          <div class="seg" role="radiogroup" aria-label="Quantity">
+            @for (q of quantities; track q.id) {
+              <button
+                type="button"
+                role="radio"
+                [attr.aria-checked]="quantity() === q.id"
+                [class.on]="quantity() === q.id"
+                (click)="quantity.set(q.id)"
+              >
+                {{ q.label }}
+              </button>
+            }
+          </div>
+        </div>
+        <div class="toolbar">
+          <button type="button" class="btn btn--ghost btn--small" (click)="playing.set(!playing())">
+            {{ playing() ? 'Pause' : 'Play' }}
+          </button>
+          <label class="scrub">
+            <span>ωt = {{ phaseDeg() }}°</span>
+            <input type="range" min="0" max="359" [value]="phaseDeg()" (input)="onScrub($event)" />
+          </label>
+          <label class="check">
+            <input type="checkbox" [checked]="showLines()" (change)="showLines.set(!showLines())" />
+            E field lines
+          </label>
+        </div>
+        <app-field-map
+          class="block__figure"
+          [solution]="sol()"
+          [view]="view()"
+          [quantity]="quantity()"
+          [phase]="wt()"
+          [lines]="showLines()"
+        />
+        @if (view() === 'apex') {
+          <p class="note">
+            At the apex the needle is modeled as a line of current and charge on its axis, so fields
+            within a few tip radii are indicative. The surface field from Gauss’s law peaks at
+            <strong>{{ r.peakField }}</strong
+            >, {{ r.peakFieldAt }} from the base.
+          </p>
+        }
+      </section>
+
+      <section class="block" aria-labelledby="wave-title">
+        <div class="block__head">
+          <h2 id="wave-title" class="block__title">02 — The standing wave in the needle</h2>
+          <p class="block__lede">
+            The current must vanish at the open apex and the source fixes the voltage across the
+            gap, so the waves running up and back down the needle add into a standing wave. The
+            charts span the whole antenna: the needle at positive heights, the other arm at negative
+            ones. Current runs continuously through the gap, up both arms; the potential jumps by
+            the gap voltage across it, and the two arms carry opposite charge. Different ends make
+            the arms slightly unequal, so the potential does not split exactly in half. Shaded bands
+            are the envelopes; the solid lines are the instantaneous values at ωt.
+          </p>
+        </div>
+        <app-needle-strip
+          [profiles]="[sol().arms[0].profile, sol().arms[1].profile]"
+          [z]="sampleZ()"
+          [values]="heatValues()"
+          [lut]="ember"
+          label="The antenna lying down: the other arm at left, the needle at right, colored by Joule heat"
+        />
+        <div class="grid-2">
+          <app-line-chart
+            [series]="currentSeries()"
+            xLabel="Height above gap"
+            yLabel="Current"
+            caption="Current along both arms of the antenna"
+            [xDomain]="antennaDomain()"
+            [formatX]="formatMm"
+            [formatY]="formatA"
+          />
+          <app-line-chart
+            [series]="voltageSeries()"
+            xLabel="Height above gap"
+            yLabel="Potential to midplane"
+            caption="Potential along both arms of the antenna"
+            [xDomain]="antennaDomain()"
+            [formatX]="formatMm"
+            [formatY]="formatV"
+          />
+        </div>
+        <app-line-chart
+          [series]="chargeSeries()"
+          xLabel="Height above gap"
+          yLabel="Charge per length"
+          caption="Line charge density along both arms of the antenna"
+          [height]="190"
+          [xDomain]="antennaDomain()"
+          [formatX]="formatMm"
+          [formatY]="formatC"
+        />
+        <dl class="facts">
+          <div>
+            <dt>Arm lengths, needle / other</dt>
+            <dd>{{ r.armLengths }}</dd>
+          </div>
+          <div>
+            <dt>Feed offset from center</dt>
+            <dd>{{ r.feedOffset }}</dd>
+          </div>
+          <div>
+            <dt>Gap voltage (peak)</dt>
+            <dd>{{ r.gapVoltage }}</dd>
+          </div>
+          <div>
+            <dt>Needle apex potential (peak)</dt>
+            <dd>{{ r.tipVoltage }}</dd>
+          </div>
+          <div>
+            <dt>Other end potential (peak)</dt>
+            <dd>{{ r.otherEndVoltage }}</dd>
+          </div>
+          <div>
+            <dt>Needle arm impedance</dt>
+            <dd>{{ r.zNeedle }}</dd>
+          </div>
+          <div>
+            <dt>Other arm impedance</dt>
+            <dd>{{ r.zOther }}</dd>
+          </div>
+          <div>
+            <dt>Point’s cone angle</dt>
+            <dd>{{ r.coneAngle }}</dd>
+          </div>
+          <div>
+            <dt>Shaft Z₀ (arm to midplane)</dt>
+            <dd>{{ r.z0 }}</dd>
+          </div>
+          <div>
+            <dt>Shaft R′ (skin effect)</dt>
+            <dd>{{ r.rPerM }}</dd>
+          </div>
+          <div>
+            <dt>Shaft internal X′</dt>
+            <dd>{{ r.xIntPerM }}</dd>
+          </div>
+          <div>
+            <dt>Shaft L′</dt>
+            <dd>{{ r.lPerM }}</dd>
+          </div>
+          <div>
+            <dt>Shaft C′</dt>
+            <dd>{{ r.cPerM }}</dd>
+          </div>
+          <div>
+            <dt>Skin depth</dt>
+            <dd>{{ r.skinDepth }} (radius ÷ δ = {{ r.skinRatio }})</dd>
+          </div>
+          <div>
+            <dt>Apex cap capacitance</dt>
+            <dd>{{ r.endCap }}</dd>
+          </div>
+          <div>
+            <dt>Other end cap capacitance</dt>
+            <dd>{{ r.otherCap }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="block" aria-labelledby="heat-title">
+        <div class="block__head">
+          <h2 id="heat-title" class="block__title">03 — Heat</h2>
+          <p class="block__lede">
+            The current crowds into a skin a few micrometers deep, and that thin skin’s resistance
+            turns ½|I|²R′ watts per meter into heat, most of it where the standing wave’s current
+            peaks. In vacuum there is no convection: heat spreads along the metal by conduction and
+            leaves by thermal radiation from the surface, plus, if the feed is heat-sunk, by
+            conduction out through the base. Both arms are shown: the needle above the gap, the
+            other arm below.
+          </p>
+        </div>
+        <div class="grid-2">
+          <app-line-chart
+            [series]="heatSeries()"
+            xLabel="Height above gap"
+            yLabel="Heat per length"
+            caption="Joule heating along the needle"
+            [xDomain]="antennaDomain()"
+            [formatX]="formatMm"
+            [formatY]="formatWm"
+          />
+          <app-line-chart
+            [series]="temperatureSeries()"
+            xLabel="Height above gap"
+            yLabel="Steady temperature"
+            caption="Steady-state temperature along the needle"
+            [xDomain]="antennaDomain()"
+            [formatX]="formatMm"
+            [formatY]="formatDegC"
+          />
+        </div>
+        <dl class="facts">
+          <div>
+            <dt>Joule heat, needle</dt>
+            <dd>{{ r.pOhmicNeedle }}</dd>
+          </div>
+          <div>
+            <dt>Joule heat, other arm</dt>
+            <dd>{{ r.pOhmicOther }}</dd>
+          </div>
+          <div>
+            <dt>Hottest, needle / other arm</dt>
+            <dd>{{ r.tNeedle }} / {{ r.tOther }}</dd>
+          </div>
+          <div>
+            <dt>Joule heat, both arms</dt>
+            <dd>{{ r.pOhmic }}</dd>
+          </div>
+          <div>
+            <dt>Loss resistance (at feed)</dt>
+            <dd>{{ r.rLoss }}</dd>
+          </div>
+          <div>
+            <dt>Lost in feed resistance</dt>
+            <dd>{{ r.pFeed }}</dd>
+          </div>
+          <div>
+            <dt>Peak temperature rise</dt>
+            <dd>{{ r.tRise }}</dd>
+          </div>
+          <div>
+            <dt>Melting point</dt>
+            <dd>{{ r.meltingPoint }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="block" aria-labelledby="radiation-title">
+        <div class="block__head">
+          <h2 id="radiation-title" class="block__title">04 — Radiation and the source</h2>
+          <p class="block__lede">
+            Where the energy goes. Radiation acts like a resistance at the base; the reactance says
+            how much energy just sloshes back and forth each cycle. Click either chart to set the
+            frequency.
+          </p>
+          <p class="note" aria-live="polite">
+            @let sp = sweepProgress();
+            @if (sp.total === 0) {
+              Computing the sweep…
+            } @else if (sp.points < sp.total) {
+              Refining the sweep: {{ sp.points }} of {{ sp.total }} frequencies…
+            } @else {
+              {{ sp.total }} frequencies.
+            }
+          </p>
+        </div>
+        <div class="grid-2">
+          <app-line-chart
+            [series]="impedanceSeries()"
+            xLabel="Frequency"
+            yLabel="Input impedance"
+            caption="Input impedance against frequency"
+            [xLog]="true"
+            [yDomain]="impedanceDomain()"
+            [marker]="params().drive.frequency"
+            [formatX]="formatHz"
+            [formatY]="formatOhm"
+            (picked)="onPickFrequency($event)"
+          />
+          <app-line-chart
+            [series]="powerSeries()"
+            xLabel="Frequency"
+            yLabel="Power at this voltage"
+            caption="Radiated power and Joule heat against frequency"
+            [xLog]="true"
+            [yLog]="true"
+            [marker]="params().drive.frequency"
+            [formatX]="formatHz"
+            [formatY]="formatW"
+            (picked)="onPickFrequency($event)"
+          />
+        </div>
+        <div class="grid-2 grid-2--top">
+          <app-polar-pattern [farField]="sol().farField" />
+          <dl class="facts facts--single">
+            <div>
+              <dt>Half-wave frequency (whole antenna)</dt>
+              <dd>{{ r.halfWave }}</dd>
+            </div>
+            <div>
+              <dt>|Z_in|</dt>
+              <dd>{{ r.zinMag }}</dd>
+            </div>
+            <div>
+              <dt>Impedance the source sees</dt>
+              <dd>{{ r.zSource }}</dd>
+            </div>
+            <div>
+              <dt>Source current</dt>
+              <dd>{{ r.sourceCurrent }}</dd>
+            </div>
+            <div>
+              <dt>Source power</dt>
+              <dd>{{ r.pSource }}</dd>
+            </div>
+            <div>
+              <dt>Radiation resistance</dt>
+              <dd>{{ r.rRad }}</dd>
+            </div>
+            <div>
+              <dt>Directivity</dt>
+              <dd>{{ r.directivity }}</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="block block--method" aria-labelledby="method-title">
+        <h2 id="method-title" class="block__title">05 — How it’s modeled</h2>
+        <ol class="method">
+          <li>
+            <strong>Circuit.</strong> The antenna floats in free space. The ideal source, behind a
+            balun (so no current runs on the outside of the feed line), sits in a vanishingly small
+            gap that splits the wire into the needle arm (gap to point) and the other arm (gap to
+            rounded end), through its series feed impedance, with any gap capacitance across it. The
+            gap can sit anywhere along the wire. The same current I flows through the gap and into
+            both arms, so the arms are in series: V_gap = I·(Z_needle + Z_other), each arm’s
+            impedance solved on its own line. Moving the gap off center changes the arms’ lengths,
+            and so where the feed sits on the standing wave: toward a current minimum, the input
+            resistance rises.
+          </li>
+          <li>
+            <strong>Geometry.</strong> The needle is a cylinder, then a cone, then a spherical cap
+            that the cone meets tangentially, so the radius a(z) and its slope are continuous all
+            the way to the apex. The other arm is a cylinder ending in a hemisphere of the shaft
+            radius (or, optionally, a copy of the needle). Every quantity below is computed from
+            these exact profiles.
+          </li>
+          <li>
+            <strong>Needle as a waveguide.</strong> Each arm is a non-uniform transmission line
+            against the midplane (Schelkunoff’s thin-dipole model) whose distributed parameters vary
+            continuously with a(z): characteristic impedance Z₀(z) = (η/2π)(ln(2L/a(z)) − 1), with L
+            half the total length (shared by both arms wherever the feed is), so the point raises
+            it; series impedance jωL′ plus the metal’s internal impedance (skin-effect resistance
+            and internal inductance, blended from the DC and thin-skin limits); shunt admittance
+            jωC′. The telegrapher’s equations dV/dz = −Z′(z)I, dI/dz = −Y′(z)V are integrated as
+            differential equations (fourth-order Runge–Kutta, coefficients evaluated at the exact
+            radius at every stage) from the apex, loaded by the cap’s capacitance, back to the gap.
+            Between nodes, V and I are cubic Hermite interpolants whose slopes come from the same
+            equations.
+          </li>
+          <li>
+            <strong>Radiation.</strong> Energy radiated is a loss the line does not know about, so
+            it is added as a uniform series resistance and iterated: solve the line, compute the
+            power the current actually radiates from its far field, update the resistance, until
+            they agree ({{ sol().convergence.iterations }} iterations here{{
+              r.converged ? '' : ', not fully converged'
+            }}).
+          </li>
+          <li>
+            <strong>Fields.</strong> Charge follows from current by continuity, λ = C′V. The fields
+            are integrals of the exact retarded fields of the current and charge along both arms
+            (Gauss–Legendre quadrature), E = −jωA − ∇Φ and H = ∇×A/μ, with a thin-wire kernel that
+            keeps them finite at the surface. Nothing is near- or far-field approximated, so the
+            reactive near field, the induction zone and the radiation zone all appear.
+          </li>
+          <li>
+            <strong>Heat.</strong> Time-averaged Joule heat ½|I|²R′ per meter, integrated along the
+            needle. The steady temperature solves one-dimensional conduction along the needle, with
+            conductances and radiating areas taken from the exact profile, and grey-body radiation
+            εσ(T⁴ − T₀⁴) from the surface. The base is insulated (a floating antenna) or held at
+            ambient (a heat-sunk feed). Material properties stay at room-temperature values.
+          </li>
+          <li>
+            <strong>Limits.</strong> The line model assumes the needle is thin (radius ≪ length and
+            wavelength). Fields within a few radii of the surface and at the apex are approximate,
+            the feed gap is idealized as infinitely small, and the medium is vacuum. Field emission
+            and breakdown at very high tip fields are not modeled.
+          </li>
+        </ol>
+      </section>
+    </div>
+  </div>
+</article>
