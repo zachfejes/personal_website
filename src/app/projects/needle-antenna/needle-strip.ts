@@ -41,7 +41,7 @@ const GAP = 6;
       @for (d of outlines(); track $index) {
         <path class="strip__needle" [attr.d]="d" [attr.fill]="'url(#' + id + ')'" />
       }
-      <rect class="strip__feed" [attr.x]="500 - GAP / 2" y="2" [attr.width]="GAP" height="40" />
+      <rect class="strip__feed" [attr.x]="gapX() - GAP / 2" y="2" [attr.width]="GAP" height="40" />
     </svg>
   `,
   styles: `
@@ -75,11 +75,17 @@ export class NeedleStrip {
   protected readonly id = `strip-${Math.random().toString(36).slice(2, 9)}`;
   protected readonly GAP = GAP;
 
-  /** x in the drawing for a height z. */
+  /** x in the drawing for a height z: the other arm's end at 0, the point at WIDTH. */
   private readonly x = computed(() => {
-    const L = this.profiles()[0].length;
-    return (z: number) => WIDTH / 2 + (Math.sign(z) * GAP) / 2 + (z / L) * (WIDTH / 2 - GAP / 2);
+    const [needle, other] = this.profiles();
+    const span = WIDTH - GAP;
+    const total = needle.length + other.length;
+    const gapX = (other.length / total) * span + GAP / 2;
+    return (z: number) => gapX + (Math.sign(z) * GAP) / 2 + (z / total) * span;
   });
+
+  /** Where the gap sits in the drawing. */
+  protected readonly gapX = computed(() => this.x()(0));
 
   protected readonly outlines = computed(() => {
     const x = this.x();

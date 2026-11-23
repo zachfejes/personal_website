@@ -1,7 +1,7 @@
 import { abs, div } from './complex';
 import { computeGrid, contourSegments, zAt } from './fields';
 import { profile, radiusAt } from './geometry';
-import { DEFAULT_PARAMS, NeedleParams } from './model';
+import { DEFAULT_PARAMS, NeedleParams, armShapes } from './model';
 import { C0, armCharge, solve, sweep } from './solver';
 import { solveTemperature } from './thermal';
 
@@ -18,8 +18,8 @@ const rod = (frequency: number): NeedleParams => ({
 });
 
 describe('needle geometry', () => {
-  const p = profile(DEFAULT_PARAMS.geometry);
-  const g = DEFAULT_PARAMS.geometry;
+  const g = armShapes(DEFAULT_PARAMS.geometry)[0];
+  const p = profile(g);
 
   it('runs shaft → cone → cap, ending at the apex', () => {
     expect(radiusAt(p, 0.01)).toBe(g.radius);
@@ -90,20 +90,20 @@ describe('needle solver (center-fed dipole in free space)', () => {
 
   it('concentrates the field at the point, not at the rounded end', () => {
     const s = solve(DEFAULT_PARAMS);
-    expect(s.peakSurfaceField.z).toBeCloseTo(DEFAULT_PARAMS.geometry.length, 6);
+    expect(s.peakSurfaceField.z).toBeCloseTo(DEFAULT_PARAMS.geometry.length / 2, 6);
   });
 
   it('matches the radiation resistance of a short dipole, 20π²(ℓ/λ)² with ℓ = 2L', () => {
     const f = 50e6;
     const s = solve(rod(f));
-    const l = 2 * DEFAULT_PARAMS.geometry.length;
+    const l = DEFAULT_PARAMS.geometry.length;
     const theory = 20 * Math.PI ** 2 * (l / (C0 / f)) ** 2;
     expect(Math.abs(s.radiationResistance / theory - 1)).toBeLessThan(0.15);
     expect(s.inputImpedance.im).toBeLessThan(-1000);
   });
 
   it('resonates as a half-wave dipole a little short of λ/2, near 73 Ω', () => {
-    const fq = C0 / (4 * DEFAULT_PARAMS.geometry.length);
+    const fq = C0 / (2 * DEFAULT_PARAMS.geometry.length);
     const pts = sweep(rod(fq), 0.8 * fq, 1.1 * fq, 80);
     const i = pts.findIndex(
       (p, k) => k > 0 && pts[k - 1].inputImpedance.im < 0 && p.inputImpedance.im >= 0,
@@ -128,6 +128,54 @@ describe('needle solver (center-fed dipole in free space)', () => {
     expect(abs(needle.current[needle.current.length - 1]) / abs(s.gapCurrent)).toBeLessThan(0.01);
   });
 
+  it('splits the wire at the feed: the arms always add up to the total length', () => {
+    for (const feedPosition of [0.1, 0.5, 0.8]) {
+      const s = solve({
+        ...DEFAULT_PARAMS,
+        geometry: { ...DEFAULT_PARAMS.geometry, feedPosition },
+      });
+      const [up, down] = s.arms.map((a) => a.profile.length);
+      expect(up + down).toBeCloseTo(DEFAULT_PARAMS.geometry.length, 12);
+      expect(down / DEFAULT_PARAMS.geometry.length).toBeCloseTo(feedPosition, 12);
+    }
+  });
+
+  it('raises the input resistance off center, roughly as R_center / cos²(k·offset)', () => {
+    // A resonant half-wave rod, fed at its center and λ/8 off it.
+    const base = rod(1);
+    const D = base.geometry.length;
+    const fq = C0 / (2 * D);
+    const pts = sweep(base, 0.85 * fq, 1.05 * fq, 120);
+    const i = pts.findIndex(
+      (q, n) => n > 0 && pts[n - 1].inputImpedance.im < 0 && q.inputImpedance.im >= 0,
+    );
+    const f0 = pts[i].frequency;
+    const lambda = C0 / f0;
+    const offset = lambda / 8;
+    const at = (feedPosition: number) =>
+      solve({
+        ...base,
+        geometry: { ...base.geometry, feedPosition },
+        drive: { ...base.drive, frequency: f0 },
+      }).inputImpedance.re;
+    const center = at(0.5);
+    const off = at(0.5 - offset / D);
+    const expected = center / Math.cos((2 * Math.PI * offset) / lambda) ** 2;
+    expect(off / expected).toBeGreaterThan(0.8);
+    expect(off / expected).toBeLessThan(1.25);
+  });
+
+  it('conserves power and charge with the feed off center', () => {
+    const s = solve({
+      ...DEFAULT_PARAMS,
+      geometry: { ...DEFAULT_PARAMS.geometry, feedPosition: 0.3 },
+    });
+    const { source, radiated, ohmic } = s.power;
+    expect((radiated + ohmic) / source).toBeCloseTo(1, 3);
+    const [up, down] = s.arms.map(armCharge);
+    expect(abs({ re: up.re + down.re, im: up.im + down.im }) / abs(up)).toBeLessThan(1e-3);
+  });
+
   it('is converged in the mesh: halving the steps barely moves the input impedance', () => {
     const coarse = solve(DEFAULT_PARAMS, { baseCells: 80 }).inputImpedance;
     const fine = solve(DEFAULT_PARAMS, { baseCells: 320 }).inputImpedance;
@@ -138,7 +186,7 @@ describe('needle solver (center-fed dipole in free space)', () => {
 
   it('gives H ≈ I/(2πρ) close to the wire', () => {
     const s = solve(rod(1e9));
-    const L = DEFAULT_PARAMS.geometry.length;
+    const L = DEFAULT_PARAMS.geometry.length / 2;
     const grid = computeGrid(s, { rhoMax: 0.03, zMin: 0, zMax: 0.045 }, 60, 90);
     const i = 3;
     const rho = ((i + 0.5) * 0.03) / 60;

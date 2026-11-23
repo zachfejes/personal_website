@@ -1,14 +1,15 @@
 /**
  * Parameters for the needle simulation. All values in SI units.
  *
- * The needle floats in free space as one arm of a center-fed dipole: an ideal voltage
- * source V(t) = V̂·cos(ωt + φ) sits in a vanishingly small gap at z = 0 between the needle's
- * base and a second arm pointing the other way: a rod of the same length and radius with a
- * rounded end, or (optionally) a copy of the needle. A balun is assumed, so the feed is
- * balanced and the feed line carries no current on its outside. There is no ground plane.
+ * The needle floats in free space as part of a dipole: one straight wire of a given total length,
+ * pointed at one end and rounded at the other, cut by a vanishingly small feed gap somewhere
+ * along it. An ideal voltage source V(t) = V̂·cos(ωt + φ) drives the gap. The part above the gap
+ * (ending in the point) is the needle arm; the part below (ending in the rounded end) is the
+ * other arm. A balun is assumed, so the feed is balanced and the feed line carries no current
+ * on its outside. There is no ground plane.
  */
 export interface NeedleGeometry {
-  /** Base to apex (m). */
+  /** Total length of the antenna, point to rounded end (m). */
   length: number;
   /** Shaft radius (m). */
   radius: number;
@@ -17,15 +18,45 @@ export interface NeedleGeometry {
   /** Radius of the rounded apex (m). */
   tipRadius: number;
   /**
-   * Whether the dipole's other arm is pointed like the needle. Otherwise it is a plain rod of the
-   * same length and radius with a hemispherical end.
+   * Whether the far end of the other arm is pointed too. Otherwise it is rounded: a hemisphere of
+   * the shaft radius.
    */
   mirrorPointed: boolean;
+  /**
+   * Where the feed gap sits, as a fraction of the total length measured from the rounded (other)
+   * end: 0.5 is center-fed.
+   */
+  feedPosition: number;
 }
 
-/** The geometry of the dipole's other arm. */
-export const mirrorGeometry = (g: NeedleGeometry): NeedleGeometry =>
-  g.mirrorPointed ? g : { ...g, taperLength: 0, tipRadius: g.radius };
+/** The shape of one arm, measured outward from the feed gap. */
+export interface ArmShape {
+  /** Gap to the arm's far end (m). */
+  length: number;
+  radius: number;
+  /** Length of a conical point at the far end (m); 0 for a hemispherical end. */
+  taperLength: number;
+  /** Radius of the rounded apex of the point (m). */
+  tipRadius: number;
+}
+
+/** The two arms on either side of the feed gap: [the needle arm, the other arm]. */
+export function armShapes(g: NeedleGeometry): [ArmShape, ArmShape] {
+  const other = g.length * g.feedPosition;
+  const needle = g.length - other;
+  const pointed = (length: number): ArmShape => ({
+    length,
+    radius: g.radius,
+    taperLength: Math.min(g.taperLength, length),
+    tipRadius: g.tipRadius,
+  });
+  return [
+    pointed(needle),
+    g.mirrorPointed
+      ? pointed(other)
+      : { length: other, radius: g.radius, taperLength: 0, tipRadius: g.radius },
+  ];
+}
 
 export interface DriveCircuit {
   /** Peak source voltage V̂ (V). */
@@ -160,11 +191,12 @@ export const VACUUM: Medium = {
 
 export const DEFAULT_PARAMS: NeedleParams = {
   geometry: {
-    length: 30e-3,
+    length: 60e-3,
     radius: 0.25e-3,
     taperLength: 4e-3,
     tipRadius: 10e-6,
     mirrorPointed: false,
+    feedPosition: 0.5,
   },
   drive: {
     voltage: 10,

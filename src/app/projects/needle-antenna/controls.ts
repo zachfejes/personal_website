@@ -25,16 +25,27 @@ const fixed = (v: number) => () => v;
 export const CONTROL_GROUPS: readonly ControlGroup[] = [
   {
     id: 'geometry',
-    title: 'Needle',
+    title: 'Antenna',
     controls: [
       {
         path: 'geometry.length',
-        label: 'Length',
+        label: 'Total length',
         unit: 'mm',
         factor: 1e-3,
-        min: fixed(1e-3),
-        max: fixed(1),
+        min: fixed(2e-3),
+        max: fixed(2),
         log: true,
+        hint: 'Point to rounded end, both arms together.',
+      },
+      {
+        path: 'geometry.feedPosition',
+        label: 'Feed position',
+        unit: '% from rounded end',
+        factor: 0.01,
+        min: fixed(0.02),
+        max: fixed(0.98),
+        log: false,
+        hint: '50 % is center-fed. The needle arm runs from the feed to the point.',
       },
       {
         path: 'geometry.radius',
@@ -42,7 +53,7 @@ export const CONTROL_GROUPS: readonly ControlGroup[] = [
         unit: 'mm',
         factor: 1e-3,
         min: fixed(5e-6),
-        max: (p) => Math.min(10e-3, p.geometry.length / 4),
+        max: (p) => Math.min(10e-3, p.geometry.length / 8),
         log: true,
       },
       {
@@ -51,9 +62,9 @@ export const CONTROL_GROUPS: readonly ControlGroup[] = [
         unit: 'mm',
         factor: 1e-3,
         min: fixed(0),
-        max: (p) => p.geometry.length,
+        max: (p) => p.geometry.length * (1 - p.geometry.feedPosition),
         log: false,
-        hint: '0 gives a blunt rod.',
+        hint: '0 gives a blunt rod. At most the length of the needle arm.',
       },
       {
         path: 'geometry.tipRadius',
@@ -200,8 +211,11 @@ export function setParam(p: NeedleParams, path: ParamControl['path'], value: num
   const [group, key] = path.split('.') as [keyof NeedleParams, string];
   const next: NeedleParams = { ...p, [group]: { ...p[group], [key]: value } };
   const g = { ...next.geometry };
-  g.radius = Math.min(g.radius, g.length / 4);
-  g.taperLength = Math.min(Math.max(g.taperLength, 0), g.length);
+  g.radius = Math.min(g.radius, g.length / 8);
+  // Keep both arms at least two radii long, and the point within the needle arm.
+  const edge = Math.min(0.45, (2 * g.radius) / g.length);
+  g.feedPosition = Math.min(Math.max(g.feedPosition, edge), 1 - edge);
+  g.taperLength = Math.min(Math.max(g.taperLength, 0), g.length * (1 - g.feedPosition));
   g.tipRadius = Math.min(g.tipRadius, g.radius);
   return { ...next, geometry: g };
 }

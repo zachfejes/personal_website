@@ -3,12 +3,13 @@
     <p class="eyebrow">Simulation · Electromagnetics</p>
     <h1 class="sim__title">A needle, <span class="accent">driven</span></h1>
     <p class="sim__lede">
-      A thin metal needle floats in empty space, driven at its base by an ideal AC voltage source
-      (through a balun, so the feed is balanced) whose other terminal meets a plain rod of the same
-      length and radius with a rounded end: together they make a center-fed dipole antenna. The
-      needle behaves as a waveguide: current and charge settle into a standing wave along it, the
-      wave leaks into the space around it as radiation, and the metal turns part of it into heat.
-      Change the needle, the drive and the material, and watch the steady state follow.
+      A thin metal needle floats in empty space: a straight wire, pointed at one end and rounded at
+      the other, cut by a tiny gap where an ideal AC voltage source drives it (through a balun, so
+      the feed is balanced). The two pieces either side of the gap make a dipole antenna, fed at its
+      center or anywhere along its length. The needle behaves as a waveguide: current and charge
+      settle into a standing wave along it, the wave leaks into the space around it as radiation,
+      and the metal turns part of it into heat. Change the needle, the drive and the material, and
+      watch the steady state follow.
     </p>
   </header>
 
@@ -134,7 +135,7 @@
           <dd>{{ r.wavelength }}</dd>
         </div>
         <div>
-          <dt>Length / λ</dt>
+          <dt>Total length / λ</dt>
           <dd>{{ r.electricalLength }}</dd>
         </div>
       </dl>
@@ -273,6 +274,14 @@
           [formatY]="formatC"
         />
         <dl class="facts">
+          <div>
+            <dt>Arm lengths, needle / other</dt>
+            <dd>{{ r.armLengths }}</dd>
+          </div>
+          <div>
+            <dt>Feed offset from center</dt>
+            <dd>{{ r.feedOffset }}</dd>
+          </div>
           <div>
             <dt>Gap voltage (peak)</dt>
             <dd>{{ r.gapVoltage }}</dd>
@@ -449,8 +458,8 @@
           <app-polar-pattern [farField]="sol().farField" />
           <dl class="facts facts--single">
             <div>
-              <dt>Quarter-wave frequency</dt>
-              <dd>{{ r.quarterWave }}</dd>
+              <dt>Half-wave frequency (whole antenna)</dt>
+              <dd>{{ r.halfWave }}</dd>
             </div>
             <div>
               <dt>|Z_in|</dt>
@@ -486,10 +495,13 @@
           <li>
             <strong>Circuit.</strong> The antenna floats in free space. The ideal source, behind a
             balun (so no current runs on the outside of the feed line), sits in a vanishingly small
-            gap between the needle’s base and the other arm, through its series feed impedance, with
-            any gap capacitance across it. The same current I flows through the gap and into both
-            arms, so the arms are in series: V_gap = I·(Z_needle + Z_other), each arm’s impedance
-            solved on its own line.
+            gap that splits the wire into the needle arm (gap to point) and the other arm (gap to
+            rounded end), through its series feed impedance, with any gap capacitance across it. The
+            gap can sit anywhere along the wire. The same current I flows through the gap and into
+            both arms, so the arms are in series: V_gap = I·(Z_needle + Z_other), each arm’s
+            impedance solved on its own line. Moving the gap off center changes the arms’ lengths,
+            and so where the feed sits on the standing wave: toward a current minimum, the input
+            resistance rises.
           </li>
           <li>
             <strong>Geometry.</strong> The needle is a cylinder, then a cone, then a spherical cap
@@ -501,14 +513,15 @@
           <li>
             <strong>Needle as a waveguide.</strong> Each arm is a non-uniform transmission line
             against the midplane (Schelkunoff’s thin-dipole model) whose distributed parameters vary
-            continuously with a(z): characteristic impedance Z₀(z) = (η/2π)(ln(2L/a(z)) − 1), so the
-            point raises it; series impedance jωL′ plus the metal’s internal impedance (skin-effect
-            resistance and internal inductance, blended from the DC and thin-skin limits); shunt
-            admittance jωC′. The telegrapher’s equations dV/dz = −Z′(z)I, dI/dz = −Y′(z)V are
-            integrated as differential equations (fourth-order Runge–Kutta, coefficients evaluated
-            at the exact radius at every stage) from the apex, loaded by the cap’s capacitance, back
-            to the gap. Between nodes, V and I are cubic Hermite interpolants whose slopes come from
-            the same equations.
+            continuously with a(z): characteristic impedance Z₀(z) = (η/2π)(ln(2L/a(z)) − 1), with L
+            half the total length (shared by both arms wherever the feed is), so the point raises
+            it; series impedance jωL′ plus the metal’s internal impedance (skin-effect resistance
+            and internal inductance, blended from the DC and thin-skin limits); shunt admittance
+            jωC′. The telegrapher’s equations dV/dz = −Z′(z)I, dI/dz = −Y′(z)V are integrated as
+            differential equations (fourth-order Runge–Kutta, coefficients evaluated at the exact
+            radius at every stage) from the apex, loaded by the cap’s capacitance, back to the gap.
+            Between nodes, V and I are cubic Hermite interpolants whose slopes come from the same
+            equations.
           </li>
           <li>
             <strong>Radiation.</strong> Energy radiated is a loss the line does not know about, so

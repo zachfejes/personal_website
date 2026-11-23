@@ -50,27 +50,30 @@ export const FIELD_QUANTITIES: readonly { id: FieldQuantity; label: string }[] =
 /** The half-plane window each view shows. */
 export function fieldWindow(sol: Solution, view: FieldView): FieldWindow {
   const g = sol.params.geometry;
-  const L = g.length;
+  const D = g.length;
+  // The needle's point is at z = up, the other arm's end at z = −down; the gap is at 0.
+  const up = sol.arms[0].profile.length;
+  const down = sol.arms[1].profile.length;
+  const center = (up - down) / 2;
   switch (view) {
     case 'radiation': {
-      const d = Math.max(1.6 * L, 1.25 * sol.wavelength);
-      return { rhoMax: d, zMin: -d, zMax: d };
+      const d = Math.max(0.8 * D, 1.25 * sol.wavelength);
+      return { rhoMax: d, zMin: center - d, zMax: center + d };
     }
     case 'antenna':
-      return { rhoMax: 0.85 * L, zMin: -1.3 * L, zMax: 1.3 * L };
+      return { rhoMax: 0.43 * D, zMin: center - 0.65 * D, zMax: center + 0.65 * D };
     case 'point': {
-      const s = Math.max(g.taperLength, 4 * g.radius, 1e-9);
-      return { rhoMax: s, zMin: L - 1.6 * s, zMax: L + 0.4 * s };
+      const s = Math.max(Math.min(g.taperLength, up), 4 * g.radius, 1e-9);
+      return { rhoMax: s, zMin: up - 1.6 * s, zMax: up + 0.4 * s };
     }
     case 'other-end': {
-      // The far end of the other arm, at z = −L.
       const end = sol.arms[1].profile;
       const s = Math.max(6 * end.capRadius, 4 * end.shaftRadius, 1e-9);
-      return { rhoMax: s, zMin: -L - 0.5 * s, zMax: -L + 1.5 * s };
+      return { rhoMax: s, zMin: -down - 0.5 * s, zMax: -down + 1.5 * s };
     }
     case 'apex': {
       const s = Math.max(30 * Math.min(g.tipRadius, g.radius), 1e-9);
-      return { rhoMax: s, zMin: L - 1.5 * s, zMax: L + 0.5 * s };
+      return { rhoMax: s, zMin: up - 1.5 * s, zMax: up + 0.5 * s };
     }
   }
 }
@@ -397,14 +400,14 @@ export class FieldMap {
    */
   private profileHeights(win: FieldWindow): number[] {
     const arms = this.solution().arms;
-    const L = arms[0].profile.length;
-    const lo = Math.max(-L, win.zMin);
-    const hi = Math.min(L, win.zMax);
+    const lo = Math.max(-arms[1].profile.length, win.zMin);
+    const hi = Math.min(arms[0].profile.length, win.zMax);
     if (hi <= lo) return [];
     const zs = new Set<number>([0]);
     for (let i = 0; i <= 400; i++) zs.add(lo + ((hi - lo) * i) / 400);
     for (const arm of arms) {
       const p = arm.profile;
+      const L = p.length;
       const side = arm.direction;
       zs.add(side * p.coneStart);
       zs.add(side * p.capStart);

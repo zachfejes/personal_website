@@ -1,4 +1,4 @@
-import { NeedleGeometry } from './model';
+import { ArmShape } from './model';
 
 /**
  * The needle's profile, resolved into its three smooth pieces: a cylindrical shaft, a cone, and
@@ -28,7 +28,7 @@ export interface Profile {
  * cone starts at L − Lt with the shaft radius and runs down the line tangent to a sphere of the
  * tip radius whose surface touches the apex at z = L.
  */
-export function profile(g: NeedleGeometry): Profile {
+export function profile(g: ArmShape): Profile {
   const L = g.length;
   const a = g.radius;
   const taper = Math.min(Math.max(g.taperLength, 0), L);

@@ -1,6 +1,6 @@
 import { Complex, ZERO, abs, abs2, add, complex, conj, div, mul, polar, scale } from './complex';
 import { Profile, capArea, profile, radiusAt } from './geometry';
-import { NeedleGeometry, NeedleParams, mirrorGeometry } from './model';
+import { ArmShape, NeedleParams, armShapes } from './model';
 import { ThermalProfile, solveTemperature } from './thermal';
 
 export const MU0 = 1.25663706212e-6;
@@ -13,7 +13,6 @@ const MAX_PHASE_STEP = 0.15;
 const GAUSS = [0.5 - 0.5 / Math.sqrt(3), 0.5 + 0.5 / Math.sqrt(3)] as const;
 
 /** Radius of the needle at height z above its base, 0 outside it. */
-export const needleRadius = (g: NeedleGeometry, z: number) => radiusAt(profile(g), z);
 
 /**
  * Nodes along the needle, from the base to where the cone meets the cap. Uniform in the shaft
@@ -70,7 +69,7 @@ export interface LineSample {
 export interface Arm {
   /** +1 for the needle (pointing up from the gap), −1 for the other arm (pointing down). */
   direction: 1 | -1;
-  geometry: NeedleGeometry;
+  geometry: ArmShape;
   profile: Profile;
   /** Distances from the gap (m), from the gap out to where the end cap begins. */
   nodes: number[];
@@ -187,7 +186,8 @@ const skinDepthOf = (ctx: Context) => Math.sqrt((2 * ctx.resistivity) / (ctx.ome
 
 /**
  * Line parameters at a given radius. The external part is Schelkunoff's average characteristic
- * impedance of a thin dipole arm, Z₀ = (η/2π)(ln(2L/a) − 1), taken with the local radius. The
+ * impedance of a thin dipole arm, Z₀ = (η/2π)(ln(2L/a) − 1), with L half the dipole's total
+ * length (shared by both arms, wherever the feed is) and a the local radius. The
  * internal part blends the DC and thin-skin limits of a round wire's internal impedance.
  */
 function coefficients(ctx: Context, a: number): LineCoefficients {
@@ -254,7 +254,7 @@ function planSteps(ctx: Context, p: Profile, nodes: number[]): Step[][] {
 /** One arm's line, set up once per solve. */
 interface ArmPlan {
   direction: 1 | -1;
-  geometry: NeedleGeometry;
+  geometry: ArmShape;
   profile: Profile;
   nodes: number[];
   steps: Step[][];
@@ -438,12 +438,14 @@ export function solve(params: NeedleParams, options: SolveOptions = {}): Solutio
     omega,
     velocity,
     eta,
-    length: g.length,
+    // Schelkunoff's average impedance takes the dipole's half-length, shared by both arms.
+    length: g.length / 2,
     resistivity: material.resistivity,
     metalMu: MU0 * material.relPermeability,
   };
+  const shapes = armShapes(g);
   const plans = ([1, -1] as const).map((direction): ArmPlan => {
-    const geometry = direction === 1 ? g : mirrorGeometry(g);
+    const geometry = shapes[direction === 1 ? 0 : 1];
     const p = profile(geometry);
     const nodes = buildMesh(p, wavelength, options.baseCells);
     return {
@@ -457,6 +459,7 @@ export function solve(params: NeedleParams, options: SolveOptions = {}): Solutio
     };
   });
   const symmetric =
+    plans[0].profile.length === plans[1].profile.length &&
     plans[0].profile.capRadius === plans[1].profile.capRadius &&
     plans[0].profile.coneStart === plans[1].profile.coneStart;
   const feedZ = complex(drive.feedResistance, drive.feedReactance);
@@ -546,7 +549,7 @@ export function solve(params: NeedleParams, options: SolveOptions = {}): Solutio
     }
     const capField = abs(arm.tipCharge) / capArea(arm.profile) / epsilon;
     if (capField > peakSurfaceField.value)
-      peakSurfaceField = { value: capField, z: arm.direction * g.length };
+      peakSurfaceField = { value: capField, z: arm.direction * arm.profile.length };
   }
 
   return {

@@ -81,7 +81,8 @@ export class NeedleAntennaPage {
   private readonly sweepParams = computed(
     () => {
       const p = this.params();
-      const fq = C0 / Math.sqrt(p.medium.relPermittivity) / (4 * p.geometry.length);
+      // The half-wave frequency of the whole antenna.
+      const fq = C0 / Math.sqrt(p.medium.relPermittivity) / (2 * p.geometry.length);
       return {
         params: { ...p, drive: { ...p.drive, phaseDeg: 0, frequency: 0 } },
         fMin: Math.min(0.1 * fq, p.drive.frequency / 1.5),
@@ -107,7 +108,9 @@ export class NeedleAntennaPage {
     return {
       wavelength: si(s.wavelength, 'm'),
       electricalLength: num(g.length / s.wavelength),
-      quarterWave: si(C0 / Math.sqrt(s.params.medium.relPermittivity) / (4 * g.length), 'Hz'),
+      halfWave: si(C0 / Math.sqrt(s.params.medium.relPermittivity) / (2 * g.length), 'Hz'),
+      armLengths: `${mm(needle.profile.length)} / ${mm(other.profile.length)} mm`,
+      feedOffset: `${mm(needle.profile.length - g.length / 2)} mm`,
       zin: impedance(s.inputImpedance),
       zinMag: si(abs(s.inputImpedance), 'Ω'),
       zSource: impedance(s.sourceImpedance),
@@ -178,8 +181,8 @@ export class NeedleAntennaPage {
   });
   /** Both arms, the other arm below the gap (negative heights). */
   protected readonly antennaDomain = computed(() => {
-    const L = this.params().geometry.length * 1e3;
-    return [-L, L] as const;
+    const [needle, other] = this.sol().arms;
+    return [-other.profile.length * 1e3, needle.profile.length * 1e3] as const;
   });
 
   /** A wave along the antenna: the instantaneous value, with its ± envelope as a band. */
