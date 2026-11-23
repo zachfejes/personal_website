@@ -2,8 +2,14 @@ import { abs, div } from './complex';
 import { computeGrid, contourSegments, zAt } from './fields';
 import { profile, radiusAt } from './geometry';
 import { DEFAULT_PARAMS, NeedleParams } from './model';
-import { C0, needleCharge, solve, sweep } from './solver';
+import { C0, armCharge, solve, sweep } from './solver';
 import { solveTemperature } from './thermal';
+
+/** Both arms pointed: the symmetric dipole. */
+const twin: NeedleParams = {
+  ...DEFAULT_PARAMS,
+  geometry: { ...DEFAULT_PARAMS.geometry, mirrorPointed: true },
+};
 
 const rod = (frequency: number): NeedleParams => ({
   ...DEFAULT_PARAMS,
@@ -47,13 +53,44 @@ describe('needle solver (center-fed dipole in free space)', () => {
     expect((radiated + ohmic) / input).toBeCloseTo(1, 3);
   });
 
-  it('conserves charge: the needle holds what the gap current delivers', () => {
+  it('conserves charge: each arm holds what the gap current delivers, and they cancel', () => {
     const s = solve(DEFAULT_PARAMS);
-    const delivered = div(s.current[0], { re: 0, im: s.omega });
-    const held = needleCharge(s);
+    const delivered = div(s.gapCurrent, { re: 0, im: s.omega });
+    const [up, down] = s.arms.map(armCharge);
+    const rel = (x: { re: number; im: number }) => abs(x) / abs(delivered);
+    expect(rel({ re: up.re - delivered.re, im: up.im - delivered.im })).toBeLessThan(1e-3);
+    expect(rel({ re: up.re + down.re, im: up.im + down.im })).toBeLessThan(1e-3);
+  });
+
+  it('puts the arms in series: Z_in = Z_needle + Z_other', () => {
+    const s = solve(DEFAULT_PARAMS);
+    const [a, b] = s.arms.map((arm) => arm.impedance);
     expect(
-      abs({ re: held.re - delivered.re, im: held.im - delivered.im }) / abs(delivered),
-    ).toBeLessThan(1e-3);
+      abs({ re: a.re + b.re - s.inputImpedance.re, im: a.im + b.im - s.inputImpedance.im }),
+    ).toBeLessThan(1e-9 * abs(s.inputImpedance));
+    // Different ends: different arms.
+    expect(abs({ re: a.re - b.re, im: a.im - b.im })).toBeGreaterThan(0.001 * abs(a));
+  });
+
+  it('reduces to the mirrored dipole when both arms are pointed', () => {
+    const s = solve(twin);
+    const [a, b] = s.arms.map((arm) => arm.impedance);
+    expect(abs({ re: a.re - b.re, im: a.im - b.im }) / abs(a)).toBeLessThan(1e-12);
+    expect(s.symmetric).toBe(true);
+    // Current runs the same way up both arms; potentials are opposite.
+    const [up, down] = s.arms;
+    const k = 10;
+    expect(
+      abs({ re: up.current[k].re - down.current[k].re, im: up.current[k].im - down.current[k].im }),
+    ).toBeLessThan(1e-9 * abs(up.current[k]));
+    expect(
+      abs({ re: up.voltage[k].re + down.voltage[k].re, im: up.voltage[k].im + down.voltage[k].im }),
+    ).toBeLessThan(1e-9 * abs(up.voltage[k]));
+  });
+
+  it('concentrates the field at the point, not at the rounded end', () => {
+    const s = solve(DEFAULT_PARAMS);
+    expect(s.peakSurfaceField.z).toBeCloseTo(DEFAULT_PARAMS.geometry.length, 6);
   });
 
   it('matches the radiation resistance of a short dipole, 20π²(ℓ/λ)² with ℓ = 2L', () => {
@@ -78,9 +115,17 @@ describe('needle solver (center-fed dipole in free space)', () => {
     expect(pts[i].inputImpedance.re).toBeLessThan(90);
   });
 
-  it('forms a standing wave: current falls to almost nothing at the open apex', () => {
+  it('forms a standing wave: only each end cap’s charging current reaches its end', () => {
     const s = solve(DEFAULT_PARAMS);
-    expect(abs(s.current[s.current.length - 1]) / abs(s.current[0])).toBeLessThan(0.01);
+    for (const arm of s.arms) {
+      const n = arm.current.length - 1;
+      const capCurrent = s.omega * arm.capCapacitance * abs(arm.voltage[n]);
+      expect(abs(arm.current[n]) / capCurrent).toBeCloseTo(1, 6);
+      expect(abs(arm.current[n]) / abs(s.gapCurrent)).toBeLessThan(0.1);
+    }
+    // The point's tiny cap takes almost nothing.
+    const needle = s.arms[0];
+    expect(abs(needle.current[needle.current.length - 1]) / abs(s.gapCurrent)).toBeLessThan(0.01);
   });
 
   it('is converged in the mesh: halving the steps barely moves the input impedance', () => {
@@ -99,14 +144,16 @@ describe('needle solver (center-fed dipole in free space)', () => {
     const rho = ((i + 0.5) * 0.03) / 60;
     const j = Math.round(((0.045 - L / 3) / 0.045) * 90 - 0.5);
     const z = zAt(grid, j);
-    const sample = s.samples.reduce((a, b) => (Math.abs(b.z - z) < Math.abs(a.z - z) ? b : a));
+    const sample = s.arms[0].samples.reduce((a, b) =>
+      Math.abs(b.z - z) < Math.abs(a.z - z) ? b : a,
+    );
     const k = j * 60 + i;
     const h = Math.hypot(grid.hPhiRe[k], grid.hPhiIm[k]);
     expect(h / (abs(sample.current) / (2 * Math.PI * rho))).toBeCloseTo(1, 1);
   });
 
-  it('mirrors the fields across the gap: E_z, H_φ even and E_ρ odd', () => {
-    const s = solve(DEFAULT_PARAMS);
+  it('mirrors the fields across the gap for identical arms: E_z, H_φ even and E_ρ odd', () => {
+    const s = solve(twin);
     const full = computeGrid(s, { rhoMax: 0.03, zMin: -0.03, zMax: 0.03 }, 20, 20);
     const top = computeGrid(s, { rhoMax: 0.03, zMin: 0, zMax: 0.03 }, 20, 10);
     const k = 4 * 20 + 15;

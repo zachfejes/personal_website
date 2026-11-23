@@ -29,7 +29,7 @@ import {
 import { radiusAt } from './physics/geometry';
 import { Solution } from './physics/solver';
 
-export type FieldView = 'radiation' | 'antenna' | 'point' | 'apex';
+export type FieldView = 'radiation' | 'antenna' | 'point' | 'apex' | 'other-end';
 export type FieldQuantity = 'e' | 'e-rms' | 'h' | 'h-rms';
 
 export const FIELD_VIEWS: readonly { id: FieldView; label: string }[] = [
@@ -37,6 +37,7 @@ export const FIELD_VIEWS: readonly { id: FieldView; label: string }[] = [
   { id: 'antenna', label: 'Whole antenna' },
   { id: 'point', label: 'Point' },
   { id: 'apex', label: 'Apex' },
+  { id: 'other-end', label: 'Other end' },
 ];
 
 export const FIELD_QUANTITIES: readonly { id: FieldQuantity; label: string }[] = [
@@ -60,6 +61,12 @@ export function fieldWindow(sol: Solution, view: FieldView): FieldWindow {
     case 'point': {
       const s = Math.max(g.taperLength, 4 * g.radius, 1e-9);
       return { rhoMax: s, zMin: L - 1.6 * s, zMax: L + 0.4 * s };
+    }
+    case 'other-end': {
+      // The far end of the other arm, at z = −L.
+      const end = sol.arms[1].profile;
+      const s = Math.max(6 * end.capRadius, 4 * end.shaftRadius, 1e-9);
+      return { rhoMax: s, zMin: -L - 0.5 * s, zMax: -L + 1.5 * s };
     }
     case 'apex': {
       const s = Math.max(30 * Math.min(g.tipRadius, g.radius), 1e-9);
@@ -259,7 +266,7 @@ export class FieldMap {
       const nZ = Math.max(40, Math.round((HALF_SAMPLES * (win.zMax - win.zMin)) / win.rhoMax));
       const grid = createGrid(sol, win, HALF_SAMPLES, nZ);
       // Symmetric windows only compute the half above the gap and mirror it.
-      const rows = rowsToCompute(grid);
+      const rows = rowsToCompute(sol, grid);
       let row = 0;
       let timer = 0;
       this.progress.set(0);
@@ -272,7 +279,7 @@ export class FieldMap {
         this.progress.set(Math.min(1, row / rows));
         if (row < rows) timer = window.setTimeout(step, 0);
         else {
-          mirrorRows(grid);
+          mirrorRows(sol, grid);
           this.grid.set({ grid, stats: stats(grid) });
         }
       };
@@ -327,9 +334,10 @@ export class FieldMap {
 
     if (lines && (q === 'e' || q === 'h')) this.fieldLines(ctx, grid, s, wt, W, H, dpr);
 
-    // The needle and its mirror, traced from the exact smooth profile at true scale (never
-    // thinner than a hairline).
-    const prof = this.solution().profile;
+    // Both arms, traced from their exact smooth profiles at true scale (never thinner than a
+    // hairline): the needle above the gap, the other arm below.
+    const arms = this.solution().arms;
+    const prof = arms[0].profile;
     const zs = this.profileHeights(win);
     const minHalf = 0.75 * dpr;
     const metal = ctx.createLinearGradient(0, 0, W, 0);
@@ -340,7 +348,7 @@ export class FieldMap {
       const span = zs.filter((z) => side * z >= 0);
       if (span.length < 2) continue;
       const half = (z: number) => {
-        const r = radiusAt(prof, Math.abs(z));
+        const r = radiusAt(side > 0 ? arms[0].profile : arms[1].profile, Math.abs(z));
         return r > 0 ? Math.max(px(r) - W / 2, minHalf) : 0;
       };
       ctx.beginPath();
@@ -388,14 +396,16 @@ export class FieldMap {
    * over each cap and the exact ends of the shaft and cone.
    */
   private profileHeights(win: FieldWindow): number[] {
-    const p = this.solution().profile;
-    const L = p.length;
+    const arms = this.solution().arms;
+    const L = arms[0].profile.length;
     const lo = Math.max(-L, win.zMin);
     const hi = Math.min(L, win.zMax);
     if (hi <= lo) return [];
     const zs = new Set<number>([0]);
     for (let i = 0; i <= 400; i++) zs.add(lo + ((hi - lo) * i) / 400);
-    for (const side of [1, -1]) {
+    for (const arm of arms) {
+      const p = arm.profile;
+      const side = arm.direction;
       zs.add(side * p.coneStart);
       zs.add(side * p.capStart);
       zs.add(side * L);

@@ -1,10 +1,11 @@
 /**
  * Parameters for the needle simulation. All values in SI units.
  *
- * The needle floats in free space as one arm of a symmetric, center-fed dipole: an ideal voltage
+ * The needle floats in free space as one arm of a center-fed dipole: an ideal voltage
  * source V(t) = V̂·cos(ωt + φ) sits in a vanishingly small gap at z = 0 between the needle's
- * base and an identical mirror needle pointing the other way. The circuit closes across that
- * gap through the source; there is no ground plane.
+ * base and a second arm pointing the other way: a rod of the same length and radius with a
+ * rounded end, or (optionally) a copy of the needle. A balun is assumed, so the feed is
+ * balanced and the feed line carries no current on its outside. There is no ground plane.
  */
 export interface NeedleGeometry {
   /** Base to apex (m). */
@@ -15,7 +16,16 @@ export interface NeedleGeometry {
   taperLength: number;
   /** Radius of the rounded apex (m). */
   tipRadius: number;
+  /**
+   * Whether the dipole's other arm is pointed like the needle. Otherwise it is a plain rod of the
+   * same length and radius with a hemispherical end.
+   */
+  mirrorPointed: boolean;
 }
+
+/** The geometry of the dipole's other arm. */
+export const mirrorGeometry = (g: NeedleGeometry): NeedleGeometry =>
+  g.mirrorPointed ? g : { ...g, taperLength: 0, tipRadius: g.radius };
 
 export interface DriveCircuit {
   /** Peak source voltage V̂ (V). */
@@ -149,7 +159,13 @@ export const VACUUM: Medium = {
 };
 
 export const DEFAULT_PARAMS: NeedleParams = {
-  geometry: { length: 30e-3, radius: 0.25e-3, taperLength: 4e-3, tipRadius: 10e-6 },
+  geometry: {
+    length: 30e-3,
+    radius: 0.25e-3,
+    taperLength: 4e-3,
+    tipRadius: 10e-6,
+    mirrorPointed: false,
+  },
   drive: {
     voltage: 10,
     frequency: 2.4e9,

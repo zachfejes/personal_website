@@ -76,7 +76,10 @@ export class NeedleAntennaPage {
     const s = this.sol();
     const g = s.params.geometry;
     const shaft = s.shaft;
-    const tipV = abs(s.voltage[s.voltage.length - 1]);
+    const [needle, other] = s.arms;
+    const tipV = abs(needle.voltage[needle.voltage.length - 1]);
+    const otherV = abs(other.voltage[other.voltage.length - 1]);
+    const tMaxK = Math.max(needle.thermal.maxTemperature, other.thermal.maxTemperature);
     return {
       wavelength: si(s.wavelength, 'm'),
       electricalLength: num(g.length / s.wavelength),
@@ -84,14 +87,20 @@ export class NeedleAntennaPage {
       zin: impedance(s.inputImpedance),
       zinMag: si(abs(s.inputImpedance), 'Ω'),
       zSource: impedance(s.sourceImpedance),
-      baseCurrent: si(abs(s.current[0]), 'A'),
+      baseCurrent: si(abs(s.gapCurrent), 'A'),
       gapVoltage: si(abs(s.gapVoltage), 'V'),
       tipVoltage: si(tipV, 'V'),
+      otherEndVoltage: si(otherV, 'V'),
+      zNeedle: impedance(needle.impedance),
+      zOther: impedance(other.impedance),
       sourceCurrent: si(abs(s.sourceCurrent), 'A'),
       pSource: si(s.power.source, 'W'),
       pRad: si(s.power.radiated, 'W'),
       pOhmic: si(s.power.ohmic, 'W'),
-      pOhmicNeedle: si(s.power.ohmicPerNeedle, 'W'),
+      pOhmicNeedle: si(needle.ohmic, 'W'),
+      pOhmicOther: si(other.ohmic, 'W'),
+      tNeedle: `${num(kelvinToCelsius(needle.thermal.maxTemperature))} °C`,
+      tOther: `${num(kelvinToCelsius(other.thermal.maxTemperature))} °C`,
       pFeed: si(s.power.feed, 'W'),
       efficiency: percent(s.efficiency),
       rRad: si(s.radiationResistance, 'Ω'),
@@ -103,14 +112,15 @@ export class NeedleAntennaPage {
       lPerM: si(shaft.inductance, 'H/m'),
       cPerM: si(shaft.capacitance, 'F/m'),
       z0: si(shaft.z0, 'Ω'),
-      endCap: si(s.capCapacitance, 'F'),
+      endCap: si(needle.capCapacitance, 'F'),
+      otherCap: si(other.capCapacitance, 'F'),
       coneAngle: `${num((2 * s.profile.halfAngle * 180) / Math.PI)}°`,
       peakField: si(s.peakSurfaceField.value, 'V/m'),
       peakFieldAt: `${mm(s.peakSurfaceField.z)} mm`,
       directivity: `${num(10 * Math.log10(s.farField.directivity))} dBi`,
-      tMax: `${num(kelvinToCelsius(s.thermal.maxTemperature))} °C`,
-      tRise: si(s.thermal.maxTemperature - s.params.medium.ambientTemperature, 'K'),
-      melts: s.thermal.maxTemperature >= s.params.material.meltingPoint,
+      tMax: `${num(kelvinToCelsius(tMaxK))} °C`,
+      tRise: si(tMaxK - s.params.medium.ambientTemperature, 'K'),
+      melts: tMaxK >= s.params.material.meltingPoint,
       meltingPoint: `${num(kelvinToCelsius(s.params.material.meltingPoint))} °C`,
       // Rough vacuum breakdown / field emission threshold at a sharp metal tip.
       emission: s.peakSurfaceField.value > 3e9,
@@ -118,63 +128,67 @@ export class NeedleAntennaPage {
     };
   });
 
-  private readonly nodesMm = computed(() => this.sol().nodes.map((z) => z * 1e3));
-  private readonly samplesMm = computed(() => this.sol().samples.map((q) => q.z * 1e3));
-  protected readonly lengthDomain = computed(
-    () => [0, this.params().geometry.length * 1e3] as const,
-  );
-  /** Both arms, mirror needle below the gap (negative heights). */
+  /**
+   * Values along the whole antenna, tip of the other arm (negative heights) to the needle's apex.
+   * The potential jumps across the gap at z = 0 by the gap voltage.
+   */
+  private readonly along = computed(() => {
+    const [needle, other] = this.sol().arms;
+    const join = <T>(lower: readonly T[], upper: readonly T[]) => [
+      ...[...lower].reverse(),
+      ...upper,
+    ];
+    const samples = join(other.samples, needle.samples);
+    return {
+      z: join(other.z, needle.z).map((z) => z * 1e3),
+      voltage: join(other.voltage, needle.voltage),
+      current: join(other.current, needle.current),
+      sampleZ: samples.map((q) => q.z * 1e3),
+      samples,
+      temperatureZ: join(
+        other.thermal.nodes.map((n) => -n * 1e3),
+        needle.thermal.nodes.map((n) => n * 1e3),
+      ),
+      temperature: join(other.thermal.temperature, needle.thermal.temperature),
+    };
+  });
+  /** Both arms, the other arm below the gap (negative heights). */
   protected readonly antennaDomain = computed(() => {
     const L = this.params().geometry.length * 1e3;
     return [-L, L] as const;
   });
-  /** Heights across both arms, and values extended to the mirror arm (even or odd in z). */
-  private both(z: readonly number[], values: readonly number[], odd: boolean) {
-    const x = [...z.map((v) => -v).reverse(), ...z];
-    const y = [...values.map((v) => (odd ? -v : v)).reverse(), ...values];
-    return { x, y };
-  }
 
-  /** A wave along both arms: the instantaneous value, with its ± envelope as a band. */
+  /** A wave along the antenna: the instantaneous value, with its ± envelope as a band. */
   private wave(
     z: readonly number[],
     phasors: readonly Complex[],
-    odd: boolean,
     label: string,
     color: string,
   ): ChartSeries[] {
     const wt = this.wt();
     const amp = phasors.map(abs);
-    const now = this.both(
-      z,
-      phasors.map((v) => instant(v, wt)),
-      odd,
-    );
-    const env = this.both(z, amp, false);
     return [
       {
         label: `${label}(z, t)`,
-        x: now.x,
-        y: now.y,
+        x: z,
+        y: phasors.map((v) => instant(v, wt)),
         color,
-        band: { lower: env.y.map((a) => -a), upper: env.y },
+        band: { lower: amp.map((a) => -a), upper: amp },
       },
-      { label: `|${label}(z)|`, x: env.x, y: env.y, color, dash: '3 3' },
+      { label: `|${label}(z)|`, x: z, y: amp, color, dash: '3 3' },
     ];
   }
 
-  // Current runs the same way up both arms (even); potential and charge flip sign (odd).
   protected readonly currentSeries = computed(() =>
-    this.wave(this.nodesMm(), this.sol().current, false, 'I', AMBER),
+    this.wave(this.along().z, this.along().current, 'I', AMBER),
   );
   protected readonly voltageSeries = computed(() =>
-    this.wave(this.nodesMm(), this.sol().voltage, true, 'V', TEAL),
+    this.wave(this.along().z, this.along().voltage, 'V', TEAL),
   );
   protected readonly chargeSeries = computed(() =>
     this.wave(
-      this.samplesMm(),
-      this.sol().samples.map((q) => q.lineCharge),
-      true,
+      this.along().sampleZ,
+      this.along().samples.map((q) => q.lineCharge),
       'λ',
       PAPER,
     ),
@@ -183,20 +197,20 @@ export class NeedleAntennaPage {
   protected readonly heatSeries = computed<ChartSeries[]>(() => [
     {
       label: 'Joule heat',
-      x: this.samplesMm(),
-      y: this.sol().samples.map((q) => q.heat),
+      x: this.along().sampleZ,
+      y: this.along().samples.map((q) => q.heat),
       color: ROSE,
     },
   ]);
 
-  protected readonly heatValues = computed(() => this.sol().samples.map((q) => q.heat));
-  protected readonly sampleZ = computed(() => this.sol().samples.map((q) => q.z));
+  protected readonly heatValues = computed(() => this.along().samples.map((q) => q.heat));
+  protected readonly sampleZ = computed(() => this.along().samples.map((q) => q.z));
 
   protected readonly temperatureSeries = computed<ChartSeries[]>(() => [
     {
       label: 'Temperature',
-      x: this.nodesMm(),
-      y: this.sol().thermal.temperature.map(kelvinToCelsius),
+      x: this.along().temperatureZ,
+      y: this.along().temperature.map(kelvinToCelsius),
       color: AMBER,
     },
   ]);
@@ -331,6 +345,11 @@ export class NeedleAntennaPage {
   protected onScrub(event: Event): void {
     this.playing.set(false);
     this.wt.set((Number((event.target as HTMLInputElement).value) * Math.PI) / 180);
+  }
+
+  protected onMirrorPointed(event: Event): void {
+    const on = (event.target as HTMLInputElement).checked;
+    this.params.update((p) => ({ ...p, geometry: { ...p.geometry, mirrorPointed: on } }));
   }
 
   protected onHeatSink(event: Event): void {

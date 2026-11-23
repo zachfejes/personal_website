@@ -8,8 +8,8 @@ const FLOOR_DB = -30;
 
 /**
  * The radiation pattern in a plane through the antenna: relative power (dB) against the angle
- * from its axis, all the way round. The solver samples 0 ≤ θ ≤ π/2; the pattern mirrors across
- * the midplane and around the axis.
+ * from its axis (needle up), all the way round. The solver samples 0 ≤ θ ≤ π; the pattern is
+ * the same at every angle around the axis.
  */
 @Component({
   selector: 'app-polar-pattern',
@@ -94,7 +94,8 @@ export class PolarPattern {
       const db = 10 * Math.log10(Math.max(u / max, 1e-12));
       return (R * Math.max(0, db - FLOOR_DB)) / -FLOOR_DB;
     };
-    // Angles all the way round from the upper axis, with U(θ) = U(π − θ) = U(−θ).
+    // θ from 0 (up the needle) to π (down the other arm) on the right, mirrored on the left:
+    // the pattern is the same all the way round the axis.
     const n = theta.length;
     const pts: string[] = [];
     const point = (angle: number, u: number) => {
@@ -102,9 +103,7 @@ export class PolarPattern {
       pts.push(`${(CX + r * Math.sin(angle)).toFixed(2)},${(CY - r * Math.cos(angle)).toFixed(2)}`);
     };
     for (let i = 0; i < n; i++) point(theta[i], intensity[i]);
-    for (let i = n - 1; i >= 0; i--) point(Math.PI - theta[i], intensity[i]);
-    for (let i = 0; i < n; i++) point(Math.PI + theta[i], intensity[i]);
-    for (let i = n - 1; i >= 0; i--) point(2 * Math.PI - theta[i], intensity[i]);
+    for (let i = n - 1; i >= 0; i--) point(-theta[i], intensity[i]);
     return `M${pts.join('L')}Z`;
   });
 }

@@ -4,10 +4,11 @@
     <h1 class="sim__title">A needle, <span class="accent">driven</span></h1>
     <p class="sim__lede">
       A thin metal needle floats in empty space, driven at its base by an ideal AC voltage source
-      whose other terminal meets an identical mirror needle: together they make a center-fed dipole
-      antenna. The needle behaves as a waveguide: current and charge settle into a standing wave
-      along it, the wave leaks into the space around it as radiation, and the metal turns part of it
-      into heat. Change the needle, the drive and the material, and watch the steady state follow.
+      (through a balun, so the feed is balanced) whose other terminal meets a plain rod of the same
+      length and radius with a rounded end: together they make a center-fed dipole antenna. The
+      needle behaves as a waveguide: current and charge settle into a standing wave along it, the
+      wave leaks into the space around it as radiation, and the metal turns part of it into heat.
+      Change the needle, the drive and the material, and watch the steady state follow.
     </p>
   </header>
 
@@ -16,6 +17,20 @@
       @for (group of groups; track group.id) {
         <fieldset class="panel__group">
           <legend>{{ group.title }}</legend>
+          @if (group.id === 'geometry') {
+            <label class="check">
+              <input
+                type="checkbox"
+                [checked]="params().geometry.mirrorPointed"
+                (change)="onMirrorPointed($event)"
+              />
+              Other arm pointed too
+            </label>
+            <p class="control__hint">
+              Off: the dipole’s other arm is a plain rod with a hemispherical end of the shaft
+              radius. On: it is a copy of the needle.
+            </p>
+          }
           @if (group.id === 'material') {
             <label class="control control--select">
               <span class="control__label">Preset</span>
@@ -141,11 +156,11 @@
         <div class="block__head">
           <h2 id="fields-title" class="block__title">01 — Fields around the needle</h2>
           <p class="block__lede">
-            A slice through the axis of the antenna: the needle above, its mirror below, the source
-            in the gap between them (amber). The fields are rotationally symmetric: E lies in this
-            plane (radial and axial), H circles the needles (in and out of the page). The lines are
-            instantaneous electric field lines: watch them detach from the antenna and travel off as
-            radiation.
+            A slice through the axis of the antenna: the pointed needle above, the rounded arm
+            below, the source in the gap between them (amber). The fields are rotationally
+            symmetric: E lies in this plane (radial and axial), H circles the arms (in and out of
+            the page). The lines are instantaneous electric field lines: watch them detach from the
+            antenna and travel off as radiation.
           </p>
         </div>
         <div class="toolbar" role="group" aria-label="Field view">
@@ -213,18 +228,19 @@
           <p class="block__lede">
             The current must vanish at the open apex and the source fixes the voltage across the
             gap, so the waves running up and back down the needle add into a standing wave. The
-            charts span the whole antenna: the needle at positive heights, its mirror at negative
-            ones. Current flows the same way along both; their potentials (measured from the
-            midplane, half the gap voltage at each base) and charges are opposite. Shaded bands are
-            the envelopes; the solid lines are the instantaneous values at ωt.
+            charts span the whole antenna: the needle at positive heights, the other arm at negative
+            ones. Current runs continuously through the gap, up both arms; the potential jumps by
+            the gap voltage across it, and the two arms carry opposite charge. Different ends make
+            the arms slightly unequal, so the potential does not split exactly in half. Shaded bands
+            are the envelopes; the solid lines are the instantaneous values at ωt.
           </p>
         </div>
         <app-needle-strip
-          [geometry]="params().geometry"
+          [profiles]="[sol().arms[0].profile, sol().arms[1].profile]"
           [z]="sampleZ()"
           [values]="heatValues()"
           [lut]="ember"
-          label="The needle, base at left, colored by Joule heat"
+          label="The antenna lying down: the other arm at left, the needle at right, colored by Joule heat"
         />
         <div class="grid-2">
           <app-line-chart
@@ -262,8 +278,20 @@
             <dd>{{ r.gapVoltage }}</dd>
           </div>
           <div>
-            <dt>Apex potential (peak)</dt>
+            <dt>Needle apex potential (peak)</dt>
             <dd>{{ r.tipVoltage }}</dd>
+          </div>
+          <div>
+            <dt>Other end potential (peak)</dt>
+            <dd>{{ r.otherEndVoltage }}</dd>
+          </div>
+          <div>
+            <dt>Needle arm impedance</dt>
+            <dd>{{ r.zNeedle }}</dd>
+          </div>
+          <div>
+            <dt>Other arm impedance</dt>
+            <dd>{{ r.zOther }}</dd>
           </div>
           <div>
             <dt>Point’s cone angle</dt>
@@ -297,6 +325,10 @@
             <dt>Apex cap capacitance</dt>
             <dd>{{ r.endCap }}</dd>
           </div>
+          <div>
+            <dt>Other end cap capacitance</dt>
+            <dd>{{ r.otherCap }}</dd>
+          </div>
         </dl>
       </section>
 
@@ -308,33 +340,42 @@
             turns ½|I|²R′ watts per meter into heat, most of it where the standing wave’s current
             peaks. In vacuum there is no convection: heat spreads along the metal by conduction and
             leaves by thermal radiation from the surface, plus, if the feed is heat-sunk, by
-            conduction out through the base. The mirror needle heats identically.
+            conduction out through the base. Both arms are shown: the needle above the gap, the
+            other arm below.
           </p>
         </div>
         <div class="grid-2">
           <app-line-chart
             [series]="heatSeries()"
-            xLabel="Height above base"
+            xLabel="Height above gap"
             yLabel="Heat per length"
             caption="Joule heating along the needle"
-            [xDomain]="lengthDomain()"
+            [xDomain]="antennaDomain()"
             [formatX]="formatMm"
             [formatY]="formatWm"
           />
           <app-line-chart
             [series]="temperatureSeries()"
-            xLabel="Height above base"
+            xLabel="Height above gap"
             yLabel="Steady temperature"
             caption="Steady-state temperature along the needle"
-            [xDomain]="lengthDomain()"
+            [xDomain]="antennaDomain()"
             [formatX]="formatMm"
             [formatY]="formatDegC"
           />
         </div>
         <dl class="facts">
           <div>
-            <dt>Joule heat, this needle</dt>
+            <dt>Joule heat, needle</dt>
             <dd>{{ r.pOhmicNeedle }}</dd>
+          </div>
+          <div>
+            <dt>Joule heat, other arm</dt>
+            <dd>{{ r.pOhmicOther }}</dd>
+          </div>
+          <div>
+            <dt>Hottest, needle / other arm</dt>
+            <dd>{{ r.tNeedle }} / {{ r.tOther }}</dd>
           </div>
           <div>
             <dt>Joule heat, both arms</dt>
@@ -433,18 +474,22 @@
         <h2 id="method-title" class="block__title">05 — How it’s modeled</h2>
         <ol class="method">
           <li>
-            <strong>Circuit.</strong> The antenna floats in free space. The ideal source sits in a
-            vanishingly small gap between the needle’s base and an identical mirror needle, through
-            its series feed impedance, with any gap capacitance across it. By symmetry each needle
-            sits at ±½ the gap voltage relative to the midplane, and the same current flows up both.
+            <strong>Circuit.</strong> The antenna floats in free space. The ideal source, behind a
+            balun (so no current runs on the outside of the feed line), sits in a vanishingly small
+            gap between the needle’s base and the other arm, through its series feed impedance, with
+            any gap capacitance across it. The same current I flows through the gap and into both
+            arms, so the arms are in series: V_gap = I·(Z_needle + Z_other), each arm’s impedance
+            solved on its own line.
           </li>
           <li>
             <strong>Geometry.</strong> The needle is a cylinder, then a cone, then a spherical cap
             that the cone meets tangentially, so the radius a(z) and its slope are continuous all
-            the way to the apex. Every quantity below is computed from this exact profile.
+            the way to the apex. The other arm is a cylinder ending in a hemisphere of the shaft
+            radius (or, optionally, a copy of the needle). Every quantity below is computed from
+            these exact profiles.
           </li>
           <li>
-            <strong>Needle as a waveguide.</strong> Each needle is a non-uniform transmission line
+            <strong>Needle as a waveguide.</strong> Each arm is a non-uniform transmission line
             against the midplane (Schelkunoff’s thin-dipole model) whose distributed parameters vary
             continuously with a(z): characteristic impedance Z₀(z) = (η/2π)(ln(2L/a(z)) − 1), so the
             point raises it; series impedance jωL′ plus the metal’s internal impedance (skin-effect
@@ -465,7 +510,7 @@
           </li>
           <li>
             <strong>Fields.</strong> Charge follows from current by continuity, λ = C′V. The fields
-            are integrals of the exact retarded fields of the current and charge along both needles
+            are integrals of the exact retarded fields of the current and charge along both arms
             (Gauss–Legendre quadrature), E = −jωA − ∇Φ and H = ∇×A/μ, with a thin-wire kernel that
             keeps them finite at the surface. Nothing is near- or far-field approximated, so the
             reactive near field, the induction zone and the radiation zone all appear.
