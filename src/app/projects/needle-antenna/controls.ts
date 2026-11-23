@@ -12,6 +12,8 @@ export interface ParamControl {
   max: (p: NeedleParams) => number;
   log: boolean;
   hint?: string;
+  /** Only shown when the surroundings are layered (air, oil, water). */
+  layeredOnly?: boolean;
 }
 
 export interface ControlGroup {
@@ -185,17 +187,71 @@ export const CONTROL_GROUPS: readonly ControlGroup[] = [
     ],
   },
   {
-    id: 'medium',
+    id: 'environment',
     title: 'Environment',
     controls: [
       {
-        path: 'medium.ambientTemperature',
+        path: 'environment.tiltDeg',
+        label: 'Angle to the surface',
+        unit: '°',
+        factor: 1,
+        min: fixed(10),
+        max: fixed(90),
+        log: false,
+        hint: '90° goes straight down into the liquid; 10° nearly skims its surface.',
+      },
+      {
+        path: 'environment.tipDepth',
+        label: 'Apex depth below the surface',
+        unit: 'mm',
+        factor: 1e-3,
+        min: fixed(0),
+        max: (p) => Math.max(1e-3, p.geometry.length),
+        log: false,
+        hint: 'Measured straight down from the oil’s top surface.',
+        layeredOnly: true,
+      },
+      {
+        path: 'environment.oilThickness',
+        label: 'Oil layer thickness',
+        unit: 'mm',
+        factor: 1e-3,
+        min: fixed(0.05e-3),
+        max: fixed(50e-3),
+        log: true,
+        layeredOnly: true,
+      },
+      {
+        path: 'environment.oilPermittivity',
+        label: 'Oil permittivity',
+        unit: 'εr',
+        factor: 1,
+        min: fixed(1.5),
+        max: fixed(5),
+        log: false,
+        hint: 'Mineral oil ≈ 2.2, vegetable oils ≈ 2.5–3.',
+        layeredOnly: true,
+      },
+      {
+        path: 'environment.oilLossTangent',
+        label: 'Oil loss tangent',
+        unit: 'tan δ',
+        factor: 1,
+        min: fixed(1e-5),
+        max: fixed(0.2),
+        log: true,
+        hint: 'Clean mineral oil ≈ 10⁻⁴–10⁻³ at GHz; vegetable oils lose more (≈ 0.05–0.15).',
+        layeredOnly: true,
+      },
+      {
+        path: 'environment.ambientTemperature',
         label: 'Surroundings temperature',
         unit: 'K',
         factor: 1,
-        min: fixed(4),
-        max: fixed(600),
+        min: fixed(273.15),
+        max: fixed(373.15),
         log: false,
+        hint: 'Air, oil and water; it also sets the water’s permittivity.',
       },
     ],
   },

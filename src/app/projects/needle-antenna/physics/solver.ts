@@ -1,26 +1,71 @@
-import { Complex, ZERO, abs, abs2, add, complex, conj, div, mul, polar, scale } from './complex';
+import {
+  Complex,
+  ZERO,
+  abs,
+  abs2,
+  add,
+  complex,
+  conj,
+  div,
+  mul,
+  polar,
+  scale,
+  sqrt,
+} from './complex';
 import { Profile, capArea, profile, radiusAt } from './geometry';
+import { CONVECTION, Layers, MediumId, layerIndex, layers as layersOf } from './media';
 import { ArmShape, NeedleParams, armShapes } from './model';
 import { ThermalProfile, solveTemperature } from './thermal';
 
 export const MU0 = 1.25663706212e-6;
 export const EPS0 = 8.8541878128e-12;
 export const C0 = 1 / Math.sqrt(MU0 * EPS0);
+/** Wave impedance of vacuum (Ω). */
+export const ETA0 = Math.sqrt(MU0 / EPS0);
 const TWO_PI = 2 * Math.PI;
 /** Largest |γ|·h per integration step. */
 const MAX_PHASE_STEP = 0.15;
 /** Two-point Gauss–Legendre nodes on [0, 1]. */
 const GAUSS = [0.5 - 0.5 / Math.sqrt(3), 0.5 + 0.5 / Math.sqrt(3)] as const;
-
-/** Radius of the needle at height z above its base, 0 outside it. */
+/** Shortest interval kept when interface crossings are added to the mesh (m). */
+const MIN_INTERVAL = 1e-9;
 
 /**
- * Nodes along the needle, from the base to where the cone meets the cap. Uniform in the shaft
- * (fine enough for the wavelength) and graded geometrically down the cone so steps near the
- * apex are comparable to the tip radius. The line equations are integrated continuously between
- * nodes; the nodes only set where results are stored and how the quadrature is split.
+ * Where the antenna sits in the vertical plane of the layers: the feed gap's position and the
+ * unit vector along the antenna from the gap toward the needle's apex. The apex sits tipDepth
+ * below the liquid surface (y = 0), the antenna tilted tiltDeg from the surface.
  */
-export function buildMesh(p: Profile, wavelength: number, baseCells = 160): number[] {
+export interface Placement {
+  gap: [number, number];
+  axis: [number, number];
+}
+
+export function placementOf(params: NeedleParams, needleLength: number): Placement {
+  const env = params.environment;
+  const a = (Math.min(Math.max(env.tiltDeg, 1), 90) * Math.PI) / 180;
+  const axis: [number, number] = [Math.cos(a), -Math.sin(a)];
+  const apex: [number, number] = [0, -env.tipDepth];
+  return { axis, gap: [apex[0] - needleLength * axis[0], apex[1] - needleLength * axis[1]] };
+}
+
+/** World position (x, y) of the point a signed distance z along the antenna from the gap. */
+export const worldAt = (p: Placement, z: number): [number, number] => [
+  p.gap[0] + z * p.axis[0],
+  p.gap[1] + z * p.axis[1],
+];
+
+/**
+ * Nodes along one arm, from the gap out to where the end cap begins. Uniform in the shaft (fine
+ * enough for the shortest wavelength the arm meets) and graded geometrically down a cone so
+ * steps near the apex are comparable to the tip radius. Extra nodes sit exactly where the arm
+ * crosses a material interface, so no step straddles one.
+ */
+export function buildMesh(
+  p: Profile,
+  wavelength: number,
+  baseCells = 160,
+  crossings: readonly number[] = [],
+): number[] {
   const h0 = Math.min(p.length / baseCells, wavelength / 40);
   const nodes: number[] = [0];
   const nShaft = Math.max(1, Math.ceil(p.coneStart / h0));
@@ -43,86 +88,132 @@ export function buildMesh(p: Profile, wavelength: number, baseCells = 160): numb
       nodes.push(i === 0 ? p.capStart : z);
     }
   }
-  return nodes;
+  const inside = crossings.filter((c) => c > MIN_INTERVAL && c < p.capStart - MIN_INTERVAL);
+  if (!inside.length) return nodes;
+  const merged = [...nodes, ...inside].sort((a, b) => a - b);
+  // Drop nodes that would leave a sliver next to a crossing (never the ends or a crossing).
+  return merged.filter(
+    (z, i) =>
+      i === 0 ||
+      i === merged.length - 1 ||
+      inside.includes(z) ||
+      inside.every((c) => Math.abs(c - z) > MIN_INTERVAL * 10),
+  );
 }
 
 /** Distributed parameters of the line at one point, per meter of needle. */
+export interface LineCoefficients {
+  /** Characteristic impedance of the arm in its local medium (Ω, real part of the index). */
+  z0: number;
+  /** Ohmic resistance with skin effect (Ω/m). */
+  resistance: number;
+  /** External inductance (H/m). */
+  inductance: number;
+  /** Internal (in-metal) inductance (H/m). */
+  internalInductance: number;
+  /** Capacitance in the local medium, C′·ε′ (F/m). */
+  capacitance: number;
+  /** Capacitance the same wire would have in vacuum (F/m). */
+  vacuumCapacitance: number;
+  /** Shunt conductance from the medium's dielectric loss, ωC′·ε″ (S/m). */
+  conductance: number;
+  /** Real part of the medium's refractive index. */
+  index: number;
+}
 
 /** A quadrature point along an arm, carrying the continuous solution there. */
 export interface LineSample {
-  /** Height above the gap (m): positive on the needle, negative on the other arm. */
+  /** Signed distance along the antenna from the gap (m): positive toward the needle's apex. */
   z: number;
   /** Quadrature weight: the length of wire this point stands for (m). */
   w: number;
   radius: number;
+  /** Index into the solution's layers of the medium around this point. */
+  layer: number;
   /** Current phasor along +z (A, peak); continuous through the gap. */
   current: Complex;
-  /** Charge per meter, λ = C′V (C/m, peak). */
+  /** Free charge per meter, λ = C′·εr·V (C/m, peak). */
   lineCharge: Complex;
   /** Ohmic resistance per meter (Ω/m). */
   resistance: number;
-  /** Time-averaged Joule heat per meter, ½|I|²R′ (W/m). */
+  /** Time-averaged Joule heat per meter in the metal, ½|I|²R′ (W/m). */
   heat: number;
+  /** Time-averaged dielectric heating per meter in the surrounding medium, ½|V|²G′ (W/m). */
+  dielectric: number;
+  /** Time-averaged power radiated per meter, ½|I|²R′_rad (W/m). */
+  radiated: number;
 }
 
 /** The solution on one arm of the dipole. */
 export interface Arm {
-  /** +1 for the needle (pointing up from the gap), −1 for the other arm (pointing down). */
+  /** +1 for the needle arm (toward the apex), −1 for the other arm. */
   direction: 1 | -1;
   geometry: ArmShape;
   profile: Profile;
   /** Distances from the gap (m), from the gap out to where the end cap begins. */
   nodes: number[];
-  /** The same points as heights: direction × distance. */
+  /** The same points as signed distances along the antenna: direction × distance. */
   z: number[];
+  /** Medium (index into the solution's layers) of each interval between nodes. */
+  intervalLayers: number[];
   /** Potential at each node (V, peak). */
   voltage: Complex[];
   /** Current along +z at each node (A, peak). */
   current: Complex[];
   samples: LineSample[];
-  /** Charge on the end cap (C, peak), centered on the cap's sphere. */
+  /** Free charge on the end cap (C, peak), centered on the cap's sphere. */
   tipCharge: Complex;
-  /** Capacitance of the end cap (F). */
+  /** Capacitance the end cap would have in vacuum (F). */
   capCapacitance: number;
+  /** Medium (index into the solution's layers) around the end cap. */
+  capLayer: number;
   /** Impedance looking into this arm from the gap (Ω); the arms add in series. */
   impedance: Complex;
-  /** Joule heat in this arm (W). */
+  /** Joule heat in this arm's metal (W). */
   ohmic: number;
   thermal: ThermalProfile;
 }
 
 export interface FarField {
-  /** Polar angles from the +z axis, 0 to π (rad). */
+  /** Polar angles from the antenna's axis, 0 to π (rad). */
   theta: number[];
-  /** Radiation intensity U(θ) (W/sr). */
+  /** Radiation intensity U(θ) the same currents would give in vacuum (W/sr). */
   intensity: number[];
-  /** Peak directivity over an isotropic radiator. */
+  /** Peak directivity over an isotropic radiator (vacuum). */
   directivity: number;
+}
+
+/** Power going into one medium. */
+export interface MediumPower {
+  medium: MediumId;
+  /** Radiated from the parts of the antenna in this medium (W). */
+  radiated: number;
+  /** Dielectric heating by the near field of the parts in this medium (W). */
+  dielectric: number;
 }
 
 export interface Solution {
   params: NeedleParams;
-  /** The needle's own profile (arm 0). */
+  /** The needle arm's profile (arm 0). */
   profile: Profile;
+  placement: Placement;
+  layers: Layers;
   omega: number;
-  /** Wavenumber in the medium (rad/m). */
+  /** Wavenumber in vacuum (rad/m). */
   k: number;
+  /** Wavelength in vacuum (m). */
   wavelength: number;
-  /** Wave impedance of the medium (Ω). */
-  eta: number;
-  epsilon: number;
-  mu: number;
-  /** [the needle, the other arm]. */
+  /** [the needle arm, the other arm]. */
   arms: [Arm, Arm];
-  /** Whether both arms are the same shape, so the fields mirror across the gap. */
+  /** Whether the two arms are identical and in one uniform medium, so fields mirror at the gap. */
   symmetric: boolean;
-  /** Line parameters of the shaft (both arms share it). */
+  /** Line parameters of the shaft in vacuum (the metal's own properties; both arms share it). */
   shaft: LineCoefficients;
   /** Source phasor V̂·e^{jφ}. */
   sourceVoltage: Complex;
-  /** Voltage across the feed gap, needle minus other arm (V, peak). */
+  /** Voltage across the feed gap, needle arm minus other arm (V, peak). */
   gapVoltage: Complex;
-  /** Current through the gap, up into the needle (A, peak). */
+  /** Current through the gap, into the needle arm (A, peak). */
   gapCurrent: Complex;
   /** Current drawn from the source (A, peak). */
   sourceCurrent: Complex;
@@ -130,7 +221,7 @@ export interface Solution {
   inputImpedance: Complex;
   /** Impedance the ideal source sees, feed network included (Ω). */
   sourceImpedance: Complex;
-  /** Equivalent series radiation resistance spread along both arms (Ω/m). */
+  /** Series radiation resistance per meter in vacuum; each point gets this × its index (Ω/m). */
   radiationResistancePerMeter: number;
   /** Radiation resistance referred to the gap current (Ω). */
   radiationResistance: number;
@@ -143,39 +234,29 @@ export interface Solution {
     feed: number;
     /** Delivered into the feed gap (W). */
     input: number;
-    /** Radiated into all space (W). */
+    /** Radiated, all media together (W). */
     radiated: number;
-    /** Joule heat in both arms (W). */
+    /** Joule heat in both arms' metal (W). */
     ohmic: number;
+    /** Dielectric heating in the surrounding media by the antenna's near field (W). */
+    dielectric: number;
+    /** Radiated and dielectric power, per layer of the surroundings. */
+    byMedium: MediumPower[];
   };
-  /** Radiated ÷ (radiated + ohmic). */
+  /** Radiated ÷ everything the antenna takes in. */
   efficiency: number;
   skinDepth: number;
-  /** Largest surface electric field amplitude anywhere on the antenna (V/m), and its height. */
-  peakSurfaceField: { value: number; z: number };
+  /** Largest surface electric field amplitude on the antenna in each layer (V/m), and where. */
+  peakSurfaceField: { value: number; z: number }[];
+  /** The far field of the same currents in vacuum (exact when the surroundings are vacuum). */
   farField: FarField;
   /** How many radiation-loss iterations ran, and the final relative change. */
   convergence: { iterations: number; change: number };
 }
 
-/** Distributed parameters of the line at one point, per meter of needle. */
-export interface LineCoefficients {
-  /** Characteristic impedance of the arm against the dipole's midplane (Ω). */
-  z0: number;
-  /** Ohmic resistance with skin effect (Ω/m). */
-  resistance: number;
-  /** External inductance (H/m). */
-  inductance: number;
-  /** Internal (in-metal) inductance (H/m). */
-  internalInductance: number;
-  /** Capacitance (F/m). */
-  capacitance: number;
-}
-
 interface Context {
   omega: number;
-  velocity: number;
-  eta: number;
+  /** Half the antenna's total length (m), for Schelkunoff's average impedance. */
   length: number;
   resistivity: number;
   metalMu: number;
@@ -185,36 +266,47 @@ interface Context {
 const skinDepthOf = (ctx: Context) => Math.sqrt((2 * ctx.resistivity) / (ctx.omega * ctx.metalMu));
 
 /**
- * Line parameters at a given radius. The external part is Schelkunoff's average characteristic
- * impedance of a thin dipole arm, Z₀ = (η/2π)(ln(2L/a) − 1), with L half the dipole's total
- * length (shared by both arms, wherever the feed is) and a the local radius. The
- * internal part blends the DC and thin-skin limits of a round wire's internal impedance.
+ * Line parameters at a given radius in a medium of relative permittivity εr = ε′ − jε″. The
+ * external part is Schelkunoff's average characteristic impedance of a thin dipole arm in
+ * vacuum, Z₀ = (η₀/2π)(ln(2L/a) − 1), with L half the dipole's total length and a the local
+ * radius; the medium scales the capacitance by εr (its loss becoming a shunt conductance) and
+ * leaves the inductance alone (no magnetic materials). The internal part blends the DC and
+ * thin-skin limits of a round wire's internal impedance.
  */
-function coefficients(ctx: Context, a: number): LineCoefficients {
-  const z0 = (ctx.eta / TWO_PI) * Math.max(Math.log((2 * ctx.length) / a) - 1, 0.5);
+function coefficients(ctx: Context, a: number, eps: Complex): LineCoefficients {
+  const z0Vac = (ETA0 / TWO_PI) * Math.max(Math.log((2 * ctx.length) / a) - 1, 0.5);
+  const vacuumCapacitance = 1 / (z0Vac * C0);
+  const index = sqrt(eps).re;
   const rDc = ctx.resistivity / (Math.PI * a * a);
   const x = a / skinDepthOf(ctx);
   const blend = Math.pow(1 + Math.pow(x / 2, 4), 0.25);
   return {
-    z0,
+    z0: z0Vac / index,
     resistance: rDc * blend,
-    inductance: z0 / ctx.velocity,
+    inductance: z0Vac / C0,
     internalInductance: (rDc * x * x) / 4 / blend / ctx.omega,
-    capacitance: 1 / (z0 * ctx.velocity),
+    capacitance: vacuumCapacitance * eps.re,
+    vacuumCapacitance,
+    conductance: ctx.omega * vacuumCapacitance * Math.max(0, -eps.im),
+    index,
   };
 }
 
-/** Series impedance and shunt admittance per meter, before the radiation term. */
+/** Series resistance and reactance, shunt conductance and susceptance per meter, and the index. */
 interface ZY {
   r: number;
   x: number;
-  y: number;
+  g: number;
+  b: number;
+  n: number;
 }
 
 const zyOf = (ctx: Context, c: LineCoefficients): ZY => ({
   r: c.resistance,
   x: ctx.omega * (c.inductance + c.internalInductance),
-  y: ctx.omega * c.capacitance,
+  g: c.conductance,
+  b: ctx.omega * c.capacitance,
+  n: c.index,
 });
 
 /** One RK4 step of the line, with the coefficients at its start, middle and end. */
@@ -225,23 +317,37 @@ interface Step {
   end: ZY;
 }
 
+/** One arm's line, set up once per solve. */
+interface ArmPlan {
+  direction: 1 | -1;
+  geometry: ArmShape;
+  profile: Profile;
+  nodes: number[];
+  /** Layer index of each interval between nodes. */
+  intervalLayers: number[];
+  steps: Step[][];
+  capCapacitance: number;
+  capLayer: number;
+}
+
 /**
- * Prepares the integration steps for every interval between nodes, walking down from the
- * apex: each interval is split so that |γ|·h stays small, and the coefficients are evaluated
- * from the exact profile radius at every RK4 stage, so the taper enters continuously.
+ * Prepares the integration steps for every interval between nodes: each interval is split so
+ * that |γ|·h stays small, and the coefficients are evaluated from the exact profile radius at
+ * every RK4 stage, so the taper enters continuously. Each interval lies in one medium.
  */
-function planSteps(ctx: Context, p: Profile, nodes: number[]): Step[][] {
+function planSteps(ctx: Context, p: Profile, nodes: number[], intervalEps: Complex[]): Step[][] {
   const plan: Step[][] = [];
-  const at = (z: number) => zyOf(ctx, coefficients(ctx, Math.max(radiusAt(p, z), 1e-12)));
   for (let n = 0; n < nodes.length - 1; n++) {
+    const eps = intervalEps[n];
+    const at = (z: number) => zyOf(ctx, coefficients(ctx, Math.max(radiusAt(p, z), 1e-12), eps));
     const z0 = nodes[n];
     const z1 = nodes[n + 1];
     const mid = at((z0 + z1) / 2);
-    const gamma = Math.sqrt(Math.hypot(mid.r, mid.x) * mid.y);
+    const gamma = Math.sqrt(Math.hypot(mid.r, mid.x) * Math.hypot(mid.g, mid.b));
     const count = Math.max(1, Math.ceil((gamma * (z1 - z0)) / MAX_PHASE_STEP));
     const h = (z1 - z0) / count;
     const steps: Step[] = [];
-    // Integrated from z1 downward.
+    // Integrated from z1 inward.
     for (let s = 0; s < count; s++) {
       const top = z1 - s * h;
       steps.push({ h, start: at(top), mid: at(top - h / 2), end: at(top - h) });
@@ -249,16 +355,6 @@ function planSteps(ctx: Context, p: Profile, nodes: number[]): Step[][] {
     plan.push(steps);
   }
   return plan;
-}
-
-/** One arm's line, set up once per solve. */
-interface ArmPlan {
-  direction: 1 | -1;
-  geometry: ArmShape;
-  profile: Profile;
-  nodes: number[];
-  steps: Step[][];
-  capCapacitance: number;
 }
 
 /** Voltage and current along an arm, normalized to 1 A flowing out of the gap into it. */
@@ -271,17 +367,18 @@ interface UnitLine {
 /**
  * Integrates the telegrapher's equations dV/ds = −Z′(s)·I, dI/ds = −Y′(s)·V along one arm
  * (s = distance from the gap) from its end cap back to the gap, by RK4 with coefficients from
- * the exact radius at every stage, then normalizes to unit current leaving the gap. V(0) is
- * then the arm's impedance.
+ * the exact radius and local medium at every stage, then normalizes to unit current leaving the
+ * gap. V(0) is then the arm's impedance. Z′ includes the radiation resistance R₀′·n(s).
  */
-function solveArm(plan: ArmPlan, radiationR: number, omega: number): UnitLine {
+function solveArm(plan: ArmPlan, radiationR: number, omega: number, capEps: Complex): UnitLine {
   const n = plan.steps.length;
   const v = new Array<Complex>(n + 1);
   const i = new Array<Complex>(n + 1);
   v[n] = complex(1);
-  i[n] = complex(0, omega * plan.capCapacitance);
-  const dv = (c: ZY, cur: Complex): Complex => mul(complex(-(c.r + radiationR), -c.x), cur);
-  const di = (c: ZY, vol: Complex): Complex => mul(complex(0, -c.y), vol);
+  // The cap's admittance jωC·εr.
+  i[n] = mul(complex(0, omega * plan.capCapacitance), capEps);
+  const dv = (c: ZY, cur: Complex): Complex => mul(complex(-(c.r + radiationR * c.n), -c.x), cur);
+  const di = (c: ZY, vol: Complex): Complex => mul(complex(-c.g, -c.b), vol);
   for (let k = n - 1; k >= 0; k--) {
     let V = v[k + 1];
     let I = i[k + 1];
@@ -321,65 +418,64 @@ function hermite(f0: Complex, f1: Complex, d0: Complex, d1: Complex, t: number):
 
 /**
  * The continuous solution on one arm at Gauss points: V and I interpolated between nodes with
- * cubic Hermite polynomials whose slopes come from the line equations themselves, then the
- * charge density λ = C′V (continuity: jωλ = −dI/ds) and the heat ½|I|²R′ from the local radius.
- * Voltage and outward current are the actual values; samples report current along +z.
+ * cubic Hermite polynomials whose slopes come from the line equations themselves (each
+ * interval's own medium, so slopes jump correctly at interfaces), then the charge density
+ * λ = C′εr·V (continuity: jωλ = −dI/ds), and the heats ½|I|²R′ and ½|V|²G′.
  */
 function sampleArm(
   ctx: Context,
   plan: ArmPlan,
+  intervalEps: Complex[],
   voltage: Complex[],
   outward: Complex[],
   radiationR: number,
 ): LineSample[] {
   const { nodes, profile: p, direction } = plan;
   const samples: LineSample[] = [];
-  const slopes = nodes.map((s, k) => {
-    const c = coefficients(ctx, radiusAt(p, s));
+  const slope = (s: number, k: number, eps: Complex) => {
+    const c = coefficients(ctx, radiusAt(p, s), eps);
     const zs = complex(
-      c.resistance + radiationR,
+      c.resistance + radiationR * c.index,
       ctx.omega * (c.inductance + c.internalInductance),
     );
     return {
       v: mul(scale(zs, -1), outward[k]),
-      i: mul(complex(0, -ctx.omega * c.capacitance), voltage[k]),
+      i: mul(complex(-c.conductance, -ctx.omega * c.capacitance), voltage[k]),
     };
-  });
+  };
   for (let k = 0; k < nodes.length - 1; k++) {
     const h = nodes[k + 1] - nodes[k];
+    const eps = intervalEps[k];
+    const d0 = slope(nodes[k], k, eps);
+    const d1 = slope(nodes[k + 1], k + 1, eps);
     for (const t of GAUSS) {
       const s = nodes[k] + t * h;
       const a = radiusAt(p, s);
-      const c = coefficients(ctx, a);
-      const V = hermite(
-        voltage[k],
-        voltage[k + 1],
-        scale(slopes[k].v, h),
-        scale(slopes[k + 1].v, h),
-        t,
-      );
-      const I = hermite(
-        outward[k],
-        outward[k + 1],
-        scale(slopes[k].i, h),
-        scale(slopes[k + 1].i, h),
-        t,
-      );
+      const c = coefficients(ctx, a, eps);
+      const V = hermite(voltage[k], voltage[k + 1], scale(d0.v, h), scale(d1.v, h), t);
+      const I = hermite(outward[k], outward[k + 1], scale(d0.i, h), scale(d1.i, h), t);
       samples.push({
         z: direction * s,
         w: h / 2,
         radius: a,
+        layer: plan.intervalLayers[k],
         current: scale(I, direction),
-        lineCharge: scale(V, c.capacitance),
+        lineCharge: scale(mul(V, eps), c.vacuumCapacitance),
         resistance: c.resistance,
         heat: 0.5 * abs2(I) * c.resistance,
+        dielectric: 0.5 * abs2(V) * c.conductance,
+        radiated: 0.5 * abs2(I) * radiationR * c.index,
       });
     }
   }
   return samples;
 }
 
-/** Far field of both arms over the full sphere, from the current along +z. */
+/**
+ * Far field of the currents along both arms as if in vacuum, over the full sphere around the
+ * antenna's axis. Exact for a uniform vacuum; in other surroundings it sets the scale of the
+ * radiation loss (see solve).
+ */
 export function farField(samples: LineSample[], k: number, eta: number, count = 180): FarField {
   const theta: number[] = [];
   const intensity: number[] = [];
@@ -424,79 +520,106 @@ export interface SolveOptions {
   angles?: number;
 }
 
-/** Steady-state solution of the driven dipole. */
+/** Steady-state solution of the driven dipole in its surroundings. */
 export function solve(params: NeedleParams, options: SolveOptions = {}): Solution {
-  const { geometry: g, drive, material, medium } = params;
+  const { geometry: g, drive, material, environment: env } = params;
   const omega = TWO_PI * drive.frequency;
-  const epsilon = EPS0 * medium.relPermittivity;
-  const mu = MU0 * medium.relPermeability;
-  const velocity = 1 / Math.sqrt(epsilon * mu);
-  const eta = Math.sqrt(mu / epsilon);
-  const k = omega / velocity;
-  const wavelength = velocity / drive.frequency;
+  const k = omega / C0;
+  const wavelength = C0 / drive.frequency;
+  const lay = layersOf(env, drive.frequency);
   const ctx: Context = {
     omega,
-    velocity,
-    eta,
-    // Schelkunoff's average impedance takes the dipole's half-length, shared by both arms.
     length: g.length / 2,
     resistivity: material.resistivity,
     metalMu: MU0 * material.relPermeability,
   };
   const shapes = armShapes(g);
+  const placement = placementOf(params, shapes[0].length);
+  const layerOfZ = (z: number) => layerIndex(lay, worldAt(placement, z)[1]);
+
   const plans = ([1, -1] as const).map((direction): ArmPlan => {
     const geometry = shapes[direction === 1 ? 0 : 1];
     const p = profile(geometry);
-    const nodes = buildMesh(p, wavelength, options.baseCells);
+    // Where this arm crosses each interface (distance from the gap).
+    const dy = direction * placement.axis[1];
+    const crossings =
+      Math.abs(dy) > 1e-12
+        ? lay.interfaces.map((y) => (y - placement.gap[1]) / dy).filter((s) => s > 0)
+        : [];
+    const maxIndex = Math.max(
+      ...[0, p.capStart].map((s) => sqrt(lay.eps[layerOfZ(direction * s)]).re),
+      ...crossings
+        .flatMap((c) => [c * 0.999, c * 1.001])
+        .map((s) => sqrt(lay.eps[layerOfZ(direction * s)]).re),
+    );
+    const nodes = buildMesh(p, wavelength / maxIndex, options.baseCells, crossings);
+    const intervalLayers = nodes
+      .slice(0, -1)
+      .map((s, i) => layerOfZ((direction * (s + nodes[i + 1])) / 2));
     return {
       direction,
       geometry,
       profile: p,
       nodes,
-      steps: planSteps(ctx, p, nodes),
-      // The cap (a spherical zone) as a lumped load: its share of an isolated sphere's 4πεr.
-      capCapacitance: 4 * Math.PI * epsilon * p.capRadius * ((1 - Math.sin(p.halfAngle)) / 2),
+      intervalLayers,
+      steps: planSteps(
+        ctx,
+        p,
+        nodes,
+        intervalLayers.map((l) => lay.eps[l]),
+      ),
+      // The cap (a spherical zone) as a lumped load: its share of an isolated sphere's 4πε₀r.
+      capCapacitance: 4 * Math.PI * EPS0 * p.capRadius * ((1 - Math.sin(p.halfAngle)) / 2),
+      capLayer: layerOfZ(direction * (p.capCenter + p.capRadius / 2)),
     };
   });
   const symmetric =
+    lay.interfaces.length === 0 &&
     plans[0].profile.length === plans[1].profile.length &&
     plans[0].profile.capRadius === plans[1].profile.capRadius &&
     plans[0].profile.coneStart === plans[1].profile.coneStart;
   const feedZ = complex(drive.feedResistance, drive.feedReactance);
   const sourceVoltage = polar(drive.voltage, (drive.phaseDeg * Math.PI) / 180);
+  const capEps = plans.map((pl) => lay.eps[pl.capLayer]);
+  const intervalEps = plans.map((pl) => pl.intervalLayers.map((l) => lay.eps[l]));
 
   /**
    * Both arms for a given radiation resistance. The gap current I flows out of the gap into
-   * the needle and back into the gap from the other arm, so the arms are in series:
+   * the needle arm and back into the gap from the other arm, so the arms are in series:
    * V_gap = I·(Z_needle + Z_other). The source drives that through its feed network.
    */
   const run = (radiationR: number) => {
-    const units = plans.map((pl) => solveArm(pl, radiationR, omega));
+    const units = plans.map((pl, a) => solveArm(pl, radiationR, omega, capEps[a]));
     const zArms = units.map((u) => u.voltage[0]);
     const zIn = add(zArms[0], zArms[1]);
     const unitSource = add(complex(1), mul(complex(0, omega * drive.baseCapacitance), zIn));
     const gapCurrent = div(sourceVoltage, add(zIn, mul(feedZ, unitSource)));
     const arms = plans.map((pl, a) => {
-      // Outward current is +I on the needle and −I on the other arm (it flows into the gap).
+      // Outward current is +I on the needle arm and −I on the other arm.
       const factor = scale(gapCurrent, pl.direction);
       const voltage = units[a].voltage.map((x) => mul(x, factor));
       const outward = units[a].current.map((x) => mul(x, factor));
-      return { voltage, outward, samples: sampleArm(ctx, pl, voltage, outward, radiationR) };
+      return {
+        voltage,
+        outward,
+        samples: sampleArm(ctx, pl, intervalEps[a], voltage, outward, radiationR),
+      };
     });
     return { arms, zArms, zIn, gapCurrent, sourceCurrent: mul(gapCurrent, unitSource) };
   };
 
-  // Radiation loss enters both arms as a uniform series resistance, iterated until the power
-  // it absorbs matches the power the current distribution actually radiates.
+  // Radiation loss enters both arms as a series resistance R₀′·n(s): R₀′ makes the power the
+  // current would radiate in vacuum match what it absorbs there, and the local refractive index
+  // scales it, as for a small dipole in a medium (P ∝ ηk² ∝ n). Iterated to agreement.
   let radiationR = 0;
   let change = 1;
   let iterations = 0;
   for (let it = 1; it <= 30; it++) {
     iterations = it;
     const all = run(radiationR).arms.flatMap((a) => a.samples);
-    const pFar = radiatedPower(farField(all, k, eta, options.angles));
+    const pVac = radiatedPower(farField(all, k, ETA0, options.angles));
     const sumI2 = all.reduce((s, q) => s + 0.5 * abs2(q.current) * q.w, 0);
-    const target = sumI2 > 0 ? pFar / sumI2 : 0;
+    const target = sumI2 > 0 ? pVac / sumI2 : 0;
     const next = it === 1 ? target : 0.5 * radiationR + 0.5 * target;
     change = Math.abs(next - radiationR) / Math.max(next, 1e-300);
     radiationR = next;
@@ -504,10 +627,24 @@ export function solve(params: NeedleParams, options: SolveOptions = {}): Solutio
   }
   const result = run(radiationR);
   const allSamples = result.arms.flatMap((a) => a.samples);
-  const ff = farField(allSamples, k, eta, options.angles);
+  const ff = farField(allSamples, k, ETA0, options.angles);
+
+  const byMedium: MediumPower[] = lay.media.map((medium) => ({
+    medium,
+    radiated: 0,
+    dielectric: 0,
+  }));
+  for (const q of allSamples) {
+    byMedium[q.layer].radiated += q.radiated * q.w;
+    byMedium[q.layer].dielectric += q.dielectric * q.w;
+  }
 
   const arms = plans.map((pl, a): Arm => {
-    const { voltage, outward, samples } = result.arms[a];
+    const { voltage, samples } = result.arms[a];
+    const vEnd = voltage[voltage.length - 1];
+    // The cap's dielectric loss: ½|V|²·ωC·ε″.
+    byMedium[pl.capLayer].dielectric +=
+      0.5 * abs2(vEnd) * omega * pl.capCapacitance * -capEps[a].im;
     const ohmic = samples.reduce((s, q) => s + q.heat * q.w, 0);
     return {
       direction: pl.direction,
@@ -515,55 +652,58 @@ export function solve(params: NeedleParams, options: SolveOptions = {}): Solutio
       profile: pl.profile,
       nodes: pl.nodes,
       z: pl.nodes.map((s) => pl.direction * s),
+      intervalLayers: pl.intervalLayers,
       voltage,
-      current: outward.map((x) => scale(x, pl.direction)),
+      current: result.arms[a].outward.map((x) => scale(x, pl.direction)),
       samples,
-      tipCharge: scale(voltage[voltage.length - 1], pl.capCapacitance),
+      tipCharge: scale(mul(vEnd, capEps[a]), pl.capCapacitance),
       capCapacitance: pl.capCapacitance,
+      capLayer: pl.capLayer,
       impedance: result.zArms[a],
       ohmic,
       thermal: options.skipThermal
         ? {
             nodes: pl.nodes,
-            temperature: pl.nodes.map(() => medium.ambientTemperature),
-            maxTemperature: medium.ambientTemperature,
+            temperature: pl.nodes.map(() => env.ambientTemperature),
+            maxTemperature: env.ambientTemperature,
           }
-        : solveThermal(pl.profile, pl.nodes, samples, params),
+        : solveThermal(pl, samples, lay, params),
     };
   }) as [Arm, Arm];
 
   const ohmic = arms[0].ohmic + arms[1].ohmic;
-  const radiated = radiatedPower(ff);
+  const radiated = byMedium.reduce((s, m) => s + m.radiated, 0);
+  const dielectric = byMedium.reduce((s, m) => s + m.dielectric, 0);
   const gapVoltage = mul(result.gapCurrent, result.zIn);
   const i2 = abs2(result.gapCurrent);
   const input = 0.5 * mul(gapVoltage, conj(result.gapCurrent)).re;
   const source = 0.5 * mul(sourceVoltage, conj(result.sourceCurrent)).re;
   const feed = 0.5 * abs2(result.sourceCurrent) * drive.feedResistance;
 
-  // Gauss's law at the surface of a thin wire, E = λ/(2πε·a), and on each cap, E = σ/ε.
-  let peakSurfaceField = { value: 0, z: 0 };
+  // Gauss's law at the surface of a thin wire, D = λ/(2πa), E = D/(ε₀|εr|); on each cap, σ/ε.
+  const peakSurfaceField = lay.media.map(() => ({ value: 0, z: 0 }));
   for (const arm of arms) {
     for (const q of arm.samples) {
-      const e = abs(q.lineCharge) / (TWO_PI * epsilon * q.radius);
-      if (e > peakSurfaceField.value) peakSurfaceField = { value: e, z: q.z };
+      const e = abs(q.lineCharge) / (TWO_PI * EPS0 * abs(lay.eps[q.layer]) * q.radius);
+      if (e > peakSurfaceField[q.layer].value) peakSurfaceField[q.layer] = { value: e, z: q.z };
     }
-    const capField = abs(arm.tipCharge) / capArea(arm.profile) / epsilon;
-    if (capField > peakSurfaceField.value)
-      peakSurfaceField = { value: capField, z: arm.direction * arm.profile.length };
+    const capField =
+      abs(arm.tipCharge) / capArea(arm.profile) / (EPS0 * abs(lay.eps[arm.capLayer]));
+    if (capField > peakSurfaceField[arm.capLayer].value)
+      peakSurfaceField[arm.capLayer] = { value: capField, z: arm.direction * arm.profile.length };
   }
 
   return {
     params,
     profile: arms[0].profile,
+    placement,
+    layers: lay,
     omega,
     k,
     wavelength,
-    eta,
-    epsilon,
-    mu,
     arms,
     symmetric,
-    shaft: coefficients(ctx, g.radius),
+    shaft: coefficients(ctx, g.radius, complex(1)),
     sourceVoltage,
     gapVoltage,
     gapCurrent: result.gapCurrent,
@@ -573,8 +713,8 @@ export function solve(params: NeedleParams, options: SolveOptions = {}): Solutio
     radiationResistancePerMeter: radiationR,
     radiationResistance: i2 > 0 ? (2 * radiated) / i2 : 0,
     lossResistance: i2 > 0 ? (2 * ohmic) / i2 : 0,
-    power: { source, feed, input, radiated, ohmic },
-    efficiency: radiated + ohmic > 0 ? radiated / (radiated + ohmic) : 0,
+    power: { source, feed, input, radiated, ohmic, dielectric, byMedium },
+    efficiency: input > 0 ? radiated / input : 0,
     skinDepth: skinDepthOf(ctx),
     peakSurfaceField,
     farField: ff,
@@ -582,35 +722,44 @@ export function solve(params: NeedleParams, options: SolveOptions = {}): Solutio
   };
 }
 
-/** Builds one arm's thermal problem from its exact profile: conductances, heat, areas. */
+/**
+ * Builds one arm's thermal problem from its exact profile: conductances along the metal, Joule
+ * heat, radiating area, and convection to whichever medium each stretch sits in.
+ */
 function solveThermal(
-  p: Profile,
-  nodes: number[],
+  pl: ArmPlan,
   samples: LineSample[],
+  lay: Layers,
   params: NeedleParams,
 ): ThermalProfile {
-  const { material, medium } = params;
+  const { material, environment: env } = params;
+  const p = pl.profile;
+  const nodes = pl.nodes;
   const intervals = nodes.slice(0, -1).map((s0, k) => {
     const h = nodes[k + 1] - s0;
     const a0 = radiusAt(p, s0);
     const a1 = radiusAt(p, nodes[k + 1]);
     const heat =
       samples[2 * k].heat * samples[2 * k].w + samples[2 * k + 1].heat * samples[2 * k + 1].w;
+    // Lateral area of a conical frustum.
+    const area = Math.PI * (a0 + a1) * Math.hypot(h, a0 - a1);
     return {
       // Exact for a linear radius: ∫ds/(kπa²) = h/(kπ·a₀a₁).
       conductance: (material.thermalConductivity * Math.PI * a0 * a1) / h,
       heat,
-      // Lateral area of a conical frustum.
-      area: Math.PI * (a0 + a1) * Math.hypot(h, a0 - a1),
+      area,
+      convection: CONVECTION[lay.media[pl.intervalLayers[k]]] * area,
     };
   });
+  const end = capArea(p);
   return solveTemperature({
     nodes,
     intervals,
-    endArea: capArea(p),
+    endArea: end,
+    endConvection: CONVECTION[lay.media[pl.capLayer]] * end,
     emissivity: material.emissivity,
-    ambient: medium.ambientTemperature,
-    clampBase: medium.feedHeatSunk,
+    ambient: env.ambientTemperature,
+    clampBase: env.feedHeatSunk,
   });
 }
 
@@ -619,6 +768,8 @@ export interface SweepPoint {
   inputImpedance: Complex;
   radiated: number;
   ohmic: number;
+  /** Dielectric heating of the surroundings (W). */
+  dielectric: number;
 }
 
 /** Input impedance and powers over a log-spaced frequency range, other parameters fixed. */
@@ -635,12 +786,13 @@ export function sweep(params: NeedleParams, fMin: number, fMax: number, n: numbe
       inputImpedance: sol.inputImpedance,
       radiated: sol.power.radiated,
       ohmic: sol.power.ohmic,
+      dielectric: sol.power.dielectric,
     });
   }
   return out;
 }
 
-/** Total charge on one arm (line plus cap). */
+/** Total free charge on one arm (line plus cap). */
 export function armCharge(arm: Arm): Complex {
   return add(
     arm.samples.reduce<Complex>((q, s) => add(q, scale(s.lineCharge, s.w)), ZERO),

@@ -25,6 +25,14 @@ export interface ChartSeries {
   quiet?: boolean;
 }
 
+/** A shaded span of x, e.g. the stretch of antenna inside a liquid. */
+export interface ChartRegion {
+  from: number;
+  to: number;
+  label: string;
+  color: string;
+}
+
 type Scale = ScaleLinear<number, number> | ScaleLogarithmic<number, number>;
 
 const MARGIN = { top: 14, right: 18, bottom: 42, left: 70 } as const;
@@ -109,6 +117,24 @@ function nearest(xs: readonly number[], x: number): number {
             />
           </clipPath>
         </defs>
+        @for (g of regionRects(); track $index) {
+          <rect
+            class="chart__region"
+            [attr.x]="g.x"
+            [attr.y]="top"
+            [attr.width]="g.width"
+            [attr.height]="bottom() - top"
+            [attr.fill]="g.color"
+          />
+          <text
+            class="chart__region-label"
+            [attr.x]="g.x + 4"
+            [attr.y]="top + 11"
+            [attr.fill]="g.color"
+          >
+            {{ g.label }}
+          </text>
+        }
         @for (p of paths(); track $index) {
           @if (p.band) {
             <path class="chart__band" [attr.d]="p.band" [attr.fill]="p.color" />
@@ -199,6 +225,15 @@ function nearest(xs: readonly number[], x: number): number {
       stroke-width: 1.8;
       stroke-linejoin: round;
     }
+    .chart__region {
+      opacity: 0.1;
+    }
+    .chart__region-label {
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
     .chart__band {
       opacity: 0.16;
     }
@@ -241,6 +276,8 @@ export class LineChart {
   readonly yLog = input(false);
   readonly xDomain = input<readonly [number, number]>();
   readonly yDomain = input<readonly [number, number]>();
+  /** Shaded spans of x, labelled. */
+  readonly regions = input<readonly ChartRegion[]>([]);
   /** Draw a dashed vertical line at this x. */
   readonly marker = input<number>();
   readonly height = input(230);
@@ -284,6 +321,18 @@ export class LineChart {
   protected readonly yTicks = computed(() =>
     this.ticks(this.yScale(), this.formatY(), this.height() / 45),
   );
+
+  protected readonly regionRects = computed(() => {
+    const x = this.xScale();
+    const [lo, hi] = [this.left, this.right()];
+    return this.regions()
+      .map((g) => {
+        const a = Math.max(lo, Math.min(hi, x(g.from)));
+        const b = Math.max(lo, Math.min(hi, x(g.to)));
+        return { x: Math.min(a, b), width: Math.abs(b - a), label: g.label, color: g.color };
+      })
+      .filter((g) => g.width > 0.5);
+  });
 
   protected readonly zeroLine = computed(() => {
     const y = this.yScale();

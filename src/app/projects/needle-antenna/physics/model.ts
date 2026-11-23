@@ -1,12 +1,12 @@
 /**
  * Parameters for the needle simulation. All values in SI units.
  *
- * The needle floats in free space as part of a dipole: one straight wire of a given total length,
+ * The needle is part of a dipole: one straight wire of a given total length,
  * pointed at one end and rounded at the other, cut by a vanishingly small feed gap somewhere
  * along it. An ideal voltage source V(t) = V̂·cos(ωt + φ) drives the gap. The part above the gap
  * (ending in the point) is the needle arm; the part below (ending in the rounded end) is the
  * other arm. A balun is assumed, so the feed is balanced and the feed line carries no current
- * on its outside. There is no ground plane.
+ * on its outside. The surroundings are described by the Environment.
  */
 export interface NeedleGeometry {
   /** Total length of the antenna, point to rounded end (m). */
@@ -86,24 +86,36 @@ export interface NeedleMaterial {
   meltingPoint: number;
 }
 
-/** The surrounding medium. Only a homogeneous, lossless medium is modeled for now. */
-export interface Medium {
-  relPermittivity: number;
-  relPermeability: number;
-  /** Temperature of the surroundings the needle radiates to (K). */
+/**
+ * The surroundings. Either uniform (vacuum or air), or layered: air above a flat layer of oil
+ * floating on deep water. The needle's point dips through the oil into the water at an angle.
+ */
+export interface Environment {
+  kind: 'vacuum' | 'air' | 'layered';
+  /** Temperature of the surroundings: air, oil and water (K). */
   ambientTemperature: number;
-  /**
-   * Whether the feed is heat-sunk, holding the needle's base at ambient. Otherwise the needle is
-   * thermally floating and sheds heat by thermal radiation alone.
-   */
+  /** Whether the feed is heat-sunk, holding the needle's base at ambient. */
   feedHeatSunk: boolean;
+  /**
+   * Angle between the needle and the liquid surface (degrees): 90 is straight down, 10 nearly
+   * skimming the surface.
+   */
+  tiltDeg: number;
+  /** How far the apex sits below the oil's top surface, measured vertically (m). */
+  tipDepth: number;
+  /** Thickness of the oil layer (m). */
+  oilThickness: number;
+  /** Relative permittivity of the oil (mineral oil ≈ 2.2). */
+  oilPermittivity: number;
+  /** Dielectric loss tangent of the oil. */
+  oilLossTangent: number;
 }
 
 export interface NeedleParams {
   geometry: NeedleGeometry;
   drive: DriveCircuit;
   material: NeedleMaterial;
-  medium: Medium;
+  environment: Environment;
 }
 
 export interface MaterialPreset {
@@ -182,12 +194,20 @@ export const MATERIAL_PRESETS: readonly MaterialPreset[] = [
   },
 ];
 
-export const VACUUM: Medium = {
-  relPermittivity: 1,
-  relPermeability: 1,
+/** Air over 3 mm of mineral oil on deep deionized water, the needle tilted at 60°. */
+export const LAYERED: Environment = {
+  kind: 'layered',
   ambientTemperature: 293.15,
   feedHeatSunk: false,
+  tiltDeg: 60,
+  tipDepth: 8e-3,
+  oilThickness: 3e-3,
+  oilPermittivity: 2.2,
+  oilLossTangent: 1e-3,
 };
+
+/** The same placement in vacuum, with no layers. */
+export const VACUUM: Environment = { ...LAYERED, kind: 'vacuum' };
 
 export const DEFAULT_PARAMS: NeedleParams = {
   geometry: {
@@ -207,5 +227,5 @@ export const DEFAULT_PARAMS: NeedleParams = {
     baseCapacitance: 0,
   },
   material: MATERIAL_PRESETS[0].material,
-  medium: VACUUM,
+  environment: LAYERED,
 };
