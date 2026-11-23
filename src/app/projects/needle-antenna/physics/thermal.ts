@@ -16,6 +16,8 @@ export interface ThermalInterval {
   heat: number;
   /** Surface area radiating to the surroundings (m²). */
   area: number;
+  /** Convective conductance to the surrounding fluid, h·area (W/K); 0 in vacuum. */
+  convection?: number;
 }
 
 export interface ThermalProblem {
@@ -23,6 +25,8 @@ export interface ThermalProblem {
   intervals: ThermalInterval[];
   /** Radiating area beyond the last node (the apex cap) (m²). */
   endArea: number;
+  /** Convective conductance of the cap (W/K). */
+  endConvection?: number;
   emissivity: number;
   /** Temperature of the surroundings (K). */
   ambient: number;
@@ -32,7 +36,8 @@ export interface ThermalProblem {
 
 /**
  * Steady temperature along the needle. Heat flows along the metal by conduction and leaves the
- * surface by grey-body radiation εσ(T⁴ − T₀⁴); in vacuum there is no convection. The base is
+ * surface by grey-body radiation εσ(T⁴ − T₀⁴) and by convection h(T − T₀) to the surrounding
+ * fluid (none in vacuum). The base is
  * either held at ambient or insulated (by symmetry nothing crosses the feed gap from the mirror
  * needle, which is at the same temperature). Finite volumes on the nodes, Newton iteration on
  * the T⁴ term, a tridiagonal solve each step.
@@ -43,19 +48,27 @@ export function solveTemperature(problem: ThermalProblem): ThermalProfile {
   const emissivity = Math.max(problem.emissivity, 1e-4);
   const source = new Array<number>(n).fill(0);
   const area = new Array<number>(n).fill(0);
+  const convective = new Array<number>(n).fill(0);
   intervals.forEach((s, i) => {
     source[i] += 0.5 * s.heat;
     source[i + 1] += 0.5 * s.heat;
     area[i] += 0.5 * s.area;
     area[i + 1] += 0.5 * s.area;
+    convective[i] += 0.5 * (s.convection ?? 0);
+    convective[i + 1] += 0.5 * (s.convection ?? 0);
   });
   area[n - 1] += problem.endArea;
+  convective[n - 1] += problem.endConvection ?? 0;
   const radiative = area.map((a) => emissivity * STEFAN_BOLTZMANN * a);
   const ambient4 = ambient ** 4;
-  // Start from each node shedding its own heat by radiation; Newton takes it from there.
-  const t = source.map((q, i) =>
-    clampBase && i === 0 ? ambient : Math.pow(q / Math.max(radiative[i], 1e-300) + ambient4, 0.25),
-  );
+  // Start from each node shedding its own heat by radiation, or by convection if that's
+  // stronger; Newton takes it from there.
+  const t = source.map((q, i) => {
+    if (clampBase && i === 0) return ambient;
+    const byRadiation = Math.pow(q / Math.max(radiative[i], 1e-300) + ambient4, 0.25);
+    const byConvection = convective[i] > 0 ? ambient + q / convective[i] : Infinity;
+    return Math.min(byRadiation, byConvection);
+  });
 
   const lower = new Array<number>(n).fill(0);
   const diag = new Array<number>(n).fill(0);
@@ -77,8 +90,8 @@ export function solveTemperature(problem: ThermalProblem): ThermalProfile {
       const df = 4 * radiative[i] * ti ** 3;
       lower[i] = -gl;
       upper[i] = -gu;
-      diag[i] = gl + gu + df;
-      rhs[i] = source[i] - f + df * ti;
+      diag[i] = gl + gu + df + convective[i];
+      rhs[i] = source[i] - f + df * ti + convective[i] * ambient;
     }
     const next = thomas(lower, diag, upper, rhs).map((x) => Math.max(x, ambient));
     let change = 0;

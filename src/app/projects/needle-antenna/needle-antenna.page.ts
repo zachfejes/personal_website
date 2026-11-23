@@ -22,10 +22,12 @@ import {
 } from './controls';
 import { FIELD_QUANTITIES, FIELD_VIEWS, FieldMap, FieldQuantity, FieldView } from './field-map';
 import { impedance, kelvinToCelsius, num, percent, si } from './format';
-import { ChartSeries, LineChart } from './line-chart';
+import { ChartRegion, ChartSeries, LineChart } from './line-chart';
 import { NeedleStrip } from './needle-strip';
 import { Complex, abs, instant } from './physics/complex';
 import { DEFAULT_PARAMS, MATERIAL_PRESETS, NeedleParams } from './physics/model';
+import { MEDIUM_LABELS } from './physics/media';
+import { slicePattern } from './physics/pattern';
 import { C0, SweepPoint, solve, sweep } from './physics/solver';
 import { PolarPattern } from './polar-pattern';
 import { sweepPasses } from './sweep-plan';
@@ -34,6 +36,8 @@ const AMBER = '#e3a857';
 const TEAL = '#6cc3c9';
 const ROSE = '#e0705a';
 const PAPER = '#ece5d6';
+const WATER = '#5aa0d2';
+const OIL = '#e3a857';
 /** Seconds per RF cycle in the animation. */
 const CYCLE_SECONDS = 3;
 /** The first sweep pass has this many log-spaced steps; each later pass halves them. */
@@ -82,7 +86,7 @@ export class NeedleAntennaPage {
     () => {
       const p = this.params();
       // The half-wave frequency of the whole antenna.
-      const fq = C0 / Math.sqrt(p.medium.relPermittivity) / (2 * p.geometry.length);
+      const fq = C0 / (2 * p.geometry.length);
       return {
         params: { ...p, drive: { ...p.drive, phaseDeg: 0, frequency: 0 } },
         fMin: Math.min(0.1 * fq, p.drive.frequency / 1.5),
@@ -105,10 +109,16 @@ export class NeedleAntennaPage {
     const tipV = abs(needle.voltage[needle.voltage.length - 1]);
     const otherV = abs(other.voltage[other.voltage.length - 1]);
     const tMaxK = Math.max(needle.thermal.maxTemperature, other.thermal.maxTemperature);
+    const layered = s.layers.interfaces.length > 0;
+    const peak = s.peakSurfaceField.reduce((a, b) => (b.value > a.value ? b : a));
+    const airIndex = s.layers.media.indexOf('air');
+    const liquid = s.power.byMedium
+      .filter((m) => m.medium === 'oil' || m.medium === 'water')
+      .reduce((sum, m) => sum + m.radiated + m.dielectric, 0);
     return {
       wavelength: si(s.wavelength, 'm'),
       electricalLength: num(g.length / s.wavelength),
-      halfWave: si(C0 / Math.sqrt(s.params.medium.relPermittivity) / (2 * g.length), 'Hz'),
+      halfWave: si(C0 / (2 * g.length), 'Hz'),
       armLengths: `${mm(needle.profile.length)} / ${mm(other.profile.length)} mm`,
       feedOffset: `${mm(needle.profile.length - g.length / 2)} mm`,
       zin: impedance(s.inputImpedance),
@@ -142,15 +152,33 @@ export class NeedleAntennaPage {
       endCap: si(needle.capCapacitance, 'F'),
       otherCap: si(other.capCapacitance, 'F'),
       coneAngle: `${num((2 * s.profile.halfAngle * 180) / Math.PI)}°`,
-      peakField: si(s.peakSurfaceField.value, 'V/m'),
-      peakFieldAt: `${mm(s.peakSurfaceField.z)} mm`,
-      directivity: `${num(10 * Math.log10(s.farField.directivity))} dBi`,
+      peakField: si(peak.value, 'V/m'),
+      peakFieldAt: `${mm(peak.z)} mm`,
+      peakFields: s.layers.media.map((m, l) => ({
+        medium: MEDIUM_LABELS[m],
+        value: s.peakSurfaceField[l].value > 0 ? si(s.peakSurfaceField[l].value, 'V/m') : '—',
+      })),
+      directivity: layered ? '—' : `${num(10 * Math.log10(s.farField.directivity))} dBi`,
+      layered,
+      media: s.layers.media.map((m, l) => ({
+        medium: MEDIUM_LABELS[m],
+        eps: impedance(s.layers.eps[l]).replace(' Ω', ''),
+        radiated: si(s.power.byMedium[l].radiated, 'W'),
+        dielectric: si(s.power.byMedium[l].dielectric, 'W'),
+        lossy: s.layers.eps[l].im < 0,
+      })),
+      pDielectric: si(s.power.dielectric, 'W'),
+      pLiquid: si(liquid, 'W'),
+      pRadAir: si(layered ? s.power.byMedium[0].radiated : s.power.radiated, 'W'),
+      // Corona onset at a sharp point in air at 1 atm starts around a few MV/m.
+      airBreakdown: airIndex >= 0 && s.peakSurfaceField[airIndex].value > 3e6,
+      airPeak: airIndex >= 0 ? si(s.peakSurfaceField[airIndex].value, 'V/m') : '',
       tMax: `${num(kelvinToCelsius(tMaxK))} °C`,
-      tRise: si(tMaxK - s.params.medium.ambientTemperature, 'K'),
+      tRise: si(tMaxK - s.params.environment.ambientTemperature, 'K'),
       melts: tMaxK >= s.params.material.meltingPoint,
       meltingPoint: `${num(kelvinToCelsius(s.params.material.meltingPoint))} °C`,
       // Rough vacuum breakdown / field emission threshold at a sharp metal tip.
-      emission: s.peakSurfaceField.value > 3e9,
+      emission: s.params.environment.kind === 'vacuum' && peak.value > 3e9,
       converged: s.convergence.change < 1e-3,
     };
   });
@@ -179,6 +207,46 @@ export class NeedleAntennaPage {
       temperature: join(other.thermal.temperature, needle.thermal.temperature),
     };
   });
+  /**
+   * Which medium each stretch of the antenna sits in, as shaded bands for the charts: positions
+   * along the antenna (mm), the rounded end negative and the point positive.
+   */
+  protected readonly regions = computed<ChartRegion[]>(() => {
+    const s = this.sol();
+    if (!s.layers.interfaces.length) return [];
+    const spans: { from: number; to: number; layer: number }[] = [];
+    for (const arm of s.arms) {
+      arm.intervalLayers.forEach((layer, i) => {
+        const a = arm.direction * arm.nodes[i] * 1e3;
+        const b = arm.direction * arm.nodes[i + 1] * 1e3;
+        spans.push({ from: Math.min(a, b), to: Math.max(a, b), layer });
+      });
+      // The cap.
+      const a = arm.direction * arm.nodes[arm.nodes.length - 1] * 1e3;
+      const b = arm.direction * arm.profile.length * 1e3;
+      spans.push({ from: Math.min(a, b), to: Math.max(a, b), layer: arm.capLayer });
+    }
+    spans.sort((x, y) => x.from - y.from);
+    const merged: typeof spans = [];
+    for (const sp of spans) {
+      const last = merged.at(-1);
+      if (last?.layer === sp.layer && sp.from - last.to < 1e-6) last.to = sp.to;
+      else merged.push({ ...sp });
+    }
+    return merged
+      .filter((m) => s.layers.media[m.layer] !== 'air')
+      .map((m) => ({
+        from: m.from,
+        to: m.to,
+        label: MEDIUM_LABELS[s.layers.media[m.layer]],
+        color: s.layers.media[m.layer] === 'water' ? WATER : OIL,
+      }));
+  });
+
+  /** The far-field pattern in the plane of the antenna and the surface normal. */
+  protected readonly pattern = computed(() => slicePattern(this.sol()));
+  protected readonly patternAxis = computed(() => this.sol().placement.axis);
+
   /** Both arms, the other arm below the gap (negative heights). */
   protected readonly antennaDomain = computed(() => {
     const [needle, other] = this.sol().arms;
@@ -256,7 +324,17 @@ export class NeedleAntennaPage {
     const f = pts.map((p) => p.frequency);
     return [
       { label: 'Radiated', x: f, y: pts.map((p) => p.radiated), color: AMBER },
-      { label: 'Joule heat', x: f, y: pts.map((p) => p.ohmic), color: ROSE },
+      { label: 'Joule heat (metal)', x: f, y: pts.map((p) => p.ohmic), color: ROSE },
+      ...(this.params().environment.kind === 'layered'
+        ? [
+            {
+              label: 'Near-field heating (liquid)',
+              x: f,
+              y: pts.map((p) => p.dielectric),
+              color: WATER,
+            },
+          ]
+        : []),
     ];
   });
 
@@ -390,7 +468,27 @@ export class NeedleAntennaPage {
 
   protected onHeatSink(event: Event): void {
     const on = (event.target as HTMLInputElement).checked;
-    this.params.update((p) => ({ ...p, medium: { ...p.medium, feedHeatSunk: on } }));
+    this.params.update((p) => ({ ...p, environment: { ...p.environment, feedHeatSunk: on } }));
+  }
+
+  protected onEnvironmentKind(event: Event): void {
+    const kind = (event.target as HTMLSelectElement).value as NeedleParams['environment']['kind'];
+    this.params.update((p) => ({ ...p, environment: { ...p.environment, kind } }));
+    if (kind !== 'layered') {
+      if (this.view() === 'entry') this.view.set('antenna');
+      if (this.quantity() === 'heat') this.quantity.set('e');
+    }
+  }
+
+  protected readonly layered = computed(() => this.params().environment.kind === 'layered');
+  protected readonly visibleViews = computed(() =>
+    FIELD_VIEWS.filter((v) => !v.layeredOnly || this.layered()),
+  );
+  protected readonly visibleQuantities = computed(() =>
+    FIELD_QUANTITIES.filter((q) => !q.layeredOnly || this.layered()),
+  );
+  protected shown(c: ParamControl): boolean {
+    return !c.layeredOnly || this.layered();
   }
 
   protected reset(): void {

@@ -341,3 +341,45 @@
   font-size: 0.92rem;
   opacity: 0.9;
 }
+
+.block__subtitle {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: 1.2rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.media {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th,
+  td {
+    padding: 0.45rem 0.7rem;
+    border-bottom: 1px dashed var(--sim-line);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  th:first-child {
+    text-align: left;
+  }
+
+  thead th {
+    font-family: var(--font-label);
+    font-size: 0.66rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  td {
+    font-family: var(--font-label);
+  }
+}
