@@ -28,6 +28,7 @@ import { Complex, abs, instant } from './physics/complex';
 import { DEFAULT_PARAMS, MATERIAL_PRESETS, NeedleParams } from './physics/model';
 import { C0, SweepPoint, solve, sweep } from './physics/solver';
 import { PolarPattern } from './polar-pattern';
+import { sweepPasses } from './sweep-plan';
 
 const AMBER = '#e3a857';
 const TEAL = '#6cc3c9';
@@ -35,7 +36,10 @@ const ROSE = '#e0705a';
 const PAPER = '#ece5d6';
 /** Seconds per RF cycle in the animation. */
 const CYCLE_SECONDS = 3;
-const SWEEP_POINTS = 90;
+/** The first sweep pass has this many log-spaced steps; each later pass halves them. */
+const SWEEP_FIRST_INTERVALS = 12;
+/** Passes in total: 13, then 25, 49 and finally 97 frequencies. */
+const SWEEP_PASSES = 4;
 
 const mm = (v: number) => num(v * 1e3);
 
@@ -66,6 +70,26 @@ export class NeedleAntennaPage {
   /** ωt, radians. */
   protected readonly wt = signal(0);
   protected readonly sweepPoints = signal<SweepPoint[]>([]);
+  /** How many sweep frequencies are done, of how many in the final pass. */
+  protected readonly sweepProgress = signal({ points: 0, total: 0 });
+  /**
+   * What the sweep depends on: the parameters without the phase (which only moves the time
+   * origin) or the frequency (which the sweep varies), plus the range to sweep, which only
+   * follows the frequency when it strays outside the default span. Compared by value, so
+   * dragging the phase or picking a frequency on the chart doesn't restart it.
+   */
+  private readonly sweepParams = computed(
+    () => {
+      const p = this.params();
+      const fq = C0 / Math.sqrt(p.medium.relPermittivity) / (4 * p.geometry.length);
+      return {
+        params: { ...p, drive: { ...p.drive, phaseDeg: 0, frequency: 0 } },
+        fMin: Math.min(0.1 * fq, p.drive.frequency / 1.5),
+        fMax: Math.max(5 * fq, p.drive.frequency * 1.5),
+      };
+    },
+    { equal: (a, b) => JSON.stringify(a) === JSON.stringify(b) },
+  );
 
   protected readonly sol = computed(() => solve(this.params()));
 
@@ -270,28 +294,37 @@ export class NeedleAntennaPage {
       destroyRef.onDestroy(() => cancelAnimationFrame(frame));
     });
 
-    // Frequency sweep: everything but the frequency (and phase) as set, computed in slices.
+    // Frequency sweep, refined in passes: a coarse sweep appears almost at once, then each
+    // pass fills in the midpoints and the charts update. Computed in short slices so the page
+    // stays responsive; a parameter change restarts it, keeping the old curves until the new
+    // first pass is ready.
     effect((onCleanup) => {
-      const p = this.params();
+      const { params: p, fMin, fMax } = this.sweepParams();
       if (!browser) return;
-      const fq = C0 / Math.sqrt(p.medium.relPermittivity) / (4 * p.geometry.length);
-      const fMin = Math.min(0.1 * fq, p.drive.frequency / 1.5);
-      const fMax = Math.max(5 * fq, p.drive.frequency * 1.5);
-      const base = { ...p, drive: { ...p.drive, phaseDeg: 0 } };
-      const out: SweepPoint[] = [];
-      let n = 0;
+      const passes = sweepPasses(fMin, fMax, SWEEP_FIRST_INTERVALS, SWEEP_PASSES);
+      const total = passes.reduce((n, pass) => n + pass.length, 0);
+      const done: SweepPoint[] = [];
+      let pass = 0;
+      let index = 0;
       let timer = 0;
       const step = () => {
         const until = performance.now() + 10;
-        while (n < SWEEP_POINTS && performance.now() < until) {
-          const f = fMin * Math.pow(fMax / fMin, n / (SWEEP_POINTS - 1));
-          out.push(...sweep(base, f, f, 1));
-          n++;
+        while (pass < passes.length && performance.now() < until) {
+          const f = passes[pass][index];
+          done.push(...sweep(p, f, f, 1));
+          index++;
+          if (index === passes[pass].length) {
+            // A pass is complete: publish everything so far, in frequency order.
+            this.sweepPoints.set([...done].sort((x, y) => x.frequency - y.frequency));
+            this.sweepProgress.set({ points: done.length, total });
+            pass++;
+            index = 0;
+          }
         }
-        if (n < SWEEP_POINTS) timer = window.setTimeout(step, 0);
-        else this.sweepPoints.set(out);
+        if (pass < passes.length) timer = window.setTimeout(step, 0);
       };
-      timer = window.setTimeout(step, 120);
+      this.sweepProgress.set({ points: 0, total });
+      timer = window.setTimeout(step, 60);
       onCleanup(() => clearTimeout(timer));
     });
   }

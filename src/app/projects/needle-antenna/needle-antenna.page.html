@@ -408,6 +408,16 @@
             how much energy just sloshes back and forth each cycle. Click either chart to set the
             frequency.
           </p>
+          <p class="note" aria-live="polite">
+            @let sp = sweepProgress();
+            @if (sp.total === 0) {
+              Computing the sweep…
+            } @else if (sp.points < sp.total) {
+              Refining the sweep: {{ sp.points }} of {{ sp.total }} frequencies…
+            } @else {
+              {{ sp.total }} frequencies.
+            }
+          </p>
         </div>
         <div class="grid-2">
           <app-line-chart
