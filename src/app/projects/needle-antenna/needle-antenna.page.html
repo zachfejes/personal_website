@@ -175,11 +175,13 @@
         <div class="block__head">
           <h2 id="fields-title" class="block__title">01 — Fields around the needle</h2>
           <p class="block__lede">
-            A slice through the axis of the antenna: the pointed needle above, the rounded arm
-            below, the source in the gap between them (amber). The fields are rotationally
-            symmetric: E lies in this plane (radial and axial), H circles the arms (in and out of
-            the page). The lines are instantaneous electric field lines: watch them detach from the
-            antenna and travel off as radiation.
+            A slice through the antenna, in the vertical plane that contains it and the normal to
+            the liquid’s surface: the pointed needle dipping into the liquid, the rounded arm behind
+            it, and the source in the gap between them (amber). E lies in this plane; H crosses it
+            (in and out of the page). The lines are instantaneous electric field lines: watch them
+            detach from the antenna and travel off as radiation. In uniform surroundings they are
+            exact; around the oil and water they are approximate, and crowd together in the water,
+            where the same field carries far more displacement.
           </p>
         </div>
         <div class="toolbar" role="group" aria-label="Field view">
@@ -522,7 +524,17 @@
           />
         </div>
         <div class="grid-2 grid-2--top">
-          <app-polar-pattern [pattern]="pattern()" [axis]="patternAxis()" />
+          <div>
+            <app-polar-pattern [pattern]="pattern()" [axis]="patternAxis()" />
+            @if (r.layered) {
+              <p class="note">
+                One scale for all media. Each curve is the part of the antenna in that medium
+                radiating there: air above the surface (with its reflection off the oil), water
+                below (with its reflection off the oil above it, and before the water absorbs it on
+                the way out). The thin oil layer is dashed, drawn as if it went on forever.
+              </p>
+            }
+          </div>
           <dl class="facts facts--single">
             <div>
               <dt>Half-wave frequency (whole antenna)</dt>

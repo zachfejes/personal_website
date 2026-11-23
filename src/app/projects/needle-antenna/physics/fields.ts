@@ -301,8 +301,9 @@ export function heating(sol: Solution, grid: FieldGrid): Float64Array {
 
 /**
  * Contour segments of a scalar grid at the given levels (marching squares), in grid units
- * (x = column + 0.5, y = row + 0.5 at a sample). Cells touching masked samples are skipped.
- * Returns x1, y1, x2, y2 for each segment.
+ * (x = column + 0.5, y = row + 0.5 at a sample). Cells touching masked samples are skipped,
+ * and so are cells whose corners lie in different groups (e.g. layers), so a field that jumps
+ * across a boundary doesn't pile contours along it. Returns x1, y1, x2, y2 for each segment.
  */
 export function contourSegments(
   values: Float64Array,
@@ -310,6 +311,7 @@ export function contourSegments(
   nx: number,
   ny: number,
   levels: readonly number[],
+  groups?: Uint8Array,
 ): number[] {
   const out: number[] = [];
   if (!levels.length) return out;
@@ -321,6 +323,11 @@ export function contourSegments(
       const i01 = i00 + nx;
       const i11 = i01 + 1;
       if (mask[i00] || mask[i10] || mask[i01] || mask[i11]) continue;
+      if (
+        groups &&
+        (groups[i00] !== groups[i10] || groups[i00] !== groups[i01] || groups[i00] !== groups[i11])
+      )
+        continue;
       const v00 = values[i00];
       const v10 = values[i10];
       const v01 = values[i01];

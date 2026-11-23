@@ -24,6 +24,7 @@ import {
   fillRows,
   heating,
   xAt,
+  yAt,
 } from './physics/fields';
 import { radiusAt } from './physics/geometry';
 import { MEDIUM_LABELS } from './physics/media';
@@ -117,10 +118,8 @@ const SAMPLES = 170;
 const ROWS_PER_SLICE = 4;
 /** Color range of the log-magnitude maps (decades below the top). */
 const DECADES = 3.5;
-/** E field-line contours per sign (upright needle). */
+/** E field-line contours per sign. */
 const LINE_LEVELS = 14;
-/** Streamline seed spacing, in grid samples (tilted needle). */
-const SEED_SPACING = 7;
 
 /** Translucent tints for the liquids, and their boundary lines. */
 const LAYER_TINT: Record<string, string> = {
@@ -138,6 +137,12 @@ interface Stats {
   heat: Float64Array;
 }
 
+/** Signed distance from the antenna's axis line, positive on one side. */
+function axisDistance(sol: Solution, x: number, y: number): number {
+  const { gap, axis } = sol.placement;
+  return (x - gap[0]) * axis[1] - (y - gap[1]) * axis[0];
+}
+
 function percentile(values: number[], p: number): number {
   if (!values.length) return 1;
   values.sort((a, b) => a - b);
@@ -150,7 +155,7 @@ function stats(sol: Solution, grid: FieldGrid): Stats {
   const h: number[] = [];
   const q: number[] = [];
   const psi: number[] = [];
-  const xa = sol.placement.gap[0];
+  const psiTop: number[] = [];
   for (let j = 0; j < grid.ny; j++) {
     for (let i = 0; i < grid.nx; i++) {
       const k = j * grid.nx + i;
@@ -159,14 +164,18 @@ function stats(sol: Solution, grid: FieldGrid): Stats {
       const hAmp = Math.hypot(grid.hRe[k], grid.hIm[k]);
       h.push(hAmp);
       if (heat[k] > 0) q.push(heat[k]);
-      psi.push(hAmp * Math.abs(xAt(grid, i) - xa));
+      const p = hAmp * Math.abs(axisDistance(sol, xAt(grid, i), yAt(grid, j)));
+      psi.push(p);
+      if (grid.layer[k] === 0) psiTop.push(p);
     }
   }
   return {
     eTop: percentile(e, 0.995),
     hTop: percentile(h, 0.995),
     heatTop: percentile(q, 0.995),
-    psiTop: percentile(psi, 0.99),
+    // Line spacing set by the top layer (air) when it's in view, so lines there keep their
+    // usual density and bunch where H is stronger for the same E (the liquids).
+    psiTop: percentile(psiTop.length > psi.length / 10 ? psiTop : psi, 0.99),
     heat,
   };
 }
@@ -576,10 +585,7 @@ export class FieldMap {
     }
   }
 
-  /**
-   * Instantaneous E field lines: contours of ρ·H for an upright antenna in uniform surroundings,
-   * traced streamlines otherwise.
-   */
+  /** Instantaneous E field lines: contours of ρ·H, with ρ the distance from the antenna's axis. */
   private fieldLines(
     ctx: CanvasRenderingContext2D,
     sol: Solution,
@@ -595,18 +601,16 @@ export class FieldMap {
     ctx.strokeStyle = 'rgb(246 240 226 / 55%)';
     ctx.lineWidth = 0.9 * dpr;
     ctx.beginPath();
-    // The stream-function shortcut needs an upright antenna in uniform surroundings: with layers,
-    // contours of ρ·H trace D = εE rather than E, and crowd ε times more densely in water.
-    const contours = Math.abs(sol.placement.axis[0]) < 1e-6 && sol.layers.interfaces.length === 0;
-    if (contours) this.contourLines(ctx, sol, grid, s, wt, sx, sy);
-    else this.streamlines(ctx, grid, s, wt, sx, sy);
+    this.contourLines(ctx, sol, grid, s, wt, sx, sy);
     ctx.stroke();
   }
 
   /**
-   * Around an upright (axisymmetric) antenna in a uniform medium, E(t) is tangent to the
-   * contours of ψ = ρ·Im{H·e^{jωt}}, so evenly spaced contours are field lines whose density
-   * follows the field's strength.
+   * Around a straight antenna in a uniform medium the fields are symmetric about its axis, and
+   * E(t) is tangent to the contours of ψ = ρ·Im{H·e^{jωt}} (ρ the distance from the axis), so
+   * evenly spaced contours are field lines whose density follows the field's strength. With the
+   * layers the symmetry is broken and the same contours become approximate: they follow
+   * ∇×H = jωεE, so they trace D = εE and crowd where ε is large (the water).
    */
   private contourLines(
     ctx: CanvasRenderingContext2D,
@@ -619,100 +623,21 @@ export class FieldMap {
   ): void {
     const cos = Math.cos(wt);
     const sin = Math.sin(wt);
-    const xa = sol.placement.gap[0];
     const psi = new Float64Array(grid.nx * grid.ny);
     for (let j = 0; j < grid.ny; j++) {
+      const y = yAt(grid, j);
       for (let i = 0; i < grid.nx; i++) {
         const k = j * grid.nx + i;
-        psi[k] = (xAt(grid, i) - xa) * (grid.hRe[k] * sin + grid.hIm[k] * cos);
+        psi[k] = axisDistance(sol, xAt(grid, i), y) * (grid.hRe[k] * sin + grid.hIm[k] * cos);
       }
     }
     const step = s.psiTop / LINE_LEVELS;
     const levels: number[] = [];
     for (let n = 0; n < LINE_LEVELS * 3; n++) levels.push((n + 0.5) * step, -(n + 0.5) * step);
-    const seg = contourSegments(psi, grid.mask, grid.nx, grid.ny, levels);
+    const seg = contourSegments(psi, grid.mask, grid.nx, grid.ny, levels, grid.layer);
     for (let n = 0; n < seg.length; n += 4) {
       ctx.moveTo(seg[n] * sx, seg[n + 1] * sy);
       ctx.lineTo(seg[n + 2] * sx, seg[n + 3] * sy);
-    }
-  }
-
-  /**
-   * Otherwise there is no such stream function, so the lines are traced: seeds on a
-   * regular grid, each followed both ways along the instantaneous field direction until it
-   * leaves the map, hits the metal, fades out or runs into another line.
-   */
-  private streamlines(
-    ctx: CanvasRenderingContext2D,
-    grid: FieldGrid,
-    s: Stats,
-    wt: number,
-    sx: number,
-    sy: number,
-  ): void {
-    const { nx, ny } = grid;
-    const cos = Math.cos(wt);
-    const sin = Math.sin(wt);
-    const ex = new Float32Array(nx * ny);
-    const ey = new Float32Array(nx * ny);
-    for (let k = 0; k < nx * ny; k++) {
-      ex[k] = grid.exRe[k] * cos - grid.exIm[k] * sin;
-      // Grid rows run downward; flip y so directions are in grid units.
-      ey[k] = -(grid.eyRe[k] * cos - grid.eyIm[k] * sin);
-    }
-    const floor = s.eTop * 2e-4;
-    const cell = SEED_SPACING / 2;
-    const cw = Math.ceil(nx / cell);
-    const ch = Math.ceil(ny / cell);
-    const owner = new Int32Array(cw * ch).fill(-1);
-    const sample = (x: number, y: number): [number, number] | undefined => {
-      const i = Math.floor(x - 0.5);
-      const j = Math.floor(y - 0.5);
-      if (i < 0 || j < 0 || i >= nx - 1 || j >= ny - 1) return undefined;
-      const k = j * nx + i;
-      if (grid.mask[k] || grid.mask[k + 1] || grid.mask[k + nx] || grid.mask[k + nx + 1])
-        return undefined;
-      const fx = x - 0.5 - i;
-      const fy = y - 0.5 - j;
-      const blend = (a: Float32Array) =>
-        (a[k] * (1 - fx) + a[k + 1] * fx) * (1 - fy) +
-        (a[k + nx] * (1 - fx) + a[k + nx + 1] * fx) * fy;
-      const vx = blend(ex);
-      const vy = blend(ey);
-      const m = Math.hypot(vx, vy);
-      return m < floor ? undefined : [vx / m, vy / m];
-    };
-    let id = 0;
-    for (let cy = 0; cy < ch; cy += 2) {
-      for (let cx = 0; cx < cw; cx += 2) {
-        if (owner[cy * cw + cx] >= 0) continue;
-        const line: [number, number][] = [];
-        for (const dir of [1, -1]) {
-          let x = (cx + 0.5) * cell;
-          let y = (cy + 0.5) * cell;
-          const part: [number, number][] = [];
-          for (let n = 0; n < 400; n++) {
-            const d1 = sample(x, y);
-            if (!d1) break;
-            const d2 = sample(x + dir * 0.3 * d1[0], y + dir * 0.3 * d1[1]);
-            if (!d2) break;
-            x += dir * 0.6 * d2[0];
-            y += dir * 0.6 * d2[1];
-            const c = Math.floor(y / cell) * cw + Math.floor(x / cell);
-            if (c < 0 || c >= owner.length) break;
-            if (owner[c] >= 0 && owner[c] !== id) break;
-            owner[c] = id;
-            part.push([x, y]);
-          }
-          if (dir === 1) line.push(...part.reverse());
-          else line.push(...part);
-        }
-        if (line.length > 14) {
-          ctx.moveTo(line[0][0] * sx, line[0][1] * sy);
-          for (const [x, y] of line) ctx.lineTo(x * sx, y * sy);
-        }
-        id++;
-      }
     }
   }
 }

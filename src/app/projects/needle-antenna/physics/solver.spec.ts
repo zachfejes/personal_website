@@ -1,6 +1,7 @@
 import { abs, div } from './complex';
 import { Mask, computeGrid, contourSegments, heating, xAt, yAt } from './fields';
 import { layers, waterPermittivity } from './media';
+import { slicePattern } from './pattern';
 import { profile, radiusAt } from './geometry';
 import { DEFAULT_PARAMS, NeedleParams, VACUUM, armShapes } from './model';
 import { C0, armCharge, solve, sweep, worldAt } from './solver';
@@ -339,6 +340,28 @@ describe('layered surroundings: air, oil, deep water', () => {
     }
     expect(inWater).toBeGreaterThan(0);
     expect(xAt(grid, 0)).toBeLessThan(ax);
+  });
+});
+
+describe('radiation pattern by medium', () => {
+  it('is one curve all round in uniform surroundings', () => {
+    const p = slicePattern(solve(FREE));
+    expect(p.curves.map((c) => [c.medium, c.sector])).toEqual([['vacuum', 'full']]);
+    expect(Math.max(...p.curves[0].intensity)).toBeCloseTo(1, 12);
+  });
+
+  it('splits into air above the surface, water below and a dashed oil curve', () => {
+    const p = slicePattern(solve(DEFAULT_PARAMS));
+    const by = Object.fromEntries(p.curves.map((c) => [c.medium, c]));
+    expect(by['air'].sector).toBe('upper');
+    expect(by['water'].sector).toBe('lower');
+    expect(by['oil'].dashed).toBe(true);
+    p.angle.forEach((a, i) => {
+      if (Math.cos(a) < -1e-9) expect(by['air'].intensity[i]).toBe(0);
+      if (Math.cos(a) > 1e-9) expect(by['water'].intensity[i]).toBe(0);
+    });
+    // One shared scale: the strongest point of any curve is 1.
+    expect(Math.max(...p.curves.flatMap((c) => c.intensity))).toBeCloseTo(1, 12);
   });
 });
 
